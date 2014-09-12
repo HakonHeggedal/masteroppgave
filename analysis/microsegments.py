@@ -74,6 +74,7 @@ def compare(rnas, frequencies):
 
 
 def _filtersimple(filename, minlen=4):
+    ''' filter out useless small lines'''
     
     rnas = []
     freqs = []
