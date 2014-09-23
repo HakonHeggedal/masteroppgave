@@ -28,3 +28,5 @@ print fold
 print energy
 
 print errs
+
+print "test"
