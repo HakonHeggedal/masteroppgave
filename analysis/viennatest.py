@@ -30,3 +30,14 @@ print energy
 print errs
 
 print "test"
+
+def viennafold(sequence):
+    """runs vienna folding, returns folding (string) and energy (double)"""
+    mypipe  = Popen("rnafold", stdin=PIPE, stdout=PIPE, bufsize=-1)
+    ans, errors = mypipe.communicate(seq2)
+    assert errors is None
+    fold, energy = ans.split(" ").strip()
+    energy = float(energy.strip("()"))
+    
+    return fold, energy
+    
