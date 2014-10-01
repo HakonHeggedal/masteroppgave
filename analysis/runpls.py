@@ -1,6 +1,4 @@
-from bowtie import bowtie_get
-from analysis import bowtie
-
+from analysis import candidate
 
 
 def main():
