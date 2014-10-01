@@ -6,9 +6,9 @@ from subprocess import PIPE, Popen, call, check_output
 
 
 
-_seq = "bowtie -c h_sapiens_37_asm TTCACAGTGGCTAAGTTCCGC"
-_seq = ["bowtie", "-c", "h_sapiens_37_asm", "TTCACAGTGGCTAAGTTCCGC"]
-_seq = ["bowtie","-f", "h_sapiens_37_asm", "mature.fa", "test.map"]
+# _seq = "bowtie -c h_sapiens_37_asm TTCACAGTGGCTAAGTTCCGC"
+# _seq = ["bowtie", "-c", "h_sapiens_37_asm", "TTCACAGTGGCTAAGTTCCGC"]
+# _seq = ["bowtie","-f", "h_sapiens_37_asm", "mature.fa", "test.map"]
 _seq = ["bowtie","-f", "h_sapiens_37_asm", "SRR797062.fa", "test.map"]
 
 
@@ -27,4 +27,4 @@ def runcommand(params):
     
 
 
-runcommand(_seq)
+# runcommand(_seq)
