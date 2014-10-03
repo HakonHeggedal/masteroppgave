@@ -39,42 +39,71 @@ MAX_HAIRPIN_LEN = 80
 MIN_HAIRPIN_LEN = 46
 
 
-def find_candidates(fixed_lines):
-    ''' finds microRNA candidates from bowtie data
+def find_candidates(sequence_hits):
+    ''' finds microRNA candidates from bowtie data using interval trees
     
-        fixed_lines -- an iterable of lists on bowtie output format:
+        sequence_hits -- an iterable of lists on bowtie output format:
   0          1    2                                 3           4                           5                           6
 ['1-15830', '-', 'gi|224589818|ref|NC_000006.11|', '72113295', 'AGCTTCCAGTCGAGGATGTTTACA', 'IIIIIIIIIIIIIIIIIIIIIIII', '0']
-        
-        
-        
+        returns a list of candidates, and the intervaltree with all 
     '''
     
-    print len(fixed_lines)
-    print fixed_lines[0]
-    
-    genome_tree = GenomeIntervalTree()
-#     candidate_tree = GenomeIntervalTree() # only candidates here
-
+    sequence_tree = GenomeIntervalTree()
+    candidate_tree = GenomeIntervalTree() # only candidates here
     # add all intervals to the tree
-    for prop in fixed_lines:
+    for prop in sequence_hits:
         
         strand_dir = prop[1] # forward: + backward: -
         genome_nr = prop[2].split("|")[3] # which genome (and version)
         genome_offset = int(prop[3]) # offset into the genome, 0-indexed
         dna_sequence = prop[4] # the dna_sequence matching this position.
         
-        genome_tree.addi(genome_nr, genome_offset, genome_offset + len(dna_sequence), strand_dir)
+        sequence_tree.addi(genome_nr, genome_offset, genome_offset + len(dna_sequence), strand_dir)
     
     
     print "added all intervals"
-    print "number of intervals: ", len(genome_tree)
+    print "number of intervals: ", len(sequence_tree)
+    
+#     candidate_list = []
+
+    
+    for tree in sequence_tree:
+#         print tree
+#         print len(sequence_tree[tree])
         
         
-    for tree in genome_tree:
-        print tree
-        
-        
+        for sequence in sorted(sequence_tree[tree]):
+#             print sequence,
+#             print sequence.begin,
+#             print sequence.end,
+#             print sequence.data
+            
+            five_begin = sequence.begin + MIN_HAIRPIN_LEN
+            five_end = sequence.begin + MAX_HAIRPIN_LEN
+            outside = sequence.begin + MAX_HAIRPIN_LEN + 1
+            
+            five_primes = sequence_tree[tree][five_begin:five_end]
+            if five_primes:
+                
+                legal_ends = [x.end for x in five_primes if x.end < outside and x.data == sequence.data]
+                if not legal_ends:
+                    continue
+                
+                candidate_begin = sequence.begin
+                candidate_end = max(legal_ends)
+
+#                 if this is a sub-interval, it is not added
+                if tree in candidate_tree:
+                    if candidate_tree[tree][candidate_begin:candidate_end]:
+                        continue
+
+#                 this interval is a new candidate
+                candidate_tree[tree][candidate_begin:candidate_end] = sequence.data
+               
+               
+    return candidate_tree, sequence_tree 
+
+            
 
 
 
@@ -120,9 +149,9 @@ def find_candidates(fixed_lines):
 #         end = genome_offset + MAX_HAIRPIN_LEN
 #         
 #         
-#         three_hits = genome_tree[genome_nr][begin, end]
+#         three_hits = sequence_tree[genome_nr][begin, end]
 #         if three_hits:
-#             outside_hits = genome_tree[genome_nr][outside]
+#             outside_hits = sequence_tree[genome_nr][outside]
 #             three_hits.difference_update(outside_hits)
 #             #TODO: add candidate(s) to candidate set
         
