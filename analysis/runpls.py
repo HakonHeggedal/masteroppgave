@@ -1,6 +1,6 @@
 import os
 from bowtie import bowtie_get
-from candidates import interval_tree
+from candidates import interval_tree_search
 
 
 def main():
@@ -12,9 +12,11 @@ def main():
     bowtie_get.runcommand(bowtie_cmds)
 #     bowtie_get.runcommand(["bowtie","-f", "h_sapiens_37_asm", "SRR797062.fa", "test.map"])
     
-    unfixed_lines = open(bowtie_output).readlines() # read 
-    interval_tree.findall(unfixed_lines)
-
+    unfixed_lines = open(bowtie_output).readlines() # read
+    fixed_lines = [line.strip().split("\t") for line in unfixed_lines] # make 
+    
+    interval_tree_search.find_candidates(fixed_lines)
+    
     
 
 
