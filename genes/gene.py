@@ -83,39 +83,36 @@ def find_all(interval_trees, extra=40 ):
                 end_line = read_end // line_len
                 end_pos = read_end % line_len
                 
+                print
+                print "new interval"
                 print read_start, start_line
                 print read_end, end_line
+                print "size:", interval.end-interval.begin,
+                print "\tinterval seqs:", interval.data[2], interval.data[4],
+                print "\tinterval sizes:", len(interval.data[2]), len(interval.data[4])
+                print "read size:", read_end - read_start
+                print "full size should be:", interval.end-interval.begin + extra + extra
                 
-                seq = chr_lines[start_line][start_pos:].strip()
-                for x in xrange(start_line+1, end_line-1):
-                    print x
-                    seq += chr_lines[x].strip()
-                seq += chr_lines[end_line][:end_pos].strip() if start_line != end_line else ""
-                seq = seq.upper()
-                seq = seq.strip()
-                seq = seq.strip("\n")
-                print "sequence:", seq, len(seq)
+                #assembling sequence
+                padded = chr_lines[start_line][start_pos:].strip()
+                for x in xrange(start_line+1, end_line):
+#                     print x
+                    padded += chr_lines[x].strip()
+                padded += chr_lines[end_line][:end_pos].strip() if start_line != end_line else ""
+                
+                padded = padded.upper()
+                padded = padded.strip()
+                padded = padded.strip("\n")
+                
+                hairpin = padded[extra:-extra]
+                print "full sequence:", padded, len(padded)
                 print interval.data
-                print "interval.data[2] in seq", interval.data[2] in seq
+                print "interval.data[2] in padded", interval.data[2] in padded
+                print "interval.data[4] in padded", interval.data[4] in padded
+                print len(hairpin), hairpin
+                print interval.data[2], interval.data[4]
                 
-#                 last = ""
-# #                 print "can I haz?"
-#                 for nr, line in enumerate(chr_lines):
-#                     last = last.strip() + line.strip()
-#                     last = last.upper()
-# #                     print last, len(last)
-# #                     
-# #                     if nr == 10:
-# #                         break
-#                     if interval.data[2] in last:
-#                         print "YES PLEASE", 
-#                         print nr, last,
-#                         print interval.data[2]
-#                     
-#                     last = line.strip()
-#                 print last
-                
-#                 break
+
         break
     
     os.chdir(p)

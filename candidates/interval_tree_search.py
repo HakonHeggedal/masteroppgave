@@ -52,7 +52,7 @@ def find_candidates(sequence_hits):
     candidate_tree = GenomeIntervalTree() # only candidates here
     # add all intervals to the tree
     for prop in sequence_hits:
-        print prop
+#         print prop
         seq_name = prop[0]
         strand_dir = prop[1] # forward: + backward: -
         genome_nr = prop[2].split("|")[3] # which genome (and version)
@@ -75,13 +75,25 @@ def find_candidates(sequence_hits):
             
             three_sequences = sequence_tree[tree][three_range_begin:three_range_end]
         
-            if three_sequences:
-                legal_three_ends = [x for x in three_sequences if x.end < outside and x.data[0] == five_interval.data[0]]
+            if three_sequences != None:
                 
-                if not legal_three_ends:
+                three_interval = None
+                
+                # find the legal 3' interval longest distance from 5'
+                for seq in three_sequences:
+                    if seq.end < outside and seq.begin > five_interval.end:
+                        if three_interval:
+                            if seq.end > three_interval.end:
+                                three_interval = seq
+                        else:
+                            three_interval = seq
+                        
+                
+#                 legal_three_ends = [x for x in three_sequences if x.end < outside and x.data[0] == five_interval.data[0]]
+#                 three_interval = max(legal_three_ends, key=lambda x:x.end) # 
+                print three_interval
+                if not three_interval:
                     continue
-
-                three_interval = max(legal_three_ends, key=lambda x:x[1]) # 
 
 #                 if this is a sub-interval, it is not added
                 if tree in candidate_tree:

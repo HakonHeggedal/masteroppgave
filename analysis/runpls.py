@@ -15,8 +15,10 @@ def main():
     bowtie_cmds = ["bowtie", "-f", "-v 0", "-a", "-m 10",  human_index, fasta_file, bowtie_output]
     bowtie_str = "bowtie -f -v 0 -a -m 10 h_sapiens_37_asm SRR797062.fa test.map"
     bowtie_str = "bowtie -f -v 0 h_sapiens_37_asm SRR797062.fa test.map"
-    print "running bowtie"
     
+    
+    
+#     print "running bowtie"
 #     outs = check_output(bowtie_str, shell=True).strip()
 # #     outs = check_output(["bowtie", human_index, "-c", "ACGTACGT", "ts.txt"], shell=True).strip()
 #     print "run commands2"        
