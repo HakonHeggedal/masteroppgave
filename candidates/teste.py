@@ -12,23 +12,27 @@
 # print i[15] - set([])
 # 
 # print i.containsi(6, 11, "test1")
-from _collections import defaultdict
+# from _collections import defaultdict
+# 
+# 
+# # liste = range(5)
+# 
+# def endre(ting):
+#     ting[2], ting[1] = ting[1], ting[2]
+#     return ting
+#     
+# # print liste
+# # print endre(liste)
+# # print liste
+# 
+# 
+# d = defaultdict(int)
+# 
+# d["2"] = 0
+# 
+# print "1" in d
 
 
-# liste = range(5)
 
-def endre(ting):
-    ting[2], ting[1] = ting[1], ting[2]
-    return ting
-    
-# print liste
-# print endre(liste)
-# print liste
-
-
-d = defaultdict(int)
-
-d["2"] = 0
-
-print "1" in d
-
+s = "1234567890"
+print s, s[2:-2]

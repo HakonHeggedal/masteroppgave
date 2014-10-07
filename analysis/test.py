@@ -8,15 +8,20 @@
 # for x in xrange(-offset,offset+1):
 #     print x
 
-a = (1,2)
-x = set([a])
-b = (2,3)
+# a = (1,2)
+# x = set([a])
+# b = (2,3)
+# 
+# x.add(b)
+# 
+# print x, len(x)
+# 
+# for el in x:
+#     print el
+# 
+# print 123
 
-x.add(b)
 
-print x, len(x)
+laa = [(1,2,3), (0,3,1)]
 
-for el in x:
-    print el
-
-print 123
+print max(laa, key=lambda x:x[1])
