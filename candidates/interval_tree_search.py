@@ -45,122 +45,59 @@ def find_candidates(sequence_hits):
         sequence_hits -- an iterable of lists on bowtie output format:
   0          1    2                                 3           4                           5                           6
 ['1-15830', '-', 'gi|224589818|ref|NC_000006.11|', '72113295', 'AGCTTCCAGTCGAGGATGTTTACA', 'IIIIIIIIIIIIIIIIIIIIIIII', '0']
-        returns a list of candidates, and the intervaltree with all 
+        returns a list of candidates, and the interval tree with all sequences
     '''
     
     sequence_tree = GenomeIntervalTree()
     candidate_tree = GenomeIntervalTree() # only candidates here
     # add all intervals to the tree
     for prop in sequence_hits:
-        
+        print prop
+        seq_name = prop[0]
         strand_dir = prop[1] # forward: + backward: -
         genome_nr = prop[2].split("|")[3] # which genome (and version)
         genome_offset = int(prop[3]) # offset into the genome, 0-indexed
         dna_sequence = prop[4] # the dna_sequence matching this position.
+        sequence_info = [strand_dir, seq_name, dna_sequence]
         
-        sequence_tree.addi(genome_nr, genome_offset, genome_offset + len(dna_sequence), strand_dir)
+        sequence_tree.addi(genome_nr, genome_offset, genome_offset + len(dna_sequence), sequence_info)
     
-    
-    print "added all intervals"
-    print "number of intervals: ", len(sequence_tree)
-    
-#     candidate_list = []
 
-    
+     
     for tree in sequence_tree:
-#         print tree
-#         print len(sequence_tree[tree])
-        
-        
-        for sequence in sorted(sequence_tree[tree]):
-#             print sequence,
-#             print sequence.begin,
-#             print sequence.end,
-#             print sequence.data
+        # test all intervals to find candidates
+
+        for five_interval in sorted(sequence_tree[tree]):
             
-            five_begin = sequence.begin + MIN_HAIRPIN_LEN
-            five_end = sequence.begin + MAX_HAIRPIN_LEN
-            outside = sequence.begin + MAX_HAIRPIN_LEN + 1
+            three_range_begin = five_interval.end
+            three_range_end = five_interval.begin + MAX_HAIRPIN_LEN
+            outside = five_interval.begin + MAX_HAIRPIN_LEN + 1
             
-            five_primes = sequence_tree[tree][five_begin:five_end]
-            if five_primes:
+            three_sequences = sequence_tree[tree][three_range_begin:three_range_end]
+        
+            if three_sequences:
+                legal_three_ends = [x for x in three_sequences if x.end < outside and x.data[0] == five_interval.data[0]]
                 
-                legal_ends = [x.end for x in five_primes if x.end < outside and x.data == sequence.data]
-                if not legal_ends:
+                if not legal_three_ends:
                     continue
-                
-                candidate_begin = sequence.begin
-                candidate_end = max(legal_ends)
+
+                three_interval = max(legal_three_ends, key=lambda x:x[1]) # 
 
 #                 if this is a sub-interval, it is not added
                 if tree in candidate_tree:
-                    if candidate_tree[tree][candidate_begin:candidate_end]:
+                    if candidate_tree[tree][five_interval.begin:three_interval.end]:
                         continue
 
-#                 this interval is a new candidate
-                candidate_tree[tree][candidate_begin:candidate_end] = sequence.data
-               
+#                 this interval is 5' in a new candidate
+#                 [strand, 5'name, 5'sequence, 3'name, 3'sequence]
+                candidate_data = five_interval.data[:]
+                candidate_data.extend(three_interval.data[1:])
+                
+                candidate_tree[tree][five_interval.begin:three_interval.end] = candidate_data
                
     return candidate_tree, sequence_tree 
 
-            
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-
-#             
-#         
-#         # test for candidates with this as 5' end
-#         outside = genome_offset + MAX_HAIRPIN_LEN + 1
-#         begin = genome_offset + MIN_HAIRPIN_LEN
-#         end = genome_offset + MAX_HAIRPIN_LEN
-#         
-#         
-#         three_hits = sequence_tree[genome_nr][begin, end]
-#         if three_hits:
-#             outside_hits = sequence_tree[genome_nr][outside]
-#             three_hits.difference_update(outside_hits)
-#             #TODO: add candidate(s) to candidate set
-        
-        
-        
-        
-        
-        
-#         genomes.add(genome_nr)
-
-    
-    
