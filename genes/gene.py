@@ -4,6 +4,7 @@ Created on 6. okt. 2014
 @author: hakon
 '''
 import os
+from analysis import candidate
 
 GENOMENR_TO_FASTAFILE = {}
 GENOMENR_TO_FASTAFILE["NC_000001.10"] = "chr1.fa"
@@ -57,7 +58,8 @@ def find_all(interval_trees, extra=40 ):
     p =  os.getcwd()
     os.chdir(os.pardir)
     os.chdir("genes")
-    results = {} 
+    candidate_list = []
+    fails = 0
     
     for tree in interval_trees:
 #         file_name = GENOMENR_TO_FASTAFILE[tree]
@@ -71,8 +73,8 @@ def find_all(interval_trees, extra=40 ):
             chr_lines = chr_file.readlines() # current genome
             line_len = len(chr_lines[0].strip())
             
-            print line_len
-            print len(chr_lines) * line_len, len(chr_lines)
+#             print line_len
+#             print len(chr_lines) * line_len, len(chr_lines)
             
             for interval in sorted(interval_trees[tree]):
                 read_start = interval.begin - extra
@@ -83,15 +85,15 @@ def find_all(interval_trees, extra=40 ):
                 end_line = read_end // line_len
                 end_pos = read_end % line_len
                 
-                print
-                print "new interval"
-                print read_start, start_line
-                print read_end, end_line
-                print "size:", interval.end-interval.begin,
-                print "\tinterval seqs:", interval.data[2], interval.data[4],
-                print "\tinterval sizes:", len(interval.data[2]), len(interval.data[4])
-                print "read size:", read_end - read_start
-                print "full size should be:", interval.end-interval.begin + extra + extra
+#                 print
+#                 print "new interval"
+#                 print read_start, start_line
+#                 print read_end, end_line
+#                 print "size:", interval.end-interval.begin,
+#                 print "\tinterval seqs:", interval.data[2], interval.data[4],
+#                 print "\tinterval sizes:", len(interval.data[2]), len(interval.data[4])
+#                 print "read size:", read_end - read_start
+#                 print "full size should be:", interval.end-interval.begin + extra + extra
                 
                 #assembling sequence
                 padded = chr_lines[start_line][start_pos:].strip()
@@ -105,17 +107,36 @@ def find_all(interval_trees, extra=40 ):
                 padded = padded.strip("\n")
                 
                 hairpin = padded[extra:-extra]
-                print "full sequence:", padded, len(padded)
-                print interval.data
-                print "interval.data[2] in padded", interval.data[2] in padded
-                print "interval.data[4] in padded", interval.data[4] in padded
-                print len(hairpin), hairpin
-                print interval.data[2], interval.data[4]
                 
+#                 [strand, 5'name, 5'sequence, 3'name, 3'sequence]
+#                 five = interval.data[2]
+#                 three = interval.data[4]
+#                 strand = interval.data[0]
+#                 five_id = interval.data[1]
+#                 three_id = interval.data[3]
+                
+#                 print "full sequence:", padded, len(padded)
+#                 print interval.data
+#                 print "interval.data[2] in padded", interval.data[2] in padded
+#                 print "interval.data[4] in padded", interval.data[4] in padded
+                
+                if interval.data[2] not in padded or interval.data[4] not in padded:
+                    fails += 1
+#                 print len(hairpin), hairpin
+#                 print interval.data[2], interval.data[4]
+                
+                canidate = candidate.Candidate(hairpin, padded, interval.data)
+                
+                candidate_list.append(canidate)
 
-        break
+#         break
     
     os.chdir(p)
+    
+    print "candidates not mapping to genome:", fails
+    
+    
+    return candidate_list
         
         
 

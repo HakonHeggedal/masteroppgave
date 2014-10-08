@@ -62,7 +62,7 @@ def find_candidates(sequence_hits):
         
         sequence_tree.addi(genome_nr, genome_offset, genome_offset + len(dna_sequence), sequence_info)
     
-
+    
      
     for tree in sequence_tree:
         # test all intervals to find candidates
@@ -91,7 +91,6 @@ def find_candidates(sequence_hits):
                 
 #                 legal_three_ends = [x for x in three_sequences if x.end < outside and x.data[0] == five_interval.data[0]]
 #                 three_interval = max(legal_three_ends, key=lambda x:x.end) # 
-                print three_interval
                 if not three_interval:
                     continue
 
@@ -100,6 +99,7 @@ def find_candidates(sequence_hits):
                     if candidate_tree[tree][five_interval.begin:three_interval.end]:
                         continue
 
+                print three_interval
 #                 this interval is 5' in a new candidate
 #                 [strand, 5'name, 5'sequence, 3'name, 3'sequence]
                 candidate_data = five_interval.data[:]

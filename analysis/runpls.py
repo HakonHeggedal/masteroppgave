@@ -45,8 +45,9 @@ def main():
     
     print "found candidates in ", time.clock() - start_time, " seconds"
     
-    gene.find_all(candidates)
-
+    candidates_list = gene.find_all(candidates)
+    
+    print "candidates:", len(candidates_list)
     print "found all loki in ", time.clock() - start_time, " seconds"
 
 
