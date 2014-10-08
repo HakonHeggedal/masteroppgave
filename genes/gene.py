@@ -4,7 +4,7 @@ Created on 6. okt. 2014
 @author: hakon
 '''
 import os
-from analysis import candidate
+from candidates import structure
 
 GENOMENR_TO_FASTAFILE = {}
 GENOMENR_TO_FASTAFILE["NC_000001.10"] = "chr1.fa"
@@ -125,7 +125,7 @@ def find_all(interval_trees, extra=40 ):
 #                 print len(hairpin), hairpin
 #                 print interval.data[2], interval.data[4]
                 
-                canidate = candidate.Candidate(hairpin, padded, interval.data)
+                canidate = structure.Candidate(hairpin, padded, interval.data)
                 
                 candidate_list.append(canidate)
 
