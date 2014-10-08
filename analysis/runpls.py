@@ -4,6 +4,8 @@ from candidates import interval_tree_search
 import time
 from genes import gene
 from subprocess import check_output
+import reads
+from candidates.vienna import energy_fold
 
 
 def main():
@@ -45,12 +47,17 @@ def main():
     
     print "found candidates in ", time.clock() - start_time, " seconds"
     
-    candidates_list = gene.find_all(candidates)
+    candidate_list = gene.find_all(candidates)
     
-    print "candidates:", len(candidates_list)
+    print "candidates:", len(candidate_list)
     print "found all loki in ", time.clock() - start_time, " seconds"
-
-
+    
+    
+    sequence_freq = reads.readcollapsed(fasta_file)
+    
+    print len(sequence_freq)
+    
+    energy_fold(candidate_list)
 
 
 # if __name__ == "__main__":

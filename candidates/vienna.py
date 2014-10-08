@@ -18,7 +18,12 @@ def _viennafold(sequence, ):
     ans, errors = mypipe.communicate(sequence)
     assert errors is None
     
-    fold, energy = ans.strip().split(" ")
+    ans = ans.strip()
+    if "\n" in ans:
+        ans = "".
+    print ans.strip().split(" ")
+    ans = 
+
     energy = float(energy.strip("()"))
     
     return fold, energy
@@ -26,7 +31,7 @@ def _viennafold(sequence, ):
     
 
 
-seq2 = "uuggauguuggccuaguucuguguggaagacuagugauuuuguuguuuuuagauaacuaaaucgacaacaaaucacagucugccauauggcacaggccaugccucuacag"
- 
- 
-_viennafold(seq2)
+# seq2 = "uuggauguuggccuaguucuguguggaagacuagugauuuuguuguuuuuagauaacuaaaucgacaacaaaucacagucugccauauggcacaggccaugccucuacag"
+#  
+#  
+# _viennafold(seq2)
