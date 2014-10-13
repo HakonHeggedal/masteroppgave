@@ -6,51 +6,51 @@ Created on 6. okt. 2014
 import os
 from candidates import structure
 
-GENOMENR_TO_FASTAFILE = {}
-GENOMENR_TO_FASTAFILE["NC_000001.10"] = "chr1.fa"
-GENOMENR_TO_FASTAFILE["NC_000002.11"] = "chr2.fa"
-GENOMENR_TO_FASTAFILE["NC_000003.11"] = "chr3.fa"
-GENOMENR_TO_FASTAFILE["NC_000004.11"] = "chr4.fa"
-GENOMENR_TO_FASTAFILE["NC_000005.9"] = "chr5.fa"
-GENOMENR_TO_FASTAFILE["NC_000006.11"] = "chr6.fa"
-GENOMENR_TO_FASTAFILE["NC_000007.13"] = "chr7.fa"
-GENOMENR_TO_FASTAFILE["NC_000008.10"] = "chr8.fa"
-GENOMENR_TO_FASTAFILE["NC_000009.11"] = "chr9.fa"
-GENOMENR_TO_FASTAFILE["NC_000010.10"] = "chr10.fa"
-GENOMENR_TO_FASTAFILE["NC_000011.9"] = "chr11.fa"
-GENOMENR_TO_FASTAFILE["NC_000012.11"] = "chr12.fa"
-GENOMENR_TO_FASTAFILE["NC_000013.10"] = "chr13.fa"
-GENOMENR_TO_FASTAFILE["NC_000014.8"] = "chr14.fa"
-GENOMENR_TO_FASTAFILE["NC_000015.9"] = "chr15.fa"
-GENOMENR_TO_FASTAFILE["NC_000016.9"] = "chr16.fa"
-GENOMENR_TO_FASTAFILE["NC_000017.10"] = "chr17.fa"
-GENOMENR_TO_FASTAFILE["NC_000018.9"] = "chr18.fa"
-GENOMENR_TO_FASTAFILE["NC_000019.9"] = "chr19.fa"
-GENOMENR_TO_FASTAFILE["NC_000020.10"] = "chr20.fa"
-GENOMENR_TO_FASTAFILE["NC_000021.8"] = "chr21.fa"
-GENOMENR_TO_FASTAFILE["NC_000022.10"] = "chr22.fa"
-GENOMENR_TO_FASTAFILE["NC_000023.10"] = "chrX.fa"
-GENOMENR_TO_FASTAFILE["NC_000024.9"] = "chrY.fa"
-GENOMENR_TO_FASTAFILE["NC_001807.4"] = "chrM.fa"
+# GENOMENR_TO_FASTAFILE = {}
+# GENOMENR_TO_FASTAFILE["NC_000001.10"] = "chr1.fa"
+# GENOMENR_TO_FASTAFILE["NC_000002.11"] = "chr2.fa"
+# GENOMENR_TO_FASTAFILE["NC_000003.11"] = "chr3.fa"
+# GENOMENR_TO_FASTAFILE["NC_000004.11"] = "chr4.fa"
+# GENOMENR_TO_FASTAFILE["NC_000005.9"] = "chr5.fa"
+# GENOMENR_TO_FASTAFILE["NC_000006.11"] = "chr6.fa"
+# GENOMENR_TO_FASTAFILE["NC_000007.13"] = "chr7.fa"
+# GENOMENR_TO_FASTAFILE["NC_000008.10"] = "chr8.fa"
+# GENOMENR_TO_FASTAFILE["NC_000009.11"] = "chr9.fa"
+# GENOMENR_TO_FASTAFILE["NC_000010.10"] = "chr10.fa"
+# GENOMENR_TO_FASTAFILE["NC_000011.9"] = "chr11.fa"
+# GENOMENR_TO_FASTAFILE["NC_000012.11"] = "chr12.fa"
+# GENOMENR_TO_FASTAFILE["NC_000013.10"] = "chr13.fa"
+# GENOMENR_TO_FASTAFILE["NC_000014.8"] = "chr14.fa"
+# GENOMENR_TO_FASTAFILE["NC_000015.9"] = "chr15.fa"
+# GENOMENR_TO_FASTAFILE["NC_000016.9"] = "chr16.fa"
+# GENOMENR_TO_FASTAFILE["NC_000017.10"] = "chr17.fa"
+# GENOMENR_TO_FASTAFILE["NC_000018.9"] = "chr18.fa"
+# GENOMENR_TO_FASTAFILE["NC_000019.9"] = "chr19.fa"
+# GENOMENR_TO_FASTAFILE["NC_000020.10"] = "chr20.fa"
+# GENOMENR_TO_FASTAFILE["NC_000021.8"] = "chr21.fa"
+# GENOMENR_TO_FASTAFILE["NC_000022.10"] = "chr22.fa"
+# GENOMENR_TO_FASTAFILE["NC_000023.10"] = "chrX.fa"
+# GENOMENR_TO_FASTAFILE["NC_000024.9"] = "chrY.fa"
+# GENOMENR_TO_FASTAFILE["NC_001807.4"] = "chrM.fa"
 
 
-def _find_loki(gene_name, begin, end, extra=40):
-    ''' finds the position in the gene
-        returns the sequence start to end, and the surroundings
-    '''
-    length = end - begin
-
-    begin_extra = begin - extra
-    end_extra = end + extra
-    length_extra = end_extra - begin_extra
-    
-    with open(gene_name, "r") as gene:
-        gene.seek(begin_extra)
-        surroundings = gene.read(length_extra)
-    
-    loki = surroundings[extra:-extra]
-    
-    return loki, surroundings
+# def _find_loki(gene_name, begin, end, extra=40):
+#     ''' finds the position in the gene
+#         returns the sequence start to end, and the surroundings
+#     '''
+#     length = end - begin
+# 
+#     begin_extra = begin - extra
+#     end_extra = end + extra
+#     length_extra = end_extra - begin_extra
+#     
+#     with open(gene_name, "r") as gene:
+#         gene.seek(begin_extra)
+#         surroundings = gene.read(length_extra)
+#     
+#     loki = surroundings[extra:-extra]
+#     
+#     return loki, surroundings
 
 
 def find_all(interval_trees, extra=40 ):

@@ -6,6 +6,7 @@ from genes import gene
 from subprocess import check_output
 import reads
 from candidates.vienna import energy_fold
+from candidates.tailing import three_prime_au
 
 
 def main():
@@ -27,7 +28,7 @@ def main():
 # #     print answers
 # #     print "errors", errors
 #     parts = outs.split("\t")
-#     print len(outs), outs
+#     print len(outs), outs 
 #     print len(parts), parts
 #      
     
@@ -54,10 +55,16 @@ def main():
     
     
     sequence_freq = reads.readcollapsed(fasta_file)
-    
     print len(sequence_freq)
     
+    # run and set vienna RNAfold + energy on all candidates
     energy_fold(candidate_list)
+    
+    three_prime_au(candidate_list, sequence_freq)
+    
+    
+    
+    
 
 
 # if __name__ == "__main__":
