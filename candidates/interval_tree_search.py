@@ -5,6 +5,7 @@ Created on 1. okt. 2014
 '''
 
 from intervaltree.bio import GenomeIntervalTree
+import intervaltree
 from candidates import structure
 
 
@@ -144,6 +145,30 @@ def find_candidates(sequence_hits):
     return candidate_tree, sequence_tree, candidate_list
 
 
+def get_nondup_intervals(sequence_hits, seqeunce_tree):
+    
+    dup_free = []
+    for prop in sequence_hits:
+        seq_name = prop[0]
+        strand_dir = prop[1] # forward: + backward: -
+        genome_nr = prop[2].split("|")[3] # which genome (and version)
+        genome_offset = int(prop[3]) # offset into the genome, 0-indexed
+        dna_sequence = prop[4] # the dna_sequence matching this position.
+        sequence_info = [strand_dir, seq_name, dna_sequence]
+        interval = intervaltree.Interval(genome_offset, genome_offset + len(dna_sequence), sequence_info)
+         
+        if genome_nr in seqeunce_tree:
+            if interval not in seqeunce_tree[genome_nr]:
+                dup_free.append(interval)
+            
+            
+        
+
+def add_seq_to_existing_candidates(seqs, candidate_tree):
+    
+    for sequence in seqs:
+        pass
+        
 # 
 # GENOMENR_TO_FASTAFILE = {}
 # GENOMENR_TO_FASTAFILE["NC_000001.10"] = "chr1.fa"

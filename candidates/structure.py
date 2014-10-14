@@ -50,7 +50,9 @@ class Candidate:
         self.hairpin_fold = hairpin_fold 
         self.hairpin_energy = hairpin_energy
         
+    def add_sequence(self, sequence):
         
+        self.all_mapped_sequences.add(sequence)
 
 #     def __init__(self, interval_data, chromosome):
 # #         [strand, 5'name, 5'sequence, 3'name, 3'sequence]
