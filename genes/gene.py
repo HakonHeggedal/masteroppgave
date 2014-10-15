@@ -5,6 +5,183 @@ Created on 6. okt. 2014
 '''
 import os
 from candidates import structure
+import candidates
+from genes import *
+
+
+
+
+def include_padding(candidate_list, padding=40 ):
+    
+    # such hack...
+    p =  os.getcwd()
+    os.chdir(os.pardir)
+    os.chdir("genes")
+    candidate_list = []
+    fails = 0
+    
+    i = 0
+
+
+    while i < len(candidate_list):
+        
+        candidate = candidate_list[i]
+        gene_name = candidate.chromosome
+
+        file_name = gene_name + ".fa"
+        
+        print "reading from", file_name
+        
+        with open(file_name) as chr_file:
+            
+            _ = chr_file.readline() # first line is info, not used
+            chr_lines = chr_file.readlines() # current genome
+            line_len = len(chr_lines[0].strip())
+            
+#             print line_len
+#             print len(chr_lines) * line_len, len(chr_lines)
+            
+            while True:
+                # fix every candidate
+                
+                read_start = candidate.pos_5_begin - padding
+                start_line = read_start // line_len
+                start_pos = read_start % line_len
+
+                read_end = candidate.pos_3_end + padding
+                end_line = read_end // line_len
+                end_pos = read_end % line_len
+                
+                #assembling sequence
+                padded = chr_lines[start_line][start_pos:].strip()
+                for x in xrange(start_line+1, end_line):
+#                     print x
+                    padded += chr_lines[x].strip()
+                padded += chr_lines[end_line][:end_pos].strip() if start_line != end_line else ""
+                
+                padded = padded.upper()
+                padded = padded.strip()
+                padded = padded.strip("\n")
+                
+                hairpin = padded[padding:-padding]
+                
+                print hairpin
+                ss = candidate.mapped_sequences
+                s = 0
+                for s in ss:
+                    break
+                print s[2]
+                
+                
+#                 if interval.data[2] not in padded or interval.data[4] not in padded:
+#                     fails += 1
+                
+                candidate.set_hairpin_padding(hairpin, padded)
+                
+                i += 1
+                if  i < len(candidate_list):
+                    break
+                
+                if candidate_list[i].chromosome != gene_name:
+                    break
+                
+                candidate = candidate_list[i]
+                gene_name = candidate.chromosome     
+                
+                
+    os.chdir(p)
+    
+#     print "candidate_list not mapping to genome:", fails
+    
+    return 
+        
+# 
+# def find_all(interval_trees, padding=40 ):
+#     
+#     p =  os.getcwd()
+#     os.chdir(os.pardir)
+#     os.chdir("genes")
+#     candidate_list = []
+#     fails = 0
+#     
+#     for tree in interval_trees:
+# #         file_name = GENOMENR_TO_FASTAFILE[tree]
+#         file_name = tree + ".fa"
+#         
+#         print "reading from", file_name
+#         
+#         with open(file_name) as chr_file:
+#             
+#             _ = chr_file.readline() # first line is info, not used
+#             chr_lines = chr_file.readlines() # current genome
+#             line_len = len(chr_lines[0].strip())
+#             
+# #             print line_len
+# #             print len(chr_lines) * line_len, len(chr_lines)
+#             
+#             for interval in sorted(interval_trees[tree]):
+#                 read_start = interval.begin - padding
+#                 start_line = read_start // line_len
+#                 start_pos = read_start % line_len
+# 
+#                 read_end = interval.end + padding
+#                 end_line = read_end // line_len
+#                 end_pos = read_end % line_len
+#                 
+# #                 print
+# #                 print "new interval"
+# #                 print read_start, start_line
+# #                 print read_end, end_line
+# #                 print "size:", interval.end-interval.begin,
+# #                 print "\tinterval seqs:", interval.data[2], interval.data[4],
+# #                 print "\tinterval sizes:", len(interval.data[2]), len(interval.data[4])
+# #                 print "read size:", read_end - read_start
+# #                 print "full size should be:", interval.end-interval.begin + padding + padding
+#                 
+#                 #assembling sequence
+#                 padded = chr_lines[start_line][start_pos:].strip()
+#                 for x in xrange(start_line+1, end_line):
+# #                     print x
+#                     padded += chr_lines[x].strip()
+#                 padded += chr_lines[end_line][:end_pos].strip() if start_line != end_line else ""
+#                 
+#                 padded = padded.upper()
+#                 padded = padded.strip()
+#                 padded = padded.strip("\n")
+#                 
+#                 hairpin = padded[padding:-padding]
+#                 
+# #                 [strand, 5'name, 5'sequence, 3'name, 3'sequence]
+# #                 five = interval.data[2]
+# #                 three = interval.data[4]
+# #                 strand = interval.data[0]
+# #                 five_id = interval.data[1]
+# #                 three_id = interval.data[3]
+#                 
+# #                 print "full sequence:", padded, len(padded)
+# #                 print interval.data
+# #                 print "interval.data[2] in padded", interval.data[2] in padded
+# #                 print "interval.data[4] in padded", interval.data[4] in padded
+#                 
+#                 if interval.data[2] not in padded or interval.data[4] not in padded:
+#                     fails += 1
+# #                 print len(hairpin), hairpin
+# #                 print interval.data[2], interval.data[4]
+#                 
+#                 canidate = structure.Candidate(hairpin, padded, interval.data)
+#                 
+#                 candidate_list.append(canidate)
+# 
+# #         break
+#     
+#     os.chdir(p)
+#     
+#     print "candidates not mapping to genome:", fails
+#     
+#     
+#     return candidate_list
+        
+        
 
 # GENOMENR_TO_FASTAFILE = {}
 # GENOMENR_TO_FASTAFILE["NC_000001.10"] = "chr1.fa"
@@ -51,96 +228,6 @@ from candidates import structure
 #     loki = surroundings[extra:-extra]
 #     
 #     return loki, surroundings
-
-
-def find_all(interval_trees, extra=40 ):
-    
-    p =  os.getcwd()
-    os.chdir(os.pardir)
-    os.chdir("genes")
-    candidate_list = []
-    fails = 0
-    
-    for tree in interval_trees:
-#         file_name = GENOMENR_TO_FASTAFILE[tree]
-        file_name = tree + ".fa"
-        
-        print "reading from", file_name
-        
-        with open(file_name) as chr_file:
-            
-            _ = chr_file.readline() # first line is info, not used
-            chr_lines = chr_file.readlines() # current genome
-            line_len = len(chr_lines[0].strip())
-            
-#             print line_len
-#             print len(chr_lines) * line_len, len(chr_lines)
-            
-            for interval in sorted(interval_trees[tree]):
-                read_start = interval.begin - extra
-                start_line = read_start // line_len
-                start_pos = read_start % line_len
-
-                read_end = interval.end + extra
-                end_line = read_end // line_len
-                end_pos = read_end % line_len
-                
-#                 print
-#                 print "new interval"
-#                 print read_start, start_line
-#                 print read_end, end_line
-#                 print "size:", interval.end-interval.begin,
-#                 print "\tinterval seqs:", interval.data[2], interval.data[4],
-#                 print "\tinterval sizes:", len(interval.data[2]), len(interval.data[4])
-#                 print "read size:", read_end - read_start
-#                 print "full size should be:", interval.end-interval.begin + extra + extra
-                
-                #assembling sequence
-                padded = chr_lines[start_line][start_pos:].strip()
-                for x in xrange(start_line+1, end_line):
-#                     print x
-                    padded += chr_lines[x].strip()
-                padded += chr_lines[end_line][:end_pos].strip() if start_line != end_line else ""
-                
-                padded = padded.upper()
-                padded = padded.strip()
-                padded = padded.strip("\n")
-                
-                hairpin = padded[extra:-extra]
-                
-#                 [strand, 5'name, 5'sequence, 3'name, 3'sequence]
-#                 five = interval.data[2]
-#                 three = interval.data[4]
-#                 strand = interval.data[0]
-#                 five_id = interval.data[1]
-#                 three_id = interval.data[3]
-                
-#                 print "full sequence:", padded, len(padded)
-#                 print interval.data
-#                 print "interval.data[2] in padded", interval.data[2] in padded
-#                 print "interval.data[4] in padded", interval.data[4] in padded
-                
-                if interval.data[2] not in padded or interval.data[4] not in padded:
-                    fails += 1
-#                 print len(hairpin), hairpin
-#                 print interval.data[2], interval.data[4]
-                
-                canidate = structure.Candidate(hairpin, padded, interval.data)
-                
-                candidate_list.append(canidate)
-
-#         break
-    
-    os.chdir(p)
-    
-    print "candidates not mapping to genome:", fails
-    
-    
-    return candidate_list
-        
-        
-
-
 
         
         

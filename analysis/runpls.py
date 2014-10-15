@@ -28,7 +28,7 @@ def main():
 # #     print answers
 # #     print "errors", errors
 #     parts = outs.split("\t")
-#     print len(outs), outs 
+#     print len(outs), outs
 #     print len(parts), parts
 #      
     
@@ -39,18 +39,22 @@ def main():
 #     unfixed_lines = open(bowtie_output).readlines() # read
 #     fixed_lines = [line.strip().split("\t") for line in unfixed_lines] 
     fixed_lines = [line.strip().split("\t") for line in open(bowtie_output)] 
-    
     print "read positions in ", time.clock() - start_time, " seconds" 
-    candidates, sequences = interval_tree_search.find_candidates(fixed_lines)
+    candidate_tree, sequence_tree, candidates = interval_tree_search.find_candidates(fixed_lines)
     
-    print len(candidates)
-    print len(sequences)
+    print "bowtie hits", len(fixed_lines)
+    print "candidate tree", len(candidates)
+    print "candidates", len(candidates)
+    print "sequence tree", len(sequence_tree)
+    print "mapped seqs", len(candidates[0].all_mapped_sequences)
     
     print "found candidates in ", time.clock() - start_time, " seconds"
     
-    candidate_list = gene.find_all(candidates)
+#     candidate_list = gene.find_all(candidates)
     
-    print "candidates:", len(candidate_list)
+    
+    
+
     print "found all loki in ", time.clock() - start_time, " seconds"
     
     
@@ -58,9 +62,9 @@ def main():
     print len(sequence_freq)
     
     # run and set vienna RNAfold + energy on all candidates
-    energy_fold(candidate_list)
+    energy_fold(candidates)
     
-    three_prime_au(candidate_list, sequence_freq)
+    three_prime_au(candidates, sequence_freq)
     
     
     
