@@ -29,9 +29,10 @@ class Candidate:
 #      
 #     loki_quality = 0.0 # 0 to 1
 
-    def __init__(self, chromosome, strand_dir, begin_5, end_5, begin_3, end_3, mapped_sequences):
+    def __init__(self, chromosome, strand_dir, begin_5, end_5,
+                 begin_3, end_3, mapped_sequences):
         
-        self.all_mapped_sequences.add(mapped_sequences)
+        self.all_mapped_sequences.update(mapped_sequences)
         
         self.chromosome = chromosome
         self.chromosome_direction = strand_dir
@@ -39,7 +40,7 @@ class Candidate:
         self.pos_5_end = end_5
         self.pos_3_begin = begin_3
         self.pos_3_end = end_3
-        self.mapped_sequences = mapped_sequences
+        self.mapped_sequences = set(mapped_sequences)
     
     
     def set_hairpin_padding(self, hairpin, padded):
@@ -50,9 +51,10 @@ class Candidate:
         self.hairpin_fold = hairpin_fold 
         self.hairpin_energy = hairpin_energy
         
-    def add_sequence(self, sequence):
+    def add_sequence(self, sequences):
         
-        self.all_mapped_sequences.add(sequence)
+        self.all_mapped_sequences.update(sequences)
+        self.mapped_sequences.update(sequences)
 
 #     def __init__(self, interval_data, chromosome):
 # #         [strand, 5'name, 5'sequence, 3'name, 3'sequence]
