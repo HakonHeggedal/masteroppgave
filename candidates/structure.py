@@ -70,3 +70,56 @@ class Candidate:
 #     
 #     def get_padded_hairpin(self):
 #         return self.seq_hairpin_padded
+
+
+
+
+
+
+
+
+class Sequence:
+    ''' contains a sequence from a sequencing file, and its duplicate number '''
+    
+    def __init__(self, candidate, id, nucleotides):
+        self.candidates = set(candidate)
+        self.number = int(id.split("-"[0]))
+        self.duplicates = int(id.split("-"[1]))
+        self.nucleotides = nucleotides
+        
+    def add_candidates(self, candidates):
+        self.candidates.update(candidates)
+    
+    def add_candidate(self, candidate):
+        self.candidates.add(candidate)
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+

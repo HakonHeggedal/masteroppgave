@@ -28,6 +28,7 @@ def find_candidates(sequence_hits):
     candidate_tree = GenomeIntervalTree() # only candidates here
     candidate_list = []
     all_mapped_sequences = set()
+    seq_to_candidates = {}
     
     # add all intervals to the tree
     for prop in sequence_hits:
@@ -195,7 +196,13 @@ def find_candidates(sequence_hits):
                                                  begin_3,
                                                  end_3,
                                                  candidate_sequences)
-
+                
+                for candidate_interval in candidate_sequences:
+                    id = candidate_interval.data[1]
+                    if id not in seq_to_candidates:
+                        seq_to_candidates[id] = structure.Sequence(candidate, id, candidate_interval.data[2]).
+                    else:
+                        seq_to_candidates[id].add_candidates(candidate)
                 
                 candidate_tree[tree][begin_5:end_3] = candidate
                 candidate_list.append(candidate)
@@ -203,7 +210,7 @@ def find_candidates(sequence_hits):
                 if len(all_mapped_sequences) == 0:
                     all_mapped_sequences = candidate.all_mapped_sequences
                
-    return candidate_tree, sequence_tree, candidate_list
+    return candidate_tree, sequence_tree, candidate_list, seq_to_candidates
 
 
 
