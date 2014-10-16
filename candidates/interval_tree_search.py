@@ -200,7 +200,7 @@ def find_candidates(sequence_hits):
                 for candidate_interval in candidate_sequences:
                     id = candidate_interval.data[1]
                     if id not in seq_to_candidates:
-                        seq_to_candidates[id] = structure.Sequence(candidate, id, candidate_interval.data[2]).
+                        seq_to_candidates[id] = structure.Sequence(candidate, id, candidate_interval.data[2])
                     else:
                         seq_to_candidates[id].add_candidates(candidate)
                 
