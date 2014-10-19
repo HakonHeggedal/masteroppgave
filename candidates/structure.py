@@ -56,7 +56,6 @@ class Candidate:
         self.hairpin_energy = hairpin_energy
         
     def add_sequence(self, sequences):
-        
         self.all_mapped_sequences.update(sequences)
         self.mapped_sequences.update(sequences)
         
@@ -67,6 +66,9 @@ class Candidate:
     def set_heterogenity(self, heterogenity_5, heterogenity_3):
         self.heterogenity_5 = heterogenity_5
         self.heterogenity_3 = heterogenity_3
+        
+    def set_quality(self, quality):
+        self.quality = quality
 
 #     def __init__(self, interval_data, chromosome):
 # #         [strand, 5'name, 5'sequence, 3'name, 3'sequence]
