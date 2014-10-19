@@ -6,14 +6,15 @@ import re
 def energy_fold(candidates):
     
     for candidate in candidates:
-        fold, energy = _viennafold(candidate.seq_hairpin)
+
+        fold, energy = _viennafold(candidate.hairpin)
         candidate.set_viennafold(fold, energy)
 
 #         fold, energy = _viennafold(candidate.seq_hairpin_padded)
 
 
 
-def _viennafold(sequence, ):
+def _viennafold(sequence):
     """runs vienna folding, returns folding (string) and energy (double)"""
     mypipe  = Popen("RNAfold", stdin=PIPE, stdout=PIPE, bufsize=-1)
     ans, errors = mypipe.communicate(sequence)
@@ -22,7 +23,8 @@ def _viennafold(sequence, ):
     ans = ans.strip()
     
     match_number = re.search("-?[0-9]+[.][0-9]+", ans)
-#     print match_number.group(0)
+    print "seq", sequence
+    print match_number.group(0)
     energy = float(match_number.group(0))
     
     

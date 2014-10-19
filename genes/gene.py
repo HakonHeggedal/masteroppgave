@@ -17,11 +17,11 @@ def include_padding(candidate_list, padding=40 ):
     p =  os.getcwd()
     os.chdir(os.pardir)
     os.chdir("genes")
-    candidate_list = []
+#     candidate_list = []
     fails = 0
     
     i = 0
-
+    print "candidates:", len(candidate_list)
 
     while i < len(candidate_list):
         
@@ -33,6 +33,7 @@ def include_padding(candidate_list, padding=40 ):
         print "reading from", file_name
         
         with open(file_name) as chr_file:
+#             print "reading from", file_name
             
             _ = chr_file.readline() # first line is info, not used
             chr_lines = chr_file.readlines() # current genome
@@ -65,12 +66,14 @@ def include_padding(candidate_list, padding=40 ):
                 
                 hairpin = padded[padding:-padding]
                 
-                print hairpin
+#                 print "hairpin",hairpin
                 ss = candidate.mapped_sequences
                 s = 0
                 for s in ss:
                     break
-                print s[2]
+#                 print s.data[2]
+                if s.data[2] not in padded:
+                    print "\t NO MATCH!!!!!!"
                 
                 
 #                 if interval.data[2] not in padded or interval.data[4] not in padded:
@@ -78,8 +81,9 @@ def include_padding(candidate_list, padding=40 ):
                 
                 candidate.set_hairpin_padding(hairpin, padded)
                 
+#                 print "candidate.hairpin", candidate.hairpin
                 i += 1
-                if  i < len(candidate_list):
+                if  i >= len(candidate_list):
                     break
                 
                 if candidate_list[i].chromosome != gene_name:

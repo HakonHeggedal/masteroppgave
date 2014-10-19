@@ -1,13 +1,13 @@
 # import os
 # from bowtie import bowtie_get
-from candidates import interval_tree_search
+from candidates import interval_tree_search, overhang, heterogenity
 import time
 from genes import gene
 from subprocess import check_output
 import reads
 from candidates.vienna import energy_fold
 from candidates.tailing import three_prime_au
-
+from candidates.entropy import entropy
 
 def main():
     start_time =time.clock()
@@ -40,10 +40,10 @@ def main():
 #     fixed_lines = [line.strip().split("\t") for line in unfixed_lines] 
     fixed_lines = [line.strip().split("\t") for line in open(bowtie_output)] 
     print "read positions in ", time.clock() - start_time, " seconds" 
-    candidate_tree, sequence_tree, candidates = interval_tree_search.find_candidates(fixed_lines)
+    candidate_tree, sequence_tree, candidates, seq_to_candidates = interval_tree_search.find_candidates(fixed_lines)
     
     print "bowtie hits", len(fixed_lines)
-    print "candidate tree", len(candidates)
+    print "candidate tree", len(candidate_tree)
     print "candidates", len(candidates)
     print "sequence tree", len(sequence_tree)
     print "mapped seqs", len(candidates[0].all_mapped_sequences)
@@ -51,7 +51,8 @@ def main():
     print "found candidates in ", time.clock() - start_time, " seconds"
     
 #     candidate_list = gene.find_all(candidates)
-    
+    gene.include_padding(candidates)
+    print "candidates??", len(candidates)
     
     
 
@@ -64,7 +65,20 @@ def main():
     # run and set vienna RNAfold + energy on all candidates
     energy_fold(candidates)
     
-    three_prime_au(candidates, sequence_freq)
+#     # A/U ends for all candidates
+#     three_prime_au(candidates, sequence_freq)
+#     
+#     # 5' and 3' alignment overhang
+#     overhang(candidates)
+#     
+#     # degree of entropy in structure and nucleotides
+#     entropy(candidates)
+    
+    # heterogenity (position counting)
+    heterogenity.frequency_counting(candidates, 5)
+    
+    
+    print "finished all in ", time.clock() - start_time, " seconds"
     
     
     

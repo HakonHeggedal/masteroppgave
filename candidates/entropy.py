@@ -5,7 +5,19 @@ Created on 9. okt. 2014
 '''
 import math
 
-def entropy(sequence, part_size = 2):
+def entropy(candidates):
+    
+    for candidate in candidates:
+        
+        hairpin_entropy = _entropy(candidate.hairpin, 2)
+        structure_entropy = _entropy(candidate.hairpin_fold, 4)
+        
+        print hairpin_entropy
+        print structure_entropy
+        candidate.set_entropy(hairpin_entropy, structure_entropy)
+
+
+def _entropy(sequence, part_size = 2):
     ''' calculate the degree of variation between all parts of the sequence 
     '''
     parts = {}

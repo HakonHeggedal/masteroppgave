@@ -5,10 +5,71 @@ Created on 10. okt. 2014
 '''
 
 
-# def frequency_counting(candidates, sequences):
-#     ''' find sequences that align to candidates
-#     find best 5' and 3' positions
-#     
-#     
-#     '''
-#     pass
+def frequency_counting(candidates, freq_range=5):
+    ''' 
+    compute quality of 5' and 3' positions     
+    '''
+    
+    
+    for candidate in candidates:
+        
+        sequences = candidate.mapped_sequences
+        count_all = 0
+        misses = 0
+        #TODO: lists to store position hits
+        
+        five_begin = candidate.pos_5_begin
+        five_end = candidate.pos_5_end
+        three_begin = candidate.pos_3_begin
+        three_end = candidate.pos_3_end
+        
+        begin_5s = [0]*((2*freq_range) + 1)
+        end_5s = [0]*((2*freq_range) + 1)
+        begin_3s = [0]*((2*freq_range) + 1)
+        end_3s = [0]*((2*freq_range) + 1)
+        
+        for seq in sequences:
+            #TODO: find positon for start / end
+            # compare to 5' and 3'
+            # add to position lists
+            count = int(seq.data[1].split("-")[1])
+            count_all += count
+            
+            if (five_begin-freq_range <= seq.begin <= five_begin+freq_range and
+                five_end -freq_range <= seq.end <= five_end+freq_range):
+#                 print five_begin-freq_range, seq.begin, five_begin-freq_range <= seq.begin
+#                 print seq.begin, five_begin+freq_range, seq.begin >= five_begin+freq_range
+                pos = freq_range + seq.begin - five_begin
+                begin_5s[pos] += count
+                
+                pos = freq_range + seq.end - five_end
+                end_5s[pos] += count
+
+            
+            elif (three_begin-freq_range <= seq.begin and
+                  seq.begin <= three_begin+freq_range and
+                  three_end-freq_range <= seq.end and
+                  seq.end <= three_end+freq_range):
+                
+                pos = freq_range + seq.begin - three_begin
+                begin_3s[pos] += count
+                
+                pos = freq_range + seq.end - three_end
+                end_3s[pos] += count
+
+            else:
+                misses += count
+                
+                
+            
+        print begin_5s
+        print end_5s
+        print begin_3s
+        print end_3s
+        print misses
+        print count_all
+        print misses * 1.0 / count_all
+        print
+            
+        
+

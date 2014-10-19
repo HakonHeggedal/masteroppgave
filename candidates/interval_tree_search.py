@@ -202,7 +202,7 @@ def find_candidates(sequence_hits):
                     if id not in seq_to_candidates:
                         seq_to_candidates[id] = structure.Sequence(candidate, id, candidate_interval.data[2])
                     else:
-                        seq_to_candidates[id].add_candidates(candidate)
+                        seq_to_candidates[id].add_candidate(candidate)
                 
                 candidate_tree[tree][begin_5:end_3] = candidate
                 candidate_list.append(candidate)

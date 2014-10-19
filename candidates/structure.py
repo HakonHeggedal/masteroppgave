@@ -1,5 +1,6 @@
 
 
+
 class Candidate:
     ''' structure to store a miRNA candidate '''
     
@@ -41,7 +42,10 @@ class Candidate:
         self.pos_3_begin = begin_3
         self.pos_3_end = end_3
         self.mapped_sequences = set(mapped_sequences)
-    
+        self.hairpin = None
+        self.hairpin_padded = None
+        self.hairpin_fold = None
+        self.hairpin_energy = None
     
     def set_hairpin_padding(self, hairpin, padded):
         self.hairpin = hairpin
@@ -55,6 +59,14 @@ class Candidate:
         
         self.all_mapped_sequences.update(sequences)
         self.mapped_sequences.update(sequences)
+        
+    def set_entropy(self, entropy_nucleotides, entropy_structure):
+        self.entropy_nucleotides = entropy_nucleotides
+        self.entropy_structure = entropy_structure
+        
+    def set_heterogenity(self, heterogenity_5, heterogenity_3):
+        self.heterogenity_5 = heterogenity_5
+        self.heterogenity_3 = heterogenity_3
 
 #     def __init__(self, interval_data, chromosome):
 # #         [strand, 5'name, 5'sequence, 3'name, 3'sequence]
@@ -82,9 +94,9 @@ class Sequence:
     ''' contains a sequence from a sequencing file, and its duplicate number '''
     
     def __init__(self, candidate, id, nucleotides):
-        self.candidates = set(candidate)
-        self.number = int(id.split("-"[0]))
-        self.duplicates = int(id.split("-"[1]))
+        self.candidates = set([candidate])
+        self.number = int(id.split("-")[0])
+        self.duplicates = int(id.split("-")[1])
         self.nucleotides = nucleotides
         
     def add_candidates(self, candidates):
