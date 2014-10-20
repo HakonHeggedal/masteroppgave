@@ -6,7 +6,7 @@ from genes import gene
 from subprocess import check_output
 import reads
 from candidates.vienna import energy_fold
-from candidates.tailing import three_prime_au
+from candidates.tailing import tailing_au
 from candidates.entropy import entropy
 from candidates.quality import candidate_quality
 
@@ -63,11 +63,14 @@ def main():
     sequence_freq = reads.readcollapsed(fasta_file)
     print len(sequence_freq)
     
+    #
+#     not_mapped_seq = [x for x in ]
+    
     # run and set vienna RNAfold + energy on all candidates
     energy_fold(candidates)
     
 #     # A/U ends for all candidates
-#     three_prime_au(candidates, sequence_freq)
+    tailing_au(candidates, sequence_freq)
 #     
 #     # 5' and 3' alignment overhang
 #     overhang(candidates)

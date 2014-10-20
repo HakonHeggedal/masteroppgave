@@ -47,9 +47,10 @@ class Candidate:
         self.hairpin_fold = None
         self.hairpin_energy = None
     
-    def set_hairpin_padding(self, hairpin, padded):
+    def set_hairpin_padding(self, hairpin, padded, padding_size):
         self.hairpin = hairpin
         self.hairpin_padded = padded
+        self.padding_size = padding_size
     
     def set_viennafold(self, hairpin_fold, hairpin_energy):
         self.hairpin_fold = hairpin_fold 
@@ -69,6 +70,9 @@ class Candidate:
         
     def set_quality(self, quality):
         self.quality = quality
+        
+    def set_tailing(self,tailing):
+        self.tailing = tailing
 
 #     def __init__(self, interval_data, chromosome):
 # #         [strand, 5'name, 5'sequence, 3'name, 3'sequence]
@@ -95,10 +99,10 @@ class Candidate:
 class Sequence:
     ''' contains a sequence from a sequencing file, and its duplicate number '''
     
-    def __init__(self, candidate, id, nucleotides):
+    def __init__(self, candidate, name, nucleotides):
         self.candidates = set([candidate])
-        self.number = int(id.split("-")[0])
-        self.duplicates = int(id.split("-")[1])
+        self.number = int(name.split("-")[0])
+        self.duplicates = int(name.split("-")[1])
         self.nucleotides = nucleotides
         
     def add_candidates(self, candidates):

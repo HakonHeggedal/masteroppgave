@@ -17,8 +17,9 @@ def candidate_quality(candidates, seq_to_candidates):
        
         for interval in candidate.mapped_sequences:
             seq_name = interval.data[1]
-            candidate_hits += interval.duplicates
-            total_hits += len(seq_to_candidates[seq_name].candidates) * interval.duplicates
+            duplicates = int(seq_name.split("-")[1])
+            candidate_hits += duplicates 
+            total_hits += len(seq_to_candidates[seq_name].candidates) * duplicates
             
         quality = candidate_hits*1.0 / total_hits
         candidate.set_quality(quality)
