@@ -8,6 +8,7 @@ import reads
 from candidates.vienna import energy_fold
 from candidates.tailing import three_prime_au
 from candidates.entropy import entropy
+from candidates.quality import candidate_quality
 
 def main():
     start_time =time.clock()
@@ -77,6 +78,8 @@ def main():
     # heterogenity (position counting)
     heterogenity.frequency_counting(candidates, 5)
     
+#     candidate quality: nr of sequence hits / all candidate hits for given sequences
+    candidate_quality(candidates, seq_to_candidates)
     
     print "finished all in ", time.clock() - start_time, " seconds"
     
