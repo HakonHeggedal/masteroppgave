@@ -1,4 +1,4 @@
-import os
+
 # all RNA lines in the files
 # rnas = [l for l in open("mature.fa") if l[0] is not ">"]
 
@@ -9,26 +9,22 @@ def readcollapsed(filename):
 #     print "trying to read", filename
     
     with open(filename, "r") as inputfile:
-        count = 0
-#         print "reading file:", filename
+        name = ""
+        
         for line in inputfile:
             line = line.strip()
-
+            
             if line[0] == ">":
-                count = int(line.split("-")[1])
+                name = line[1:].strip()
 #                 print count
-            elif count > 0:
-                sequences.append((line, count))
-#                 print "seq",sequences
-#                 freqdick[line] = count
-#                 print freqdick[line], line
-            else:
-                count = 0
-    
+            elif len(name) > 0:
+                sequences.append((name, line))
+                name = ""
+
     
     
 #     print len(sequences)
     return sequences
             
 
-readcollapsed("SRR797062.fa")
+# print readcollapsed("SRR797062.fa")

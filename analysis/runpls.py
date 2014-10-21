@@ -1,6 +1,6 @@
 # import os
 # from bowtie import bowtie_get
-from candidates import interval_tree_search, overhang, heterogenity
+from candidates import interval_tree_search, heterogenity
 import time
 from genes import gene
 from subprocess import check_output
@@ -9,6 +9,8 @@ from candidates.vienna import energy_fold
 from candidates.tailing import tailing_au
 from candidates.entropy import entropy
 from candidates.quality import candidate_quality
+from candidates import structure
+from candidates import overhang
 
 def main():
     start_time =time.clock()
@@ -61,28 +63,33 @@ def main():
     
     
     sequence_freq = reads.readcollapsed(fasta_file)
-    print len(sequence_freq)
+    print len(sequence_freq)    
     
-    #
-#     not_mapped_seq = [x for x in ]
     
     # run and set vienna RNAfold + energy on all candidates
     energy_fold(candidates)
     
-#     # A/U ends for all candidates
-    tailing_au(candidates, sequence_freq)
+    
+    not_mapped_seq = [structure.Sequence(i,n) for i,n in sequence_freq] # if i not in seq_to_candidates]
+    print len(not_mapped_seq)
+    print len(seq_to_candidates)
+    print len(not_mapped_seq) + len(seq_to_candidates)
+    print len(sequence_freq)
+    
+#     A/U ends for all remaining candidates
+    tailing_au(candidates, not_mapped_seq)
 #     
 #     # 5' and 3' alignment overhang
-#     overhang(candidates)
+    overhang.find_overhang(candidates)
 #     
-#     # degree of entropy in structure and nucleotides
+#     degree of entropy in structure and nucleotides
 #     entropy(candidates)
-    
-    # heterogenity (position counting)
-    heterogenity.frequency_counting(candidates, 5)
-    
+#      
+#     heterogenity (position counting)
+#     heterogenity.frequency_counting(candidates, 5)
+#      
 #     candidate quality: nr of sequence hits / all candidate hits for given sequences
-    candidate_quality(candidates, seq_to_candidates)
+#     candidate_quality(candidates, seq_to_candidates)
     
     print "finished all in ", time.clock() - start_time, " seconds"
     

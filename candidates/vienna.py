@@ -23,13 +23,13 @@ def _viennafold(sequence):
     ans = ans.strip()
     
     match_number = re.search("-?[0-9]+[.][0-9]+", ans)
-    print "seq", sequence
-    print match_number.group(0)
+#     print "seq", sequence
+#     print match_number.group(0)
     energy = float(match_number.group(0))
     
     
     match_fold = re.search("[.\(\)]{5,}", ans)
-#     print match_fold.group(0)
+    print match_fold.group(0)
     fold = match_fold.group(0)
 
     

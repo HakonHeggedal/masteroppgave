@@ -4,8 +4,6 @@ Created on 19. okt. 2014
 @author: hakon
 '''
 
-
-
 def candidate_quality(candidates, seq_to_candidates):
     ''' sequences matching both this candidate and others /
         sequences matching this candidate
@@ -24,4 +22,4 @@ def candidate_quality(candidates, seq_to_candidates):
         quality = candidate_hits*1.0 / total_hits
         candidate.set_quality(quality)
         
-        print quality, candidate_hits, total_hits, candidate.hairpin_energy
+        print quality, candidate_hits, total_hits

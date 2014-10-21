@@ -99,8 +99,8 @@ class Candidate:
 class Sequence:
     ''' contains a sequence from a sequencing file, and its duplicate number '''
     
-    def __init__(self, candidate, name, nucleotides):
-        self.candidates = set([candidate])
+    def __init__(self, name, nucleotides):
+        self.candidates = set([])
         self.number = int(name.split("-")[0])
         self.duplicates = int(name.split("-")[1])
         self.nucleotides = nucleotides
@@ -129,15 +129,3 @@ class Sequence:
     
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
-

@@ -82,10 +82,10 @@ def find_candidates(sequence_hits):
             
             if len(three_sequences) > 0:
                 
-                print 
-                print five_interval
-                print "sequences:", len(three_sequences)
-                print [c for c in three_sequences]
+#                 print 
+#                 print five_interval
+#                 print "sequences:", len(three_sequences)
+#                 print [c for c in three_sequences]
                 
 #                 find 5' start and ends
                 
@@ -126,11 +126,11 @@ def find_candidates(sequence_hits):
                         best_end_pos = end
                 
                 
-                print "start positions:\n", starts, "goes to:", get_end
-                print "ends positions:\n", ends, "starts from:", get_start
-                
-                print "best start position:", best_start_pos, best_start, get_end[best_start_pos],
-                print "best ends position:", best_end_pos, best_end, get_start[best_end_pos]
+#                 print "start positions:\n", starts, "goes to:", get_end
+#                 print "ends positions:\n", ends, "starts from:", get_start
+#                 
+#                 print "best start position:", best_start_pos, best_start, get_end[best_start_pos],
+#                 print "best ends position:", best_end_pos, best_end, get_start[best_end_pos]
                 
                 #TODO not overlapping or very close
                 second_starts = set()
@@ -161,9 +161,9 @@ def find_candidates(sequence_hits):
                 second_start = max(second_starts, key=lambda (k,v): v)
                 second_end = max(second_ends, key=lambda(k,v):v)
                 
-                print "!!!"
-                print "second_starts", second_starts, second_start    
-                print "second ends", second_ends, second_end
+#                 print "!!!"
+#                 print "second_starts", second_starts, second_start    
+#                 print "second ends", second_ends, second_end
                 
                 
 #                 TODO: assemble the intervals, full length format 999999999
@@ -174,12 +174,12 @@ def find_candidates(sequence_hits):
                 strand_dir = interval.data[0]
                 chromosome = tree
                 
-                print min(best_start_pos, second_start[0])
-                print min(best_end_pos, second_end[0])
-                print max(best_start_pos, second_start[0])
-                print max(best_end_pos, second_end[0])
+#                 print min(best_start_pos, second_start[0])
+#                 print min(best_end_pos, second_end[0])
+#                 print max(best_start_pos, second_start[0])
+#                 print max(best_end_pos, second_end[0])
                 
-                print begin_5, end_5, begin_3, end_3
+#                 print begin_5, end_5, begin_3, end_3
 #                 if this is a sub-interval, it is not added 
 #                 TODO: same strand direction
                 if tree in candidate_tree:
@@ -198,16 +198,17 @@ def find_candidates(sequence_hits):
                                                  candidate_sequences)
                 
                 for candidate_interval in candidate_sequences:
-                    id = candidate_interval.data[1]
-                    if id not in seq_to_candidates:
-                        s = structure.Sequence(candidate, id, candidate_interval.data[2])
-                        seq_to_candidates[id] = s
+                    name = candidate_interval.data[1]
+                    if name not in seq_to_candidates:
+                        s = structure.Sequence(name, candidate_interval.data[2])
+                        s.add_candidate(candidate)
+                        seq_to_candidates[name] = s
                     else:
-                        seq_to_candidates[id].add_candidate(candidate)
+                        seq_to_candidates[name].add_candidate(candidate)
                 
                 candidate_tree[tree][begin_5:end_3] = candidate
                 candidate_list.append(candidate)
-                print "\tsaved as candidate\n"
+#                 print "\tsaved as candidate\n"
                 if len(all_mapped_sequences) == 0:
                     all_mapped_sequences = candidate.all_mapped_sequences
                
