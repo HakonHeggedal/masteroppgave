@@ -49,16 +49,16 @@ def hashcluster(string_list, sublen = 3, offset = 1, maxlength = 10, filename = 
         print nr
         
         for node1 in xrange(len(string) - sublen + 1):
-            sub = string[node1:node1+3]
+            subs = string[node1:node1+3]
             
             for j in xrange(-offset, offset+1):
                 if 0 <= node1+j < maxrange:
-                    if sub in posdicts[node1+j]:
-#                         print "sub ", sub, " at position ", node1+j
-                        posdicts[node1+j][sub].add(nr)
+                    if subs in posdicts[node1+j]:
+#                         print "subs ", subs, " at position ", node1+j
+                        posdicts[node1+j][subs].add(nr)
                     else:
-#                         print "new ", sub, " at position ", node1+j
-                        posdicts[node1+j][sub] = set([nr])
+#                         print "new ", subs, " at position ", node1+j
+                        posdicts[node1+j][subs] = set([nr])
     
     print "creating result structure:", (time.clock() - starttime)
 

@@ -11,11 +11,11 @@ def compare(rnas, frequencies):
     
     for nr, rna in enumerate(rnas):
         for i in xrange(len(rna)-3):
-            sub = rna[i:i+4]
-            if sub in rnadict:
-                rnadict[sub].add((nr,i))
+            subs = rna[i:i+4]
+            if subs in rnadict:
+                rnadict[subs].add((nr,i))
             else:
-                rnadict[sub] = set([(nr,i)])
+                rnadict[subs] = set([(nr,i)])
     
     # 2: find all substring-rnas
     substringdict = {}
@@ -23,26 +23,26 @@ def compare(rnas, frequencies):
     
     for nr, rna in enumerate(rnas):
         print "rna: ", rna
-        sub = rna[:4]
+        subs = rna[:4]
         
-        if sub not in rnadict:
+        if subs not in rnadict:
             continue
         
         if nr in superstrings:
             continue
         
         # all rnas that match this rna
-        matching = set((x,p) for (x,p) in [rnadict[sub]] if nr != x)
+        matching = set((x,p) for (x,p) in [rnadict[subs]] if nr != x)
         if len(matching) == 0:
             continue
         
         for i in xrange(4, len(rna), 4):
-            sub = rna[i:i+4]
-            if len(sub) < 4:
-                i -= 4 - len(sub)
-                sub = rna[i:i+4]
+            subs = rna[i:i+4]
+            if len(subs) < 4:
+                i -= 4 - len(subs)
+                subs = rna[i:i+4]
             
-            new = rnadict[sub]
+            new = rnadict[subs]
             matching = set([(rnanr, j) for (rnanr, j) in matching if (rnanr, j+i) in new])
             if len(matching) == 0:
                 break
