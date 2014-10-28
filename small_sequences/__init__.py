@@ -2,7 +2,8 @@
 import matplotlib.pyplot as plot
 import SuffixTree
 # from SuffixTree import SuffixTree, STREE_DNA
-# import SuffixTree.SubstringDict
+import SuffixTree.SubstringDict
+from SuffixTree import SubstringDict
 
 
 def readcollapsed(filename):
@@ -27,13 +28,14 @@ def readcollapsed(filename):
 
 
 
-small_min = 10
-small_max = 17
+small_min = 12
+small_max = 19
 filename = "SRR797062.fa"
 filename = "SRR207116.collapsed"
 
 seqs, counts = readcollapsed(filename)
 small_seqs = [x for x in seqs if len(x) >= small_min and len(x) < small_max]
+
 
 
 print small_seqs[0:10]
@@ -54,12 +56,13 @@ for seq, count in zip(seqs, counts):
 print seqs[0] in seq_to_count
 
 
-
+seqs = [x for x in seqs if len(x) > small_max]
 # create suffix Tree
 print "adding to suffix tree"
 
 
 suffixes = SuffixTree.SuffixTree()
+# suffixes = SubstringDict()
 
 print "ok?"
 for i, seq in enumerate(seqs):
@@ -101,31 +104,60 @@ print "analyzing small seqs"
 
 for i, seq in enumerate(small_seqs):
     
-    if i%10000 == 0:
+    if i%1000 == 0:
         print
         print i, "of", len(small_seqs), i*100.0/len(small_seqs)
+        print
     
     match_length, suffix_node, endpos = suffixes.match(seq)
+#     print match_length, endpos, len(seq)
     
     
 #     print "ok?"
 #     nr = len(suffixes[seq]) # insanely slow...
+    m = len(seq) is match_length
+#     if len(seq) is not match_length:
 
-    if len(seq) is not match_length:
-        # not substring...
-        nosubs += 1
-        nosubs_scaled += seq_to_count[seq]
-        len_nosub[len(seq)] += 1
-        len_nosub_scaled[len(seq)] += seq_to_count[seq]
         
         
-    else:
+    if len(seq) is match_length:
         subs += 1
         subs_scaled += seq_to_count[seq]
         
         len_sub[len(seq)] += 1
         len_sub_scaled[len(seq)] += seq_to_count[seq]
+#         print "yes",
 
+    else:
+#     if nr <= 1:
+        # not substring...
+        nosubs += 1
+        nosubs_scaled += seq_to_count[seq]
+        len_nosub[len(seq)] += 1
+        len_nosub_scaled[len(seq)] += seq_to_count[seq]
+#         print "no",
+    
+    sh = ""
+#     for s in seqs:
+#         m_s = False
+#         if seq in s and seq is not s:
+# #             print "actually yes",
+#             m_s = True
+#             sh = s
+#             break
+
+#     if m_s and not m:
+#         pass
+# #         print "missing match:"
+#         print match_length, endpos, len(seq)
+#         print sh, seq
+#         print
+        
+#         print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n\n\n\n\n!!!!!!!!!!!!"
+#         
+#     if m and not m_s:
+#         print "---------------------\n\n\n"
+        # nesten ikke lenger :)
         
 
 tot_scaled = subs_scaled+nosubs_scaled
@@ -141,14 +173,32 @@ print "% substring, scaled:", subs_scaled*100.0 / tot_scaled
  
 print [(x,y) for x,y in enumerate(len_sub)]
  
-print [(x*1.0/(x+y), e) for (e,(x,y)) in enumerate(zip(len_sub,len_nosub)) if x > 0 or y > 0]
+relevant =  [(x*1.0/(x+y), e) for (e,(x,y)) in enumerate(zip(len_sub_scaled,len_nosub_scaled)) if x > 0 or y > 0]
 
+print relevant
 print
 print "finished analysing small seqeunces"
 
+print zip(*relevant)
+[x,y] = [list(t) for t in zip(*relevant)]
+plot.plot(y,x)
 
+# plot.plot([1,2,3],[4,5,6])
+plot.show()
 
-
+# hits = 0
+# alls = 0
+# for i, sub in enumerate(small_seqs):
+#     if i%1000 == 0:
+#         print
+#         print i, "of", len(small_seqs), i*100.0/len(small_seqs)
+#      
+#     for seq in seqs:
+#         if sub in seq and sub != seq:
+#             hits += 1
+#             break
+#  
+# print "test", hits, hits*100.0 / len(small_seqs)
 
 
 # 

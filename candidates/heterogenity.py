@@ -5,6 +5,62 @@ Created on 10. okt. 2014
 '''
 
 
+
+
+
+
+
+
+
+
+
+
+def heterogenity(candidates, offset=5):
+    
+    for candidate in candidates:
+        sequences = candidate.mapped_sequences
+        
+        five_begin = candidate.pos_5_begin
+        five_end = candidate.pos_5_end
+        three_begin = candidate.pos_3_begin
+        three_end = candidate.pos_3_end
+        
+        
+        begins = [0] * (three_end-five_begin+offset+offset)
+        ends = [0] * (three_end-five_begin+offset+offset)
+        
+        count_sum = 0
+        for sequence in sequences:
+            count = int(sequence.data[1].split("-")[1])
+            begin_pos = sequence.begin - five_begin + offset
+            end_pos = sequence.end - five_begin + offset
+            
+            if begin_pos < 0 or end_pos >= len(ends):
+                print "out of range", begin_pos, end_pos
+                break
+            
+            begins[begin_pos] += count
+            ends[end_pos] += count
+            count_sum += count
+            
+        print begins
+        print ends
+        print
+        
+        het = 0
+        reads = 0
+        for i, count in enumerate(begins[:2*offset + 1]):
+            off = abs(offset - i)
+            het += off * count
+            reads += count
+        
+#         for i, count in enumerate(ends[]) 
+        
+        
+        
+        
+
+
 def frequency_counting(candidates, freq_range=5):
     ''' 
     compute quality of 5' and 3' positions     

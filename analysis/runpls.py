@@ -86,7 +86,7 @@ def main():
 #     entropy(candidates)
 #      
 #     heterogenity (position counting)
-#     heterogenity.frequency_counting(candidates, 5)
+    heterogenity.heterogenity(candidates)
 #      
 #     candidate quality: nr of sequence hits / all candidate hits for given sequences
 #     candidate_quality(candidates, seq_to_candidates)
