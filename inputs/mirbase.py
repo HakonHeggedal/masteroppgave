@@ -18,8 +18,8 @@ class Micro_RNA:
         self.pos_3_end = pos_3_end
 
 def _add_position(miRNA, mature_seq, is_5p, is_3p, name=None):
-    #TODO: take position out for more debugging...
-     
+    
+    #TODO: MOVE
     pos = miRNA.hairpin.find(mature_seq) # mature seq. must be in hairpin.
     
     if pos >= 0:
@@ -41,7 +41,7 @@ def _add_position(miRNA, mature_seq, is_5p, is_3p, name=None):
         print "\tname?", name
 
         
- 
+
 
 def read_miRNA(mature_file, hairpin_file):
     
@@ -147,10 +147,6 @@ def read_miRNA(mature_file, hairpin_file):
                                     print "\tno hit", name, x, c, is_3p, is_5p
                     
                     
-#                     print name in micro_rnas
-#                     print hairpin
-#                     print mature_seq
-#                     print pos
 
 
     print "no hits:", no_hits
@@ -186,23 +182,6 @@ def read_miRNA(mature_file, hairpin_file):
     print "only in mature seqs:", len(mat_nrs - hp_nrs)
 
 read_miRNA("mature.fa", "hairpin.fa")
-
-
-
-
-# x = "GAGGUGGGAGGAUUGCUUGAGUCAGGGUGGUUGAGGCUGCAGUAAGUUGUGAUCAUACCACUGCACUCCAGCCUGAGUGACAGAGCAAGACCUUGUCUCA"
-# 
-# 
-# 
-# 
-# print x.replace("U", "T")
-#     
-#     
-# dust = {}
-# dust["hsa-miR-17"] = 0
-# 
-# print "hsa-miR-17" in dust
-
 
 
 
