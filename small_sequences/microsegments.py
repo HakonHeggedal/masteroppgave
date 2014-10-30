@@ -1,10 +1,9 @@
-'''compare miRNAs to small segments from same sequencing.
+'''compare miRNAs to small segments from same sequencing file.
 '''
 
 def compare(rnas, frequencies):
     ''' finds small segments (substrings) from rna-file, and aligns them with the rna
-    input: list of rnas to be analysed, 
-    
+    input: list of rnas to be analysed,
     '''
     # 1: hash subparts of all rnas 
     rnadict = {}
