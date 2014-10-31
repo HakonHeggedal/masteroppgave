@@ -5,7 +5,6 @@ Created on 29. okt. 2014
 '''
 
 class Micro_RNA:
-    
     def __init__(self,hairpin):
         self.hairpin = hairpin
         self.pos_5_begin = None
@@ -22,7 +21,6 @@ class Micro_RNA:
         self.pos_3_end = pos_3_end
 
 def _add_position(miRNA, startpos, endpos, is_5p, is_3p):
-    
     assert startpos >= 0
     if is_5p:
         miRNA.set_five_prime(startpos, endpos)
@@ -60,11 +58,8 @@ def read_miRNA(mature_file, hairpin_file):
                     
             elif is_human:
                 hairpin += mature_seq
-    
 
 
-
-    mature_keys = []
 
     no_hits = 0
 #     print "finding mature seqs"
@@ -94,8 +89,6 @@ def read_miRNA(mature_file, hairpin_file):
                 elif name.endswith("5p"):
                     is_5p = True
                     name = name[:-3]
-                    
-                mature_keys.append(name)
                 
 #                 print name, len(name)
 #                 print "after: %s" %name
@@ -108,7 +101,12 @@ def read_miRNA(mature_file, hairpin_file):
                         _add_position(micro_rnas[name], pos, endpos, is_5p, is_3p)
 
 #                 elif not found_hairpin:
+
                 x = 1
+                
+                if name+"-"+str(x) not in micro_rnas:
+                    x = 2
+                
                 while name+"-"+str(x) in micro_rnas:
                     pos = micro_rnas[name+"-"+str(x)].hairpin.find(mature_seq)
                     if pos >= 0:
@@ -132,55 +130,42 @@ def read_miRNA(mature_file, hairpin_file):
                     no_hits += 1
                     
                     print "\tno hit", name, x, c, is_3p, is_5p
-            
-                    
     
-#     for k,v in micro_rnas.iteritems():
-    hairpin_keys = set([k for k in micro_rnas.iterkeys()])
-    mature_keys = set(mature_keys)
+    print "finished assembling miRNAs"
+    return micro_rnas
     
-    fives = 0
-    threes = 0
-    both = 0
-    noone = 0
-    for name, hairpin_struct in  micro_rnas.iteritems():
-        if hairpin_struct.pos_5_begin: fives += 1
-        if hairpin_struct.pos_3_begin: threes += 1
-        if hairpin_struct.pos_3_begin and hairpin_struct.pos_5_begin:
-            both += 1
-        else:
-            noone += 1
-            #TODO: why was noone found?
-    
-    print "no hits:", no_hits
-    print
-    print "nr of hairpins", len(hairpin_keys)
-    print "nr of mature seqs", len(mature_keys)
-    print
-    print "fives:", fives 
-    print "threes:", threes
-    print "both:", both
-    print "none:", noone
+# #     for k,v in micro_rnas.iteritems():
+#     hairpin_keys = set([k for k in micro_rnas.iterkeys()])
+#     
+#     fives = 0
+#     threes = 0
+#     both = 0
+#     noone = 0
+#     for name, hairpin_struct in  micro_rnas.iteritems():
+#         if hairpin_struct.pos_5_begin != None:
+#             fives += 1
+#         if hairpin_struct.pos_3_begin != None:
+#             threes += 1
+#         if hairpin_struct.pos_3_begin != None and hairpin_struct.pos_5_begin != None:
+#             both += 1
+#         elif hairpin_struct.pos_3_begin == None and hairpin_struct.pos_5_begin == None:
+#             noone += 1
+#             #TODO: why was noone found?
+#             print name, hairpin_struct.pos_5_begin, hairpin_struct.pos_3_begin
+#     
+#     print "no hits:", no_hits
+#     print
+#     print "nr of hairpins", len(hairpin_keys)
+# 
+#     print
+#     print "fives:", fives 
+#     print "threes:", threes
+#     print "both:", both
+#     print "none:", noone
     
 
 
 read_miRNA("mature.fa", "hairpin.fa")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
