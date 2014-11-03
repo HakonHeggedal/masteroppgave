@@ -5,12 +5,12 @@ Created on 29. okt. 2014
 '''
 
 
-def merge_collapsed_fasta(fasta_files):
+def collapse_collapsed(collapsed_files, min_len=11):
     ''' merge files in files list, return as lists'''
     
     all_sequences = {}
     
-    for filename in fasta_files:
+    for filename in collapsed_files:
         
         with open(filename) as fasta_file:
             
@@ -19,12 +19,17 @@ def merge_collapsed_fasta(fasta_files):
                 line = line.strip()
                 if line[0] == ">":
                     count = int(line.split("-")[1])
-                elif len(line) > 10 and count > 0 and _legal_DNA(line):
+                elif len(line) >= min_len and count > 0 and _legal_DNA(line):
                     if line in all_sequences:
                         all_sequences[line] += count
                     else:
                         all_sequences[line] = count
                     count = 0
+    
+    return all_sequences
+    
+
+def filter_seqeunces(all_sequences, min_read_len=18):
     
     small_reads = []
     small_reads_count = []
@@ -33,7 +38,7 @@ def merge_collapsed_fasta(fasta_files):
     
     for seq, count in all_sequences.iteritems():
         
-        if len(seq) < 18:
+        if len(seq) < min_read_len:
             small_reads.append(seq)
             small_reads_count.append(count)
         else:
@@ -45,6 +50,16 @@ def merge_collapsed_fasta(fasta_files):
     return reads, reads_count, small_reads, small_reads_count
 
 
+def write_collapsed(output_name, reads, reads_count):
+    
+    with open(output_name, "w") as file_out:
+        
+        for i, (read, count) in enumerate(zip(reads, reads_count)):
+            name = ">" + str(i) + "-" + str(count)
+            
+            file_out.write(name + "\n")
+            file_out.write(read + "\n")
+            
 
 
 def _legal_DNA(sequence, chars=set("ACGT")):
@@ -57,6 +72,3 @@ def _legal_DNA(sequence, chars=set("ACGT")):
     return True
 
 
-fastas = ["SRR797060.collapsed", "SRR797061.collapsed", "SRR797062.collapsed", "SRR797063.collapsed"]
-
-merge_collapsed_fasta(fastas)
