@@ -1,10 +1,12 @@
 # import os
 # from bowtie import bowtie_get
-from candidates import interval_tree_search, heterogenity
+
 import time
-from genes import gene
+from inputs import merge
 from subprocess import check_output
-import reads
+
+from genes import gene
+from candidates import interval_tree_search, heterogenity
 from candidates.vienna import energy_fold
 from candidates.tailing import tailing_au
 from candidates.entropy import entropy
@@ -12,21 +14,49 @@ from candidates.quality import candidate_quality
 from candidates import structure
 from candidates import overhang
 
-def main():
-    start_time =time.clock()
-    print "starting"
-    fasta_file = "SRR797062.fa"
-    bowtie_output = "test.map"
+
+
+
+def _input_collapsed():
+    pass
+
+
+def _align_bowtie(bowtie_output, all_reads_file):
+    import os
+    os.environ['BOWTIE_INDEXES'] = "/home/hakon/Skrivebord/h_sapiens_37_asm.ebwt"
+    
+    
+    
     human_index = "h_sapiens_37_asm"
-    bowtie_cmds = ["bowtie", "-f", "-v 0", "-a", "-m 10",  human_index, fasta_file, bowtie_output]
-    bowtie_str = "bowtie -f -v 0 -a -m 10 h_sapiens_37_asm SRR797062.fa test.map"
-    bowtie_str = "bowtie -f -v 0 h_sapiens_37_asm SRR797062.fa test.map"
+    bowtie_cmds = ["bowtie", "-f", "-v 0", "-a", "-m 10",  human_index, all_reads_file, bowtie_output]
+#     bowtie_str = "bowtie -f -v 0 -a -m 10 h_sapiens_37_asm SRR797062.fa test.map"
+#     bowtie_str = "bowtie -f -v 0 h_sapiens_37_asm SRR797062.fa test.map"
+#     
+#     cmd_simple = ["bowtie", "-f", "-v 0", "h_sapiens_37_asm", "-c", "ACGTACGTACGT"]
+#     cmd_str = "bowtie -f -v 0 h_sapiens_37_asm -c ACGTACGTACGT"
+#     cmd_exitsts = "bowtie-inspect -n h_sapiens_37_asm"
+#     
     
+    print check_output(bowtie_cmds)
+
+
+#     print check_output(cmd_exitsts, shell=True)
+#     print check_output(cmd_str, shell=True)
     
-    
+#     print check_output(["echo", "testest"])
+#     print check_output(["bowtie", "h_sapiens_37_asm", "-c", "ACGTACGTACGT"])
+#     print check_output("bowtie h_sapiens_37_asm -c ACGTACGTACGT",  shell=True )
 #     print "running bowtie"
+
+
 #     outs = check_output(bowtie_str, shell=True).strip()
-# #     outs = check_output(["bowtie", human_index, "-c", "ACGTACGT", "ts.txt"], shell=True).strip()
+#     print bowtie_cmds
+#     outs = check_output(bowtie_cmds, shell=True).strip()
+    
+    
+    
+#     outs = check_output(["bowtie", human_index, "-c", "ACGTACGT", "ts.txt"], shell=True).strip()
+#     outs = check_output(bowtie_cmds, shell=True)
 #     print "run commands2"        
 # #     print answers
 # #     print "errors", errors
@@ -37,12 +67,40 @@ def main():
     
 #     bowtie_get.runcommand(bowtie_cmds)
 #     bowtie_get.runcommand(["bowtie","-f", "h_sapiens_37_asm", "SRR797062.fa", "test.map"])
+
+
+
+def main():
+    start_time =time.clock()
+    print "starting"
     
+    print "merging collapsed files"
+    fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed",
+                   "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed"]
+    
+#     fasta_file = "SRR797062.fa"
+
+#     merge collapsed input files
+    dict_collapsed = merge.collapse_collapsed(fasta_files)
+    
+#     split small and larger sequences
+    reads, reads_count, small_reads, small_reads_count = merge.filter_seqeunces(dict_collapsed, 18)
+    
+#     write reads to file
+    all_reads_file = "all.collapsed"
+    merge.write_collapsed(all_reads_file, reads, reads_count)
+    
+    
+#     aligning to genome using bowtie
+    bowtie_output = "bowtie_out.map"
+    _align_bowtie(bowtie_output, all_reads_file)
     print "finished bowtie in ", time.clock() - start_time, " seconds" 
-#     unfixed_lines = open(bowtie_output).readlines() # read
-#     fixed_lines = [line.strip().split("\t") for line in unfixed_lines] 
+    
+    
     fixed_lines = [line.strip().split("\t") for line in open(bowtie_output)] 
-    print "read positions in ", time.clock() - start_time, " seconds" 
+    print "read positions in ", time.clock() - start_time, " seconds"
+    
+#     using sequence tree to find possible candidates
     candidate_tree, sequence_tree, candidates, seq_to_candidates = interval_tree_search.find_candidates(fixed_lines)
     
     print "bowtie hits", len(fixed_lines)
@@ -55,15 +113,11 @@ def main():
     
 #     candidate_list = gene.find_all(candidates)
     gene.include_padding(candidates)
-    print "candidates??", len(candidates)
-    
-    
-
     print "found all loki in ", time.clock() - start_time, " seconds"
     
     
-    sequence_freq = reads.readcollapsed(fasta_file)
-    print len(sequence_freq)    
+#     sequence_freq = reads.readcollapsed(fasta_file)
+#     print len(sequence_freq)    
     
     
     # run and set vienna RNAfold + energy on all candidates
@@ -93,6 +147,7 @@ def main():
     
     print "finished all in ", time.clock() - start_time, " seconds"
     
+
     
     
     
