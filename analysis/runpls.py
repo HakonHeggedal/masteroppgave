@@ -3,17 +3,18 @@
 
 import time
 from inputs import merge
-from subprocess import check_output
-
 from genes import gene
-from candidates import interval_tree_search, heterogenity
-from candidates.vienna import energy_fold
-from candidates.tailing import tailing_au
-from candidates.entropy import entropy
-from candidates.quality import candidate_quality
+from candidates import interval_tree_search
+from candidates import heterogenity
+from candidates import vienna
+from candidates import tailing
+from candidates import entropy
+from candidates import quality
 from candidates import structure
 from candidates import overhang
 
+from ml import vectorize
+from ml import learn
 
 
 
@@ -21,14 +22,15 @@ def _input_collapsed():
     pass
 
 
-def _align_bowtie(bowtie_output, all_reads_file):
+def _align_bowtie(bowtie_output, collapsed_seqs):
     import os
+    from subprocess import check_output
     os.environ['BOWTIE_INDEXES'] = "/home/hakon/Skrivebord/h_sapiens_37_asm.ebwt"
     
     
     
     human_index = "h_sapiens_37_asm"
-    bowtie_cmds = ["bowtie", "-f", "-v 0", "-a", "-m 10",  human_index, all_reads_file, bowtie_output]
+    bowtie_cmds = ["bowtie", "-f", "-v 0", "-a", "-m 10",  human_index, collapsed_seqs, bowtie_output]
 #     bowtie_str = "bowtie -f -v 0 -a -m 10 h_sapiens_37_asm SRR797062.fa test.map"
 #     bowtie_str = "bowtie -f -v 0 h_sapiens_37_asm SRR797062.fa test.map"
 #     
@@ -123,7 +125,7 @@ def main():
     
     
     # run and set vienna RNAfold + energy on all candidates
-    energy_fold(candidates)
+    vienna.energy_fold(candidates)
     
     
 #     not_mapped_reads = [structure.Sequence(i,n,read) for i,(read,n) in 
@@ -148,9 +150,9 @@ def main():
     heterogenity.heterogenity(candidates)
 #      
 #     candidate quality: nr of sequence hits / all candidate hits for given sequences
-    candidate_quality(candidates, seq_to_candidates)
+    quality.candidate_quality(candidates, seq_to_candidates)
     
-    print "finished all in ", time.clock() - start_time, " seconds"
+    print "finished features in ", time.clock() - start_time, " seconds"
     
 
     
