@@ -102,18 +102,20 @@ def main():
     
 #     using sequence tree to find possible candidates
     candidate_tree, sequence_tree, candidates, seq_to_candidates = interval_tree_search.find_candidates(fixed_lines)
-    
+    print "found candidates in ", time.clock() - start_time, " seconds"
     print "bowtie hits", len(fixed_lines)
     print "candidate tree", len(candidate_tree)
     print "candidates", len(candidates)
     print "sequence tree", len(sequence_tree)
     print "mapped seqs", len(candidates[0].all_mapped_sequences)
     
-    print "found candidates in ", time.clock() - start_time, " seconds"
-    
 #     candidate_list = gene.find_all(candidates)
     gene.include_padding(candidates)
-    print "found all loki in ", time.clock() - start_time, " seconds"
+    print "padded all candidates in ", time.clock() - start_time, " seconds"
+    
+#     TODO: run annotated miRNA through bowtie + others  
+    
+    
     
     
 #     sequence_freq = reads.readcollapsed(fasta_file)
@@ -124,26 +126,29 @@ def main():
     energy_fold(candidates)
     
     
-    not_mapped_seq = [structure.Sequence(i,n) for i,n in sequence_freq] # if i not in seq_to_candidates]
-    print len(not_mapped_seq)
-    print len(seq_to_candidates)
-    print len(not_mapped_seq) + len(seq_to_candidates)
-    print len(sequence_freq)
-    
-#     A/U ends for all remaining candidates
-    tailing_au(candidates, not_mapped_seq)
+#     not_mapped_reads = [structure.Sequence(i,n,read) for i,(read,n) in 
+#                         enumerate(zip(reads, reads_count))
+#                         if read not in seq_to_candidates]
 #     
-#     # 5' and 3' alignment overhang
-    overhang.find_overhang(candidates)
+#     print len(not_mapped_reads)
+#     print len(seq_to_candidates)
+#     print len(not_mapped_reads) + len(seq_to_candidates)
+#     print len(reads)
+#     
+# #     A/U ends for all remaining candidates
+#     tailing_au(candidates, not_mapped_reads)
+# #     
+#     #TODO: 5' and 3' alignment overhang
+#     overhang.find_overhang(candidates)
 #     
 #     degree of entropy in structure and nucleotides
-#     entropy(candidates)
+    entropy(candidates)
 #      
 #     heterogenity (position counting)
     heterogenity.heterogenity(candidates)
 #      
 #     candidate quality: nr of sequence hits / all candidate hits for given sequences
-#     candidate_quality(candidates, seq_to_candidates)
+    candidate_quality(candidates, seq_to_candidates)
     
     print "finished all in ", time.clock() - start_time, " seconds"
     

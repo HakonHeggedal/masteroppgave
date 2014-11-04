@@ -15,6 +15,7 @@ def energy_fold(candidates):
 
 
 def _viennafold(sequence):
+    #TODO: ALL AT ONCE
     """runs vienna folding, returns folding (string) and energy (double)"""
     mypipe  = Popen("RNAfold", stdin=PIPE, stdout=PIPE, bufsize=-1)
     ans, errors = mypipe.communicate(sequence)
@@ -29,7 +30,7 @@ def _viennafold(sequence):
     
     
     match_fold = re.search("[.\(\)]{5,}", ans)
-    print match_fold.group(0)
+#     print match_fold.group(0)
     fold = match_fold.group(0)
 
     
