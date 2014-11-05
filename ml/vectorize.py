@@ -7,7 +7,7 @@ import numpy
 
 def candidates_to_array(candidates):
     
-    candidate_array = numpy.array()
+    candidate_array = None
     
     for candidate in candidates:
         
@@ -15,8 +15,8 @@ def candidates_to_array(candidates):
         b = candidate.hairpin_energy
         c = candidate.entropy_nucleotides
         d = candidate.entropy_structure
-        e = candidate.heterogenity_5
-        f = candidate.heterogenity_3
+#         e = candidate.heterogenity_5
+#         f = candidate.heterogenity_3
         g = candidate.quality
         
         
@@ -24,7 +24,11 @@ def candidates_to_array(candidates):
         
         
         
-        features = numpy.array(a,b,c,d,e,f,g)
-        numpy.concatenate(candidate_array, features)
+        features = numpy.array([a,b,c,d,g])
+        
+        if candidate_array is None:
+            candidate_array = features
+        else:
+            numpy.concatenate(candidate_array, features)
         
     return candidate_array
