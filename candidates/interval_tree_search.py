@@ -200,7 +200,9 @@ def find_candidates(sequence_hits):
                 for candidate_interval in candidate_sequences:
                     name = candidate_interval.data[1]
                     if name not in seq_to_candidates:
-                        s = structure.Sequence(name, candidate_interval.data[2])
+                        number_id = int(name.split("-")[0])
+                        duplicates = int(name.split("-")[1])
+                        s = structure.Sequence(number_id, duplicates, candidate_interval.data[2])
                         s.add_candidate(candidate)
                         seq_to_candidates[name] = s
                     else:
@@ -208,7 +210,7 @@ def find_candidates(sequence_hits):
                 
                 candidate_tree[tree][begin_5:end_3] = candidate
                 candidate_list.append(candidate)
-#                 print "\tsaved as candidate\n"
+
                 if len(all_mapped_sequences) == 0:
                     all_mapped_sequences = candidate.all_mapped_sequences
                
@@ -247,10 +249,7 @@ def get_nondupl_intervals(sequence_hits, seqeunce_tree):
             
         
 
-def add_seq_to_existing_candidates(seqs, candidate_tree):
-    
-    for sequence in seqs:
-        pass
+
 
 
 
