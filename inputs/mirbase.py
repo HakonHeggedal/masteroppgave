@@ -41,23 +41,25 @@ def read_miRNA(mature_file, hairpin_file):
         hairpin = ""
         is_human = False
         name = ""
-        for mature_seq in hairpins:
-            mature_seq = mature_seq.lower().strip()
+        for hairpin_seq in hairpins:
+            hairpin_seq = hairpin_seq.lower().strip()
             
-            if mature_seq[0] == ">":
+            if hairpin_seq[0] == ">":
 
-                if is_human:
-                    micro_rnas[name] = Micro_RNA(hairpin.replace("U", "T"))
+                if is_human:  # previous entry
+                    micro_rnas[name] = Micro_RNA(hairpin.replace("u", "t"))
                 
-                if mature_seq[1:4] == "hsa":
+                if hairpin_seq[1:4] == "hsa":
 #                     print mature_seq[1:4]
                     is_human = True
-                    hairpin = ""
-                    name = mature_seq.split()[0]
+                    name = hairpin_seq.split()[0]
 #                     print "hairpin \"%s\"" % name, len(name)
+                else:
+                    is_human = False
+                hairpin = ""
                     
             elif is_human:
-                hairpin += mature_seq
+                hairpin += hairpin_seq
 
 
 
@@ -69,6 +71,7 @@ def read_miRNA(mature_file, hairpin_file):
         name = ""
         for mature_seq in mature_seqs:
             mature_seq = mature_seq.lower().strip()
+            mature_seq = mature_seq.replace("u", "t")
             if mature_seq[0] == ">":
                 if mature_seq[1:4] == "hsa":
                     is_human = True
@@ -134,38 +137,34 @@ def read_miRNA(mature_file, hairpin_file):
     print "finished assembling miRNAs"
     return micro_rnas
     
-# #     for k,v in micro_rnas.iteritems():
-#     hairpin_keys = set([k for k in micro_rnas.iterkeys()])
-#     
-#     fives = 0
-#     threes = 0
-#     both = 0
-#     noone = 0
-#     for name, hairpin_struct in  micro_rnas.iteritems():
-#         if hairpin_struct.pos_5_begin != None:
-#             fives += 1
-#         if hairpin_struct.pos_3_begin != None:
-#             threes += 1
-#         if hairpin_struct.pos_3_begin != None and hairpin_struct.pos_5_begin != None:
-#             both += 1
-#         elif hairpin_struct.pos_3_begin == None and hairpin_struct.pos_5_begin == None:
-#             noone += 1
-#             #TODO: why was noone found?
-#             print name, hairpin_struct.pos_5_begin, hairpin_struct.pos_3_begin
-#     
-#     print "no hits:", no_hits
-#     print
-#     print "nr of hairpins", len(hairpin_keys)
-# 
-#     print
-#     print "fives:", fives 
-#     print "threes:", threes
-#     print "both:", both
-#     print "none:", noone
+
+
+def write_miRNA(mi_rnas, filename):
     
 
+    with open(filename, "w") as outfile:
+        for name, miRNA in mi_rnas.iteritems():
+            outfile.write( name + "\n")
+            outfile.write(miRNA.hairpin.upper() + "\n")     
+            
 
-read_miRNA("mature.fa", "hairpin.fa")
+    
+
+# read_miRNA("mature.fa", "hairpin.fa")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

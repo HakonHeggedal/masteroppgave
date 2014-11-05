@@ -2,7 +2,10 @@
 # from bowtie import bowtie_get
 
 import time
+start_time = time.clock()
+
 from inputs import merge
+from inputs import mirbase
 from genes import gene
 from candidates import interval_tree_search
 from candidates import heterogenity
@@ -18,68 +21,31 @@ from ml import learn
 
 
 
-def _input_collapsed():
-    pass
 
-
-def _align_bowtie(bowtie_output, collapsed_seqs):
-    import os
+def _align_bowtie(bowtie_output_file, collapsed_seq_file):
     from subprocess import check_output
+    import os # hack: setting path to bowtie index
     os.environ['BOWTIE_INDEXES'] = "/home/hakon/Skrivebord/h_sapiens_37_asm.ebwt"
-    
-    
-    
+
     human_index = "h_sapiens_37_asm"
-    bowtie_cmds = ["bowtie", "-f", "-v 0", "-a", "-m 10",  human_index, collapsed_seqs, bowtie_output]
-#     bowtie_str = "bowtie -f -v 0 -a -m 10 h_sapiens_37_asm SRR797062.fa test.map"
-#     bowtie_str = "bowtie -f -v 0 h_sapiens_37_asm SRR797062.fa test.map"
-#     
-#     cmd_simple = ["bowtie", "-f", "-v 0", "h_sapiens_37_asm", "-c", "ACGTACGTACGT"]
-#     cmd_str = "bowtie -f -v 0 h_sapiens_37_asm -c ACGTACGTACGT"
-#     cmd_exitsts = "bowtie-inspect -n h_sapiens_37_asm"
-#     
-    
+    bowtie_cmds = ["bowtie", "-f", "-v 0", "-a", "-m 10",
+                   human_index, collapsed_seq_file, bowtie_output_file]
+
     print check_output(bowtie_cmds)
 
 
-#     print check_output(cmd_exitsts, shell=True)
-#     print check_output(cmd_str, shell=True)
-    
-#     print check_output(["echo", "testest"])
-#     print check_output(["bowtie", "h_sapiens_37_asm", "-c", "ACGTACGTACGT"])
-#     print check_output("bowtie h_sapiens_37_asm -c ACGTACGTACGT",  shell=True )
-#     print "running bowtie"
-
-
-#     outs = check_output(bowtie_str, shell=True).strip()
-#     print bowtie_cmds
-#     outs = check_output(bowtie_cmds, shell=True).strip()
-    
-    
-    
-#     outs = check_output(["bowtie", human_index, "-c", "ACGTACGT", "ts.txt"], shell=True).strip()
-#     outs = check_output(bowtie_cmds, shell=True)
-#     print "run commands2"        
-# #     print answers
-# #     print "errors", errors
-#     parts = outs.split("\t")
-#     print len(outs), outs
-#     print len(parts), parts
-#      
-    
-#     bowtie_get.runcommand(bowtie_cmds)
-#     bowtie_get.runcommand(["bowtie","-f", "h_sapiens_37_asm", "SRR797062.fa", "test.map"])
 
 
 
 def main():
-    start_time =time.clock()
+#     start_time = time.clock()
     print "starting"
     
     print "merging collapsed files"
-    fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed",
-                   "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed"]
-    
+#     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed",
+#                    "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed"]
+
+    fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed"]
 #     fasta_file = "SRR797062.fa"
 
 #     merge collapsed input files
@@ -87,7 +53,7 @@ def main():
     
 #     split small and larger sequences
     reads, reads_count, small_reads, small_reads_count = merge.filter_seqeunces(dict_collapsed, 18)
-    
+    print "reads:", len(reads), "small:", len(small_reads), len(small_reads_count)
 #     write reads to file
     all_reads_file = "all.collapsed"
     merge.write_collapsed(all_reads_file, reads, reads_count)
@@ -98,12 +64,46 @@ def main():
     _align_bowtie(bowtie_output, all_reads_file)
     print "finished bowtie in ", time.clock() - start_time, " seconds" 
     
-    
+#     read genome alignment from bowtie
     fixed_lines = [line.strip().split("\t") for line in open(bowtie_output)] 
     print "read positions in ", time.clock() - start_time, " seconds"
     
+    
+
+    
+#     get mirbase entries
+    micro_rnas = mirbase.read_miRNA("mature.fa", "hairpin.fa")
+    print "got all miRNAs from mirbase files", len(micro_rnas)
+    
+#     run write micro rnas to file
+    miRNA_file_name = "mirnas.fa"
+    mirbase.write_miRNA(micro_rnas, miRNA_file_name)
+    print "wrote human miRNAs to file", time.clock() - start_time, " seconds"
+    
+#     run bowtie to find miRNA positions
+    miRNA_bowtie_output = "miRNA.map"
+    _align_bowtie(miRNA_bowtie_output, miRNA_file_name)
+    
+    print "aligned miRNAs in", time.clock() - start_time, " seconds"
+    
+    miRNA_bowtie_hits = [line.strip().split("\t") for line in open(miRNA_bowtie_output)] 
+    
+    unique_mirna_hits = set([x[0] for x in miRNA_bowtie_hits])
+    
+    print "miRNA bowtie hits:", len(miRNA_bowtie_hits)
+    for x in range(50):
+        print miRNA_bowtie_hits[x][:3]
+
+    print "unique miRNA hits:", len(unique_mirna_hits)
+
+#     for x in sorted(unique_mirna_hits):
+#         print x
+    
+    assert False
+    
 #     using sequence tree to find possible candidates
     candidate_tree, sequence_tree, candidates, seq_to_candidates = interval_tree_search.find_candidates(fixed_lines)
+    
     print "found candidates in ", time.clock() - start_time, " seconds"
     print "bowtie hits", len(fixed_lines)
     print "candidate tree", len(candidate_tree)
@@ -115,17 +115,14 @@ def main():
     gene.include_padding(candidates)
     print "padded all candidates in ", time.clock() - start_time, " seconds"
     
-#     TODO: run annotated miRNA through bowtie + others  
-    
-    
-    
+
     
 #     sequence_freq = reads.readcollapsed(fasta_file)
 #     print len(sequence_freq)    
     
     
     # run and set vienna RNAfold + energy on all candidates
-    vienna.energy_fold(candidates)
+    vienna.energy_fold(candidates) # slow?
     
     
 #     not_mapped_reads = [structure.Sequence(i,n,read) for i,(read,n) in 
@@ -144,7 +141,7 @@ def main():
 #     overhang.find_overhang(candidates)
 #     
 #     degree of entropy in structure and nucleotides
-    entropy(candidates)
+    entropy.entropy(candidates)
 #      
 #     heterogenity (position counting)
     heterogenity.heterogenity(candidates)
@@ -155,7 +152,7 @@ def main():
     print "finished features in ", time.clock() - start_time, " seconds"
     
 
-    
+    candidate_array = vectorize.candidates_to_array(candidates)
     
     
 
