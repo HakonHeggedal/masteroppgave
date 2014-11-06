@@ -72,12 +72,12 @@ def main():
 
     
 #     get mirbase entries
-    micro_rnas = mirbase.read_miRNA("mature.fa", "hairpin.fa")
-    print "got all miRNAs from mirbase files", len(micro_rnas)
+    miRNAid_to_hairpin = mirbase.read_miRNA("mature.fa", "hairpin.fa")
+    print "got all miRNAs from mirbase files", len(miRNAid_to_hairpin)
     
 #     run write micro rnas to file
     miRNA_file_name = "mirnas.fa"
-    mirbase.write_miRNA(micro_rnas, miRNA_file_name)
+    mirbase.write_miRNA(miRNAid_to_hairpin, miRNA_file_name)
     print "wrote human miRNAs to file", time.clock() - start_time, " seconds"
     
 #     run bowtie to find miRNA positions
@@ -91,15 +91,10 @@ def main():
     unique_mirna_hits = set([x[0] for x in miRNA_bowtie_hits])
     
     print "miRNA bowtie hits:", len(miRNA_bowtie_hits)
-    for x in range(50):
-        print miRNA_bowtie_hits[x][:3]
-
     print "unique miRNA hits:", len(unique_mirna_hits)
 
-#     for x in sorted(unique_mirna_hits):
-#         print x
     
-    assert False
+#     assert False
     
 #     using sequence tree to find possible candidates
     candidate_tree, sequence_tree, candidates, seq_to_candidates = interval_tree_search.find_candidates(fixed_lines)
@@ -114,6 +109,40 @@ def main():
 #     candidate_list = gene.find_all(candidates)
     gene.include_padding(candidates)
     print "padded all candidates in ", time.clock() - start_time, " seconds"
+    
+    
+    print "create candidate structure from miRNAs"
+    miRNA_candidates = []
+    for mirna_loki in miRNA_bowtie_hits:
+        miRNAid = mirna_loki[0]
+        strand_dir = mirna_loki[1]
+        chromosome = mirna_loki[2].split("|")[3]
+        begin_5 = 0
+        end_5 = 0
+        begin_3 = 0
+        end_3 = 0
+        candidate_sequences = None
+        hairpin = miRNAid_to_hairpin[miRNAid]
+        
+# 0            1   2[0] [1]      [2] [3]
+# ['1-15830', '-', 'gi|224589818|ref|NC_000006.11|',
+#         NC_000006.11
+        
+        mirna_candidate = structure.Candidate(chromosome,
+                                     strand_dir,
+                                     begin_5,
+                                     end_5,
+                                     begin_3,
+                                     end_3,
+                                     candidate_sequences)
+
+        mirna_candidate.set_hairpin_padding(hairpin, "", -1)
+        
+        miRNA_candidates.append(mirna_candidate)
+        
+    
+    print "align miRNAs to other sequences"
+    candidate_union = interval_tree_search.align_miRNAs(miRNA_candidates)
     
 
     

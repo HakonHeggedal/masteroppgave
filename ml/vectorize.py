@@ -29,6 +29,8 @@ def candidates_to_array(candidates):
         if candidate_array is None:
             candidate_array = features
         else:
+            print "candidates:", candidate_array
+            print "new", features
             numpy.concatenate(candidate_array, features)
         
     return candidate_array

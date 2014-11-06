@@ -4,9 +4,9 @@ Created on 6. okt. 2014
 @author: hakon
 '''
 import os
-from candidates import structure
-import candidates
-from genes import *
+# from candidates import structure
+# import candidates
+# from genes import *
 
 
 
@@ -18,7 +18,7 @@ def include_padding(candidate_list, padding=40 ):
     os.chdir(os.pardir)
     os.chdir("genes")
 #     candidate_list = []
-    fails = 0
+
     
     i = 0
     print "candidates:", len(candidate_list)

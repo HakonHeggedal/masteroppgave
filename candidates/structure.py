@@ -33,19 +33,21 @@ class Candidate:
     def __init__(self, chromosome, strand_dir, begin_5, end_5,
                  begin_3, end_3, mapped_sequences):
         
-        self.all_mapped_sequences.update(mapped_sequences)
-        
         self.chromosome = chromosome
         self.chromosome_direction = strand_dir
         self.pos_5_begin = begin_5
         self.pos_5_end = end_5
         self.pos_3_begin = begin_3
         self.pos_3_end = end_3
-        self.mapped_sequences = set(mapped_sequences)
         self.hairpin = None
         self.hairpin_padded = None
         self.hairpin_fold = None
         self.hairpin_energy = None
+        self.mapped_sequences = set()
+        
+        if mapped_sequences is not None:
+            self.mapped_sequences = set(mapped_sequences)
+            self.all_mapped_sequences.update(mapped_sequences)
     
     def set_hairpin_padding(self, hairpin, padded, padding_size):
         self.hairpin = hairpin

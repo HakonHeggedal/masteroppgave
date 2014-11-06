@@ -35,7 +35,7 @@ def _add_position(miRNA, startpos, endpos, is_5p, is_3p):
 
 def read_miRNA(mature_file, hairpin_file):
     
-    micro_rnas = {}
+    miRNAid_to_hairpin = {}
     
     with open(hairpin_file) as hairpins:
         hairpin = ""
@@ -47,7 +47,7 @@ def read_miRNA(mature_file, hairpin_file):
             if hairpin_seq[0] == ">":
 
                 if is_human:  # previous entry
-                    micro_rnas[name] = Micro_RNA(hairpin.replace("u", "t"))
+                    miRNAid_to_hairpin[name] = Micro_RNA(hairpin.replace("u", "t"))
                 
                 if hairpin_seq[1:4] == "hsa":
 #                     print mature_seq[1:4]
@@ -95,38 +95,38 @@ def read_miRNA(mature_file, hairpin_file):
                 
 #                 print name, len(name)
 #                 print "after: %s" %name
-#                 print "is \"%s\" in dict?" % name, name in micro_rnas
-                if name in micro_rnas:
-                    pos = micro_rnas[name].hairpin.find(mature_seq) # mature seq. must be in hairpin.
+#                 print "is \"%s\" in dict?" % name, name in miRNAid_to_hairpin
+                if name in miRNAid_to_hairpin:
+                    pos = miRNAid_to_hairpin[name].hairpin.find(mature_seq) # mature seq. must be in hairpin.
                     if pos >= 0:
                         found_hairpin = True
                         endpos = pos + len(mature_seq)
-                        _add_position(micro_rnas[name], pos, endpos, is_5p, is_3p)
+                        _add_position(miRNAid_to_hairpin[name], pos, endpos, is_5p, is_3p)
 
 #                 elif not found_hairpin:
 
                 x = 1
                 
-                if name+"-"+str(x) not in micro_rnas:
+                if name+"-"+str(x) not in miRNAid_to_hairpin:
                     x = 2
                 
-                while name+"-"+str(x) in micro_rnas:
-                    pos = micro_rnas[name+"-"+str(x)].hairpin.find(mature_seq)
+                while name+"-"+str(x) in miRNAid_to_hairpin:
+                    pos = miRNAid_to_hairpin[name+"-"+str(x)].hairpin.find(mature_seq)
                     if pos >= 0:
                         found_hairpin = True
                         endpos = pos + len(mature_seq)
-                        _add_position(micro_rnas[name+"-"+str(x)],
+                        _add_position(miRNAid_to_hairpin[name+"-"+str(x)],
                                       pos, endpos, is_5p, is_3p)
                     x += 1
 #                     else:
 #                         if not found_hairpin:
                 c = "a"
-                while name+c in micro_rnas:
-                    pos = micro_rnas[name+c].hairpin.find(mature_seq)
+                while name+c in miRNAid_to_hairpin:
+                    pos = miRNAid_to_hairpin[name+c].hairpin.find(mature_seq)
                     if pos >= 0:
                         found_hairpin = True
                         endpos = pos + len(mature_seq)
-                        _add_position(micro_rnas[name+c],pos, endpos, is_5p, is_3p)
+                        _add_position(miRNAid_to_hairpin[name+c],pos, endpos, is_5p, is_3p)
                     c += chr(ord(c) + 1)
                                      
                 if not found_hairpin:
@@ -135,7 +135,7 @@ def read_miRNA(mature_file, hairpin_file):
                     print "\tno hit", name, x, c, is_3p, is_5p
     
     print "finished assembling miRNAs"
-    return micro_rnas
+    return miRNAid_to_hairpin
     
 
 

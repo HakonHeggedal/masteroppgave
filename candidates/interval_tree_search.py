@@ -30,6 +30,7 @@ def find_candidates(sequence_hits):
     all_mapped_sequences = set()
     seq_to_candidates = {}
     
+    test_inner_count = 0
     # add all intervals to the tree
     for prop in sequence_hits:
 #         print prop
@@ -45,7 +46,7 @@ def find_candidates(sequence_hits):
     
     for tree in sequence_tree:
         # test all intervals to find candidates
-        print tree
+        print tree, test_inner_count
 
         for five_interval in sorted(sequence_tree[tree]):
             
@@ -207,7 +208,8 @@ def find_candidates(sequence_hits):
                         seq_to_candidates[name] = s
                     else:
                         seq_to_candidates[name].add_candidate(candidate)
-                
+                    
+                    test_inner_count += 1
                 candidate_tree[tree][begin_5:end_3] = candidate
                 candidate_list.append(candidate)
 
@@ -220,32 +222,39 @@ def find_candidates(sequence_hits):
 
 
 
-
-
-
-
-
-
-
-
-
-
-def get_nondupl_intervals(sequence_hits, seqeunce_tree):
+def align_miRNAs(mirna_candidates, candidate_tree, sequence_tree):
+    pass
+    candidates_at_miRNA = []
     
-    dup_free = []
-    for prop in sequence_hits:
-        seq_name = prop[0]
-        strand_dir = prop[1] # forward: + backward: -
-        genome_nr = prop[2].split("|")[3] # which genome (and version)
-        genome_offset = int(prop[3]) # offset into the genome, 0-indexed
-        dna_sequence = prop[4] # the dna_sequence matching this position.
-        sequence_info = [strand_dir, seq_name, dna_sequence]
-        interval = intervaltree.Interval(genome_offset, genome_offset + len(dna_sequence), sequence_info)
-         
-        if genome_nr in seqeunce_tree:
-            if interval not in seqeunce_tree[genome_nr]:
-                dup_free.append(interval)
-            
+    # TODO: finne kandidater som matcher miRNA
+    
+    # TODO: finne sekvenser fra bowtie som aligner med miRNA
+    
+    
+    return candidates_at_miRNA
+
+
+
+
+
+
+# 
+# def get_nondupl_intervals(sequence_hits, seqeunce_tree):
+#     
+#     dup_free = []
+#     for prop in sequence_hits:
+#         seq_name = prop[0]
+#         strand_dir = prop[1] # forward: + backward: -
+#         genome_nr = prop[2].split("|")[3] # which genome (and version)
+#         genome_offset = int(prop[3]) # offset into the genome, 0-indexed
+#         dna_sequence = prop[4] # the dna_sequence matching this position.
+#         sequence_info = [strand_dir, seq_name, dna_sequence]
+#         interval = intervaltree.Interval(genome_offset, genome_offset + len(dna_sequence), sequence_info)
+#          
+#         if genome_nr in seqeunce_tree:
+#             if interval not in seqeunce_tree[genome_nr]:
+#                 dup_free.append(interval)
+#             
             
         
 
