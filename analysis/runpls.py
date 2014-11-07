@@ -42,10 +42,10 @@ def main():
     print "starting"
     
     print "merging collapsed files"
-#     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed",
-#                    "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed"]
+    fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed",
+                    "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed"]
 
-    fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed"]
+#     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed"]
 #     fasta_file = "SRR797062.fa"
 
 #     merge collapsed input files
@@ -107,6 +107,11 @@ def main():
     print "mapped seqs", len(candidates[0].all_mapped_sequences)
     
 #     candidate_list = gene.find_all(candidates)
+
+# 0            1   2[0] [1]      [2] [3]
+# ['1-15830', '-', 'gi|224589818|ref|NC_000006.11|',
+#         NC_000006.11
+        
     gene.include_padding(candidates)
     print "padded all candidates in ", time.clock() - start_time, " seconds"
     
@@ -117,16 +122,13 @@ def main():
         miRNAid = mirna_loki[0]
         strand_dir = mirna_loki[1]
         chromosome = mirna_loki[2].split("|")[3]
-        begin_5 = 0
+        hairpin = miRNAid_to_hairpin[">"+miRNAid].hairpin
+        begin_5 = int(mirna_loki[3])
         end_5 = 0
         begin_3 = 0
-        end_3 = 0
+        end_3 = begin_5 + len(hairpin)
         candidate_sequences = None
-        hairpin = miRNAid_to_hairpin[miRNAid]
         
-# 0            1   2[0] [1]      [2] [3]
-# ['1-15830', '-', 'gi|224589818|ref|NC_000006.11|',
-#         NC_000006.11
         
         mirna_candidate = structure.Candidate(chromosome,
                                      strand_dir,
@@ -137,12 +139,12 @@ def main():
                                      candidate_sequences)
 
         mirna_candidate.set_hairpin_padding(hairpin, "", -1)
-        
+        print hairpin
         miRNA_candidates.append(mirna_candidate)
         
     
     print "align miRNAs to other sequences"
-    candidate_union = interval_tree_search.align_miRNAs(miRNA_candidates)
+    candidate_union = interval_tree_search.align_miRNAs(miRNA_candidates, candidate_tree, sequence_tree)
     
 
     
