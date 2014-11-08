@@ -69,15 +69,40 @@ def main():
     print "read positions in ", time.clock() - start_time, " seconds"
     
     
+    
+    hairpin_file = "hairpin.fa"
+    mature_seq_file = "mature.fa"
+    miRNA_file_name = "mirnas.fa"
+    
+    print "loading miRNA hairpins:"
+    
+    hsa_to_hairpin, other_to_hairpin = mirbase.read_miRNA_fasta(hairpin_file)
+    hsa_to_mature, other_to_mature = mirbase.read_miRNA_fasta(mature_seq_file)
+    
+    miRNA_species = mirbase.similar_hairpins(hsa_to_hairpin, other_to_hairpin)
+    
+    hairpinID_to_mature = mirbase.combine_hairpin_mature(hsa_to_hairpin, hsa_to_mature)
+    
+    for k,v in miRNA_species.iteritems():
+        if v > 0:
+            print k,v
+    
+    
+#     assert False
+#     get mirbase entries
+#     miRNAid_to_hairpin = mirbase.read_miRNA("mature.fa", "hairpin.fa")
+#     print "got all miRNAs from mirbase files", len(miRNAid_to_hairpin)
+
 
     
-#     get mirbase entries
-    miRNAid_to_hairpin = mirbase.read_miRNA("mature.fa", "hairpin.fa")
-    print "got all miRNAs from mirbase files", len(miRNAid_to_hairpin)
+#     miRNA_species = mirbase.mirna_copies(miRNAid_to_hairpin.values(), "hairpin.fa")
+    
+#     for k,v in miRNA_species.iteritems():
+#         print v
     
 #     run write micro rnas to file
-    miRNA_file_name = "mirnas.fa"
-    mirbase.write_miRNA(miRNAid_to_hairpin, miRNA_file_name)
+
+    mirbase.write_miRNA(hsa_to_hairpin, miRNA_file_name)
     print "wrote human miRNAs to file", time.clock() - start_time, " seconds"
     
 #     run bowtie to find miRNA positions
@@ -94,7 +119,39 @@ def main():
     print "unique miRNA hits:", len(unique_mirna_hits)
 
     
-#     assert False
+    print "create candidate structure from miRNAs"
+    miRNA_candidates = []
+    for mirna_loki in miRNA_bowtie_hits:
+        miRNAid = mirna_loki[0]
+        strand_dir = mirna_loki[1]
+        chromosome = mirna_loki[2].split("|")[3]
+        hairpin = hsa_to_hairpin[">"+miRNAid]
+        begin_5 = int(mirna_loki[3])
+        end_5 = 0
+        begin_3 = 0
+        end_3 = begin_5 + len(hairpin)
+        candidate_sequences = None
+        
+        
+        mirna_candidate = structure.Candidate(chromosome,
+                                     strand_dir,
+                                     begin_5,
+                                     end_5,
+                                     begin_3,
+                                     end_3,
+                                     candidate_sequences)
+
+        mirna_candidate.set_hairpin_padding(hairpin, "", -1)
+#         print hairpin
+        miRNA_candidates.append(mirna_candidate)
+    
+    print "candidates:", len(miRNA_candidates)
+    
+    
+    
+
+    
+    assert False
     
 #     using sequence tree to find possible candidates
     candidate_tree, sequence_tree, candidates, seq_to_candidates = interval_tree_search.find_candidates(fixed_lines)
@@ -114,33 +171,6 @@ def main():
         
     gene.include_padding(candidates)
     print "padded all candidates in ", time.clock() - start_time, " seconds"
-    
-    
-    print "create candidate structure from miRNAs"
-    miRNA_candidates = []
-    for mirna_loki in miRNA_bowtie_hits:
-        miRNAid = mirna_loki[0]
-        strand_dir = mirna_loki[1]
-        chromosome = mirna_loki[2].split("|")[3]
-        hairpin = miRNAid_to_hairpin[">"+miRNAid].hairpin
-        begin_5 = int(mirna_loki[3])
-        end_5 = 0
-        begin_3 = 0
-        end_3 = begin_5 + len(hairpin)
-        candidate_sequences = None
-        
-        
-        mirna_candidate = structure.Candidate(chromosome,
-                                     strand_dir,
-                                     begin_5,
-                                     end_5,
-                                     begin_3,
-                                     end_3,
-                                     candidate_sequences)
-
-        mirna_candidate.set_hairpin_padding(hairpin, "", -1)
-        print hairpin
-        miRNA_candidates.append(mirna_candidate)
         
     
     print "align miRNAs to other sequences"
