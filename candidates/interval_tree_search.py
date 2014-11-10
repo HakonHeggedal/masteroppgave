@@ -59,7 +59,6 @@ def find_candidates(sequence_hits):
             
             #test if this interval is present in another candidate
             
-
             
 #             print len(all_mapped_sequences)
 #             print five_interval in all_mapped_sequences
@@ -210,11 +209,11 @@ def find_candidates(sequence_hits):
 
 
 def align_miRNAs(mirna_candidates, candidate_tree, sequence_tree):
-
-    candidates_at_miRNA = set()
+    print "align candidates with miRNA"
+    candidate_to_miRNA = {}
     
-#     TODO: finne kandidater som matcher miRNA
-#     TODO: finne sekvenser fra bowtie som aligner med miRNA
+#     finne kandidater som matcher miRNA
+#     finne sekvenser fra bowtie som aligner med miRNA
 #     sequence_tree[tree][five_interval.begin:three_range_end]
     candidate_already = 0
     seqs_count = 0
@@ -223,18 +222,48 @@ def align_miRNAs(mirna_candidates, candidate_tree, sequence_tree):
     for mirna in mirna_candidates:
         
         tree = candidate_tree[mirna.chromosome]
-        candidates = tree[mirna.pos_5_begin:mirna.pos_3_end]
-        
+        candidates = tree[mirna.pos_hairpin_begin:mirna.pos_hairpin_end]
+#         print tree, 
         if candidates:
-            print candidates
+#             print mirna.pos_hairpin_begin, mirna.pos_hairpin_end
+#             
+#             tree = sequence_tree[mirna.chromosome]
+#             sequences = tree[mirna.pos_hairpin_begin:mirna.pos_hairpin_end]
+#             print len(sequences)
+#             print candidates
             candidate_already += 1
+            
+            print
+            print "candidate match:"
+            print mirna.pos_5p_begin
+            print mirna.pos_5p_end
+            print mirna.pos_3p_begin
+            print mirna.pos_3p_end
+            
             for candidate in candidates:
-                candidates_at_miRNA.add(candidate)
+                similar_pos = 0
+                print "\trange:", candidate.begin, candidate.end
+                print "\t", candidate.data.pos_5p_begin, mirna.pos_5p_begin
+                print "\t", candidate.data.pos_5p_end, mirna.pos_5p_end
+                print "\t", candidate.data.pos_3p_begin, mirna.pos_3p_begin
+                print "\t", candidate.data.pos_3p_end, mirna.pos_3p_end
+                
+                if candidate.data.pos_5p_begin == mirna.pos_5p_begin:
+                    similar_pos += 1
+                if candidate.data.pos_5p_end == mirna.pos_5p_end:
+                    similar_pos += 1
+                if candidate.data.pos_3p_begin == mirna.pos_3p_begin:
+                    similar_pos += 1
+                if candidate.data.pos_3p_end == mirna.pos_3p_end:
+                    similar_pos += 1
+                
+                candidate_to_miRNA[candidate] = mirna
+#                 candidates_at_miRNA.add(candidate)
             continue
         
         # not candidate already
         tree = sequence_tree[mirna.chromosome]
-        sequences = tree[mirna.pos_5_begin:mirna.pos_3_end]
+        sequences = tree[mirna.pos_hairpin_begin:mirna.pos_hairpin_end]
         
         if sequences:
 #             mirna.
@@ -243,21 +272,24 @@ def align_miRNAs(mirna_candidates, candidate_tree, sequence_tree):
             
         else:
             no_seqs += 1
-            print "no sequences"
+#             print "no sequences"
 
     
     print "mirnas:", len(mirna_candidates)
-    print "\tfound candidate:", candidate_already * 1.0 / len(mirna_candidates)
+    print "\tfound candidate:", candidate_already * 1.0 / len(mirna_candidates), candidate_already
     print "\tonly seqs:", seqs_count * 1.0 / len(mirna_candidates)
     print "\tno seqs:", no_seqs * 1.0 / len(mirna_candidates)
     
-    assert False
-    return candidates_at_miRNA
+#     assert False
+    return candidate_to_miRNA
 
 
 # 
 #     def __init__(self, chromosome, strand_dir, begin_5, end_5,
 #                  begin_3, end_3, mapped_sequences):
+
+
+
 
 
 

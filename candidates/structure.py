@@ -30,15 +30,15 @@ class Candidate:
 #      
 #     loki_quality = 0.0 # 0 to 1
 
-    def __init__(self, chromosome, strand_dir, begin_5, end_5,
-                 begin_3, end_3, mapped_sequences):
+    def __init__(self, chromosome, strand_dir, begin_5p, end_5p,
+                 begin_3p, end_3p, mapped_sequences):
         
         self.chromosome = chromosome
         self.chromosome_direction = strand_dir
-        self.pos_5_begin = begin_5
-        self.pos_5_end = end_5
-        self.pos_3_begin = begin_3
-        self.pos_3_end = end_3
+        self.pos_5p_begin = begin_5p
+        self.pos_5p_end = end_5p
+        self.pos_3p_begin = begin_3p
+        self.pos_3p_end = end_3p
         self.hairpin = None
         self.hairpin_padded = None
         self.hairpin_fold = None
@@ -57,6 +57,10 @@ class Candidate:
     def set_viennafold(self, hairpin_fold, hairpin_energy):
         self.hairpin_fold = hairpin_fold 
         self.hairpin_energy = hairpin_energy
+        
+    def set_hairpin_pos(self, begin, end):
+        self.pos_hairpin_begin = begin
+        self.pos_hairpin_end = end
         
     def add_sequence(self, sequences):
         self.all_mapped_sequences.update(sequences)

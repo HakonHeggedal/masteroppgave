@@ -20,10 +20,10 @@ def heterogenity(candidates, offset=5):
     for candidate in candidates:
         sequences = candidate.mapped_sequences
         
-        five_begin = candidate.pos_5_begin
-        five_end = candidate.pos_5_end
-        three_begin = candidate.pos_3_begin
-        three_end = candidate.pos_3_end
+        five_begin = candidate.pos_5p_begin
+        five_end = candidate.pos_5p_end
+        three_begin = candidate.pos_3p_begin
+        three_end = candidate.pos_3p_end
         
         
         begins = [0] * (three_end-five_begin+offset+offset)

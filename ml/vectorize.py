@@ -7,7 +7,7 @@ import numpy
 
 def candidates_to_array(candidates):
     
-    candidate_array = None
+    all_candidates = []
     
     for candidate in candidates:
         
@@ -20,17 +20,8 @@ def candidates_to_array(candidates):
         g = candidate.quality
         
         
+        features = [a,b,c,d,g]
         
+        all_candidates.append(features)
         
-        
-        
-        features = numpy.array([a,b,c,d,g])
-        
-        if candidate_array is None:
-            candidate_array = features
-        else:
-            print "candidates:", candidate_array
-            print "new", features
-            numpy.concatenate(candidate_array, features)
-        
-    return candidate_array
+    return numpy.array(all_candidates)

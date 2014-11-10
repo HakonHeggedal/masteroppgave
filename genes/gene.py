@@ -45,11 +45,11 @@ def include_padding(candidate_list, padding=40 ):
             while True:
                 # fix every candidate
                 
-                read_start = candidate.pos_5_begin - padding
+                read_start = candidate.pos_5p_begin - padding
                 start_line = read_start // line_len
                 start_pos = read_start % line_len
 
-                read_end = candidate.pos_3_end + padding
+                read_end = candidate.pos_3p_end + padding
                 end_line = read_end // line_len
                 end_pos = read_end % line_len
                 

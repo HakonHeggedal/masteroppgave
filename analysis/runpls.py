@@ -3,6 +3,8 @@
 
 import time
 start_time = time.clock()
+import numpy
+from sklearn import svm
 
 from inputs import merge
 from inputs import mirbase
@@ -45,7 +47,7 @@ def main():
     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed",
                     "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed"]
 
-#     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed"]
+    fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed"]
 #     fasta_file = "SRR797062.fa"
 
 #     merge collapsed input files
@@ -122,14 +124,17 @@ def main():
     print "create candidate structure from miRNAs"
     miRNA_candidates = []
     for mirna_loki in miRNA_bowtie_hits:
-        miRNAid = mirna_loki[0]
+        miRNAid = ">" + mirna_loki[0]
+#         print "candidate", miRNAid, hairpinID_to_mature[miRNAid]
         strand_dir = mirna_loki[1]
         chromosome = mirna_loki[2].split("|")[3]
-        hairpin = hsa_to_hairpin[">"+miRNAid]
-        begin_5 = int(mirna_loki[3])
-        end_5 = 0
-        begin_3 = 0
-        end_3 = begin_5 + len(hairpin)
+        genome_offset = int(mirna_loki[3])
+        hairpin = hsa_to_hairpin[miRNAid]
+        mature_pos = hairpinID_to_mature[miRNAid]
+        begin_5 = mature_pos[0] + genome_offset if mature_pos[0] >= 0 else mature_pos[0]
+        end_5 =  mature_pos[1] + genome_offset if mature_pos[1] >= 0 else mature_pos[1]
+        begin_3 =  mature_pos[2] + genome_offset if mature_pos[2] >= 0 else mature_pos[2]
+        end_3 =  mature_pos[3] + genome_offset if mature_pos[3] >= 0 else mature_pos[3]
         candidate_sequences = None
         
         
@@ -142,7 +147,9 @@ def main():
                                      candidate_sequences)
 
         mirna_candidate.set_hairpin_padding(hairpin, "", -1)
-#         print hairpin
+        mirna_candidate.set_hairpin_pos(genome_offset, genome_offset + len(hairpin) )
+
+
         miRNA_candidates.append(mirna_candidate)
     
     print "candidates:", len(miRNA_candidates)
@@ -151,7 +158,7 @@ def main():
     
 
     
-    assert False
+#     assert False
     
 #     using sequence tree to find possible candidates
     candidate_tree, sequence_tree, candidates, seq_to_candidates = interval_tree_search.find_candidates(fixed_lines)
@@ -174,7 +181,7 @@ def main():
         
     
     print "align miRNAs to other sequences"
-    candidate_union = interval_tree_search.align_miRNAs(miRNA_candidates, candidate_tree, sequence_tree)
+    candidate_to_miRNA = interval_tree_search.align_miRNAs(miRNA_candidates, candidate_tree, sequence_tree)
     
 
     
@@ -212,10 +219,26 @@ def main():
     
     print "finished features in ", time.clock() - start_time, " seconds"
     
-
-    candidate_array = vectorize.candidates_to_array(candidates)
     
+    miRNAs = []
+    miRNA_annotations = [] 
+    only_candidates = []
     
+    for candidate in candidates:
+        print candidate, candidate in candidate_to_miRNA
+        if candidate in candidate_to_miRNA:
+            print "ok mirna!"
+            miRNAs.append(candidate)
+            
+            
+    
+    learn_miRNAs = vectorize.candidates_to_array(miRNAs)
+    class_miRNAs = numpy.array(miRNA_annotations)
+    candidate_array = vectorize.candidates_to_array(only_candidates)
+    
+    learner = svm.SVC()
+    learner.fit(learn_miRNAs, class_miRNAs)
+    learner.predict(only_candidates)
 
 
 # if __name__ == "__main__":
