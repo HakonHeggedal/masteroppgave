@@ -6,30 +6,6 @@ class Candidate:
     
     all_mapped_sequences = set()
     
-    
-
-#     seq_hairpin = ""
-#     seq_hairpin_padded = ""
-#     seq_prime5 = ""
-#     seq_prime3 = ""
-#     strand = "" # + is forward, - is backward
-#     id_prime5 = ""
-#     id_prime3 = ""
-#     energy_hairpin = 0.0
-#     energy_padding = 0.0
-#     heterogenity_prime5 = 0
-#     heterogenity_prime3 = 0
-#      
-#     entropy_nucleotide = 0
-#     entropy_structure = 0
-#      
-#     overhang_prime5 = 0
-#     overhang_prime3 = 0
-#      
-#     tailing_au = 0
-#      
-#     loki_quality = 0.0 # 0 to 1
-
     def __init__(self, chromosome, strand_dir, begin_5p, end_5p,
                  begin_3p, end_3p, mapped_sequences):
         
@@ -79,25 +55,20 @@ class Candidate:
         
     def set_tailing(self,tailing):
         self.tailing = tailing
-
-#     def __init__(self, interval_data, chromosome):
-# #         [strand, 5'name, 5'sequence, 3'name, 3'sequence]
-#         self.strand = interval_data[0]
-#         self.id_prime5 = interval_data[1]        
-#         self.seq_prime5 = interval_data[2]
-#         self.id_prime3 = interval_data[3]
-#         self.seq_prime3 = interval_data[4]
-#         self.chromosome = chromosome
-
-#     def get_hairpin(self):
-#         return self.seq_hairpin
+        
+        
+#     def __hash__self(self):
+#         return hash(self)
 #     
-#     def get_padded_hairpin(self):
-#         return self.seq_hairpin_padded
-
-
-
-
+#     def __eq__(self, other):
+#         return self == other
+        
+#     def __hash__(self):
+#         return hash( (self.chromosome, self.chromosome_direction, self.pos_5p_begin) )
+# 
+#     def __eq__(self, other):
+#         return ((self.chromosome, self.chromosome_direction, self.pos_5p_begin) ==
+#             (other.chromosome, other.chromosome_direction, other.pos_5p_begin) )
 
 
 
