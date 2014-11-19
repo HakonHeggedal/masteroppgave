@@ -19,7 +19,7 @@ from candidates import structure
 from candidates import overhang
 
 from ml import vectorize
-from ml import learn
+
 
 
 
@@ -47,18 +47,20 @@ def main():
     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed",
                     "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed"]
 
-#     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed"]
+    fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed"]
+    fasta_files = ["SRR797064.collapsed"]
+    
 #     fasta_file = "SRR797062.fa"
 
-#     merge collapsed input files
     dict_collapsed = merge.collapse_collapsed(fasta_files)
     
 #     split small and larger sequences
-    reads, reads_count, small_reads, small_reads_count = merge.filter_seqeunces(dict_collapsed, 18)
-    print "reads:", len(reads), "small:", len(small_reads), len(small_reads_count)
 #     write reads to file
     all_reads_file = "all.collapsed"
+    reads, reads_count, small_reads, small_reads_count = merge.filter_seqeunces(dict_collapsed, 18)
     merge.write_collapsed(all_reads_file, reads, reads_count)
+
+    print "reads:", len(reads), "small:", len(small_reads), len(small_reads_count)
     
     
 #     aligning to genome using bowtie
@@ -121,43 +123,7 @@ def main():
     print "unique miRNA hits:", len(unique_mirna_hits)
 
     
-#     print "create candidate structure from miRNAs"
-#     miRNA_candidates = []
-#     for mirna_loki in miRNA_bowtie_hits:
-#         miRNAid = ">" + mirna_loki[0]
-# #         print "candidate", miRNAid, hairpinID_to_mature[miRNAid]
-#         strand_dir = mirna_loki[1]
-#         chromosome = mirna_loki[2].split("|")[3]
-#         genome_offset = int(mirna_loki[3])
-#         hairpin = hsa_to_hairpin[miRNAid]
-#         mature_pos = hairpinID_to_mature[miRNAid]
-#         begin_5 = mature_pos[0] + genome_offset if mature_pos[0] >= 0 else mature_pos[0]
-#         end_5 =  mature_pos[1] + genome_offset if mature_pos[1] >= 0 else mature_pos[1]
-#         begin_3 =  mature_pos[2] + genome_offset if mature_pos[2] >= 0 else mature_pos[2]
-#         end_3 =  mature_pos[3] + genome_offset if mature_pos[3] >= 0 else mature_pos[3]
-#         candidate_sequences = None
-#         
-#         
-#         mirna_candidate = structure.Candidate(chromosome,
-#                                      strand_dir,
-#                                      begin_5,
-#                                      end_5,
-#                                      begin_3,
-#                                      end_3,
-#                                      candidate_sequences)
-# 
-#         mirna_candidate.set_hairpin_padding(hairpin, "", -1)
-#         mirna_candidate.set_hairpin_pos(genome_offset, genome_offset + len(hairpin) )
-# 
-# 
-#         miRNA_candidates.append(mirna_candidate)
-#     
-#     print "candidates:", len(miRNA_candidates)
-    
-    
-    
 
-    
 #     assert False
     
 #     using sequence tree to find possible candidates
@@ -251,12 +217,19 @@ def main():
             only_candidates.append(candidate)
             
     print len(candidate_to_miRNA)
+    print len(only_candidates)
     
+
+
     learn_miRNAs = vectorize.candidates_to_array(miRNAs)
     class_miRNAs = numpy.array(miRNA_annotations)
     candidate_array = vectorize.candidates_to_array(only_candidates)
     
-
+    for mi, nr in zip(learn_miRNAs, class_miRNAs):
+        print mi, nr
+# 
+#     for mi in candidate_array:
+#         print mi
     
     
     
@@ -278,4 +251,62 @@ def main():
 # if __name__ == "__main__":
 #     main()
 main()
-print "finished everythoin in ", time.clock() - start_time, " seconds"
+print "finished everything in ", time.clock() - start_time, " seconds"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#     print "create candidate structure from miRNAs"
+#     miRNA_candidates = []
+#     for mirna_loki in miRNA_bowtie_hits:
+#         miRNAid = ">" + mirna_loki[0]
+# #         print "candidate", miRNAid, hairpinID_to_mature[miRNAid]
+#         strand_dir = mirna_loki[1]
+#         chromosome = mirna_loki[2].split("|")[3]
+#         genome_offset = int(mirna_loki[3])
+#         hairpin = hsa_to_hairpin[miRNAid]
+#         mature_pos = hairpinID_to_mature[miRNAid]
+#         begin_5 = mature_pos[0] + genome_offset if mature_pos[0] >= 0 else mature_pos[0]
+#         end_5 =  mature_pos[1] + genome_offset if mature_pos[1] >= 0 else mature_pos[1]
+#         begin_3 =  mature_pos[2] + genome_offset if mature_pos[2] >= 0 else mature_pos[2]
+#         end_3 =  mature_pos[3] + genome_offset if mature_pos[3] >= 0 else mature_pos[3]
+#         candidate_sequences = None
+#         
+#         
+#         mirna_candidate = structure.Candidate(chromosome,
+#                                      strand_dir,
+#                                      begin_5,
+#                                      end_5,
+#                                      begin_3,
+#                                      end_3,
+#                                      candidate_sequences)
+# 
+#         mirna_candidate.set_hairpin_padding(hairpin, "", -1)
+#         mirna_candidate.set_hairpin_pos(genome_offset, genome_offset + len(hairpin) )
+# 
+# 
+#         miRNA_candidates.append(mirna_candidate)
+#     
+#     print "candidates:", len(miRNA_candidates)
+    

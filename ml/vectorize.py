@@ -11,7 +11,7 @@ def candidates_to_array(candidates):
     
     for candidate in candidates:
         
-        a = len(candidate.mapped_sequences)
+        a = len(candidate.mapped_sequences)  # not scaled
         b = candidate.hairpin_energy
         c = candidate.entropy_nucleotides
         d = candidate.entropy_structure

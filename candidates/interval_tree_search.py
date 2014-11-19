@@ -7,6 +7,7 @@ Created on 1. okt. 2014
 from intervaltree.bio import GenomeIntervalTree
 import intervaltree
 from candidates import structure
+from gi.overrides.keysyms import percent
 
 
 MAX_HAIRPIN_LEN = 80
@@ -54,18 +55,20 @@ def find_candidates(sequence_hits):
             three_range_begin = five_interval.end
             three_range_end = five_interval.begin + MAX_HAIRPIN_LEN
             
-            outside_after = sequence_tree[tree][five_interval.begin+MAX_HAIRPIN_LEN+1]
-            outside_before = sequence_tree[tree][five_interval.begin-1]
+
             
             #test if this interval is present in another candidate
-            
-            
-#             print len(all_mapped_sequences)
-#             print five_interval in all_mapped_sequences
-#             print "???????"
 
             # all candidates in allowed range
             candidate_sequences = sequence_tree[tree][five_interval.begin:three_range_end]
+            
+            if len(candidate_sequences) <= 1:
+                continue
+
+            outside_after = sequence_tree[tree][five_interval.begin+MAX_HAIRPIN_LEN+1]
+            outside_before = sequence_tree[tree][five_interval.begin-1]           
+            
+            
             candidate_sequences.difference_update(outside_before, outside_after)
             candidate_sequences = [s for s in candidate_sequences if s.data[0] == five_interval.data[0]]
             
@@ -78,12 +81,7 @@ def find_candidates(sequence_hits):
 
             
             if len(three_sequences) > 0:
-                
-#                 print 
-#                 print five_interval
-#                 print "sequences:", len(three_sequences)
-#                 print [c for c in three_sequences]
-                
+
 #                 find 5' start and ends
                 
                 starts = {} # start positions -> frequency
@@ -174,9 +172,6 @@ def find_candidates(sequence_hits):
                     if candidate_tree[tree][begin_5:end_3]:
                         continue
 
-
-                
-
                 candidate = structure.Candidate(chromosome,
                                                  strand_dir,
                                                  begin_5,
@@ -211,14 +206,16 @@ def find_candidates(sequence_hits):
 def align_miRNAs(mirna_hits, hairpinID_to_mature, candidate_tree, sequence_tree):
     print "align candidates with miRNA"
     candidate_to_miRNAid = {}
-    
+    derp = {}
 #     finne kandidater som matcher miRNA
 #     finne sekvenser fra bowtie som aligner med miRNA
 #     sequence_tree[tree][five_interval.begin:three_range_end]
     candidate_already = 0
     seqs_count = 0
     no_seqs = 0
-    
+    candidate_count = 0
+    has_candidates = []
+    has_seqs = []
     for mirna_loki in mirna_hits:
         
         
@@ -237,30 +234,27 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, candidate_tree, sequence_tree)
         tree = candidate_tree[chromosome]
         candidates = tree[begin_5p:end_3p]
 #         print tree, 
+        
+        #TODO: not -1 positions 5p, 3p
+
         if candidates:
-#             print mirna.pos_hairpin_begin, mirna.pos_hairpin_end
-#             
-#             tree = sequence_tree[mirna.chromosome]
-#             sequences = tree[mirna.pos_hairpin_begin:mirna.pos_hairpin_end]
-#             print len(sequences)
-#             print candidates
+            has_candidates.append(miRNAid)
+            
+            print len(candidates), begin_5p, end_3p
             candidate_already += 1
             
-            print
-            print "candidate match:"
-            print begin_5p
-            print end_5p
-            print begin_3p
-            print end_3p
+#             print
+#             print "candidate match:"
+#             print begin_5p
+#             print end_5p
+#             print begin_3p
+#             print end_3p
             
             for candidate in candidates:
+                print candidate.data.chromosome, "-", str(candidate.data.pos_5p_begin)
+                candidate_count += 1
                 similar_pos = 0
-#                 print "\trange:", candidate.begin, candidate.end
-#                 print "\t", candidate.data.pos_5p_begin, begin_5p
-#                 print "\t", candidate.data.pos_5p_end, end_5p
-#                 print "\t", candidate.data.pos_3p_begin, begin_3p
-#                 print "\t", candidate.data.pos_3p_end, end_3p
-#                 
+                hashval = candidate.data.chromosome + str(candidate.data.pos_5p_begin)
                 if candidate.data.pos_5p_begin == begin_5p:
                     similar_pos += 1
                 if candidate.data.pos_5p_end == end_5p:
@@ -273,29 +267,26 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, candidate_tree, sequence_tree)
                     hashval = candidate.data.chromosome + str(candidate.data.pos_5p_begin)
                     candidate_to_miRNAid[hashval] = miRNAid
 #                 candidates_at_miRNA.add(candidate)
+                derp[hashval] = miRNAid
             continue
         
 #         # not candidate already
-#         tree = sequence_tree[chromosome]
-#         sequences = tree[mirna.pos_hairpin_begin:mirna.pos_hairpin_end]
-#         
-#         if sequences:
-# #             mirna.
-#             print len(sequences)
-#             seqs_count += 1
-#             
-#         else:
-#             no_seqs += 1
-# #             print "no sequences"
+        tree = sequence_tree[chromosome]
+        sequences = tree[begin_5p:end_3p]
+        if sequences:
+            has_seqs.append(miRNAid)
 
-    
-#     print "mirnas:", len(mirna_candidates)
-#     print "\tfound candidate:", candidate_already * 1.0 / len(mirna_candidates), candidate_already
-#     print "\tonly seqs:", seqs_count * 1.0 / len(mirna_candidates)
-#     print "\tno seqs:", no_seqs * 1.0 / len(mirna_candidates)
-    
-#     assert False
-    print "candidate is miRNA:", candidate_already
+    print
+    print "candidate is miRNA repeats:", candidate_already, candidate_count
+    print "set of candidates:", len(set(candidate_to_miRNAid.iterkeys())), len(list(candidate_to_miRNAid.iterkeys()))
+    print "derp candidates:", len(set(derp.iterkeys())), list(derp.iterkeys())[0:5]
+    print "miRNA aligning candidates:", len(set(has_candidates)), has_candidates[0]
+    print "miRNA aligning sequences:", len(set(has_seqs)), has_seqs[0]
+    print "both (pls no):", set(has_seqs) & set(has_candidates)
+
+#     for k,v in derp.iteritems():
+#         print k,v
+    assert False
     return candidate_to_miRNAid
 
 
