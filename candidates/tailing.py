@@ -19,7 +19,7 @@ def tailing_au(candidates, sequences, align_len=8):
     
     for nr, candidate in enumerate(candidates):
         # store parts at the end of 5' and 3'
-        candidate_seq = candidate.hairpin_padded
+        candidate_seq = candidate.hairpin
         candidate_len = candidate.pos_3_end - candidate.pos_3_begin
         start = candidate.padding_size + candidate_len - 1
 #         print "starting at", start, candidate.padding_size, candidate_len
@@ -51,7 +51,7 @@ def tailing_au(candidates, sequences, align_len=8):
             
             for c_nr in last_parts[seq_end]:
 
-                if seq in candidates[c_nr].hairpin_padded:
+                if seq in candidates[c_nr].hairpin:
                     full_hits[c_nr] += count
                     has_matches = True
                 

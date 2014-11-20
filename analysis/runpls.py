@@ -2,6 +2,7 @@
 # from bowtie import bowtie_get
 
 import time
+from candidates.microseqs import align_small_seqs
 start_time = time.clock()
 import numpy
 from sklearn import svm
@@ -48,7 +49,7 @@ def main():
                     "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed"]
 
     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed"]
-    fasta_files = ["SRR797064.collapsed"]
+    fasta_files = ["SRR797062.collapsed"]
     
 #     fasta_file = "SRR797062.fa"
 
@@ -141,10 +142,12 @@ def main():
 # 0            1   2[0] [1]      [2] [3]
 # ['1-15830', '-', 'gi|224589818|ref|NC_000006.11|',
 #         NC_000006.11
+
         
     gene.include_padding(candidates)
     print "padded all candidates in ", time.clock() - start_time, " seconds"
         
+    align_small_seqs(candidates, small_reads, small_reads_count)
     
     print "align miRNAs to other sequences"
     candidate_to_miRNA = interval_tree_search.align_miRNAs(miRNA_bowtie_hits,

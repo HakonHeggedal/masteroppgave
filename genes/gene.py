@@ -78,7 +78,9 @@ def include_padding(candidate_list, padding=40 ):
                 
 #                 if interval.data[2] not in padded or interval.data[4] not in padded:
 #                     fails += 1
-                
+                assert hairpin
+                assert padded
+                assert padding
                 candidate.set_hairpin_padding(hairpin, padded, padding)
                 
 #                 print "candidate.hairpin", candidate.hairpin

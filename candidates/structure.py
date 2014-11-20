@@ -16,16 +16,19 @@ class Candidate:
         self.pos_3p_begin = begin_3p
         self.pos_3p_end = end_3p
         self.hairpin = None
-        self.hairpin_padded = None
         self.hairpin_fold = None
         self.hairpin_energy = None
         self.mapped_sequences = set()
+        self.small_subs = 0
+        self.small_subs_5p = 0
+        self.small_subs_3p = 0
+        self.padding_size = 40
         
         if mapped_sequences is not None:
             self.mapped_sequences = set(mapped_sequences)
             self.all_mapped_sequences.update(mapped_sequences)
     
-    def set_hairpin_padding(self, hairpin, padded, padding_size):
+    def set_hairpin_padding(self, hairpin, padded, padding_size=40):
         self.hairpin = hairpin
         self.hairpin_padded = padded
         self.padding_size = padding_size
@@ -55,8 +58,18 @@ class Candidate:
         
     def set_tailing(self,tailing):
         self.tailing = tailing
+    
+    
+    def set_small_seq(self, index, copies):
+        self.small_subs += copies
+        if index == self.padding_size:
+            self.small_subs_5p += copies
+        elif index == self.padding_size + self.pos_3p_begin - self.pos_5p_begin:
+            self.small_subs_3p += copies
+
         
         
+    
 #     def __hash__self(self):
 #         return hash(self)
 #     
