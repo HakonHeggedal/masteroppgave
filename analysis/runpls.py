@@ -49,7 +49,7 @@ def main():
                     "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed"]
 
     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed"]
-    fasta_files = ["SRR797062.collapsed"]
+#     fasta_files = ["SRR797062.collapsed"]
     
 #     fasta_file = "SRR797062.fa"
 
@@ -148,6 +148,8 @@ def main():
     print "padded all candidates in ", time.clock() - start_time, " seconds"
         
     align_small_seqs(candidates, small_reads, small_reads_count)
+    assert False
+    
     
     print "align miRNAs to other sequences"
     candidate_to_miRNA = interval_tree_search.align_miRNAs(miRNA_bowtie_hits,

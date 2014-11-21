@@ -5,7 +5,7 @@ Created on 29. okt. 2014
 '''
 
 
-def collapse_collapsed(collapsed_files, min_len=11):
+def collapse_collapsed(collapsed_files, min_len=7):
     ''' merge files in files list, return as lists'''
     
     all_sequences = {}
