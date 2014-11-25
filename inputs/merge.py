@@ -12,22 +12,53 @@ def collapse_collapsed(collapsed_files, min_len=7):
     
     for filename in collapsed_files:
         
+        current_seqs = {}
+        total_seqs = 0
+        
         with open(filename) as fasta_file:
-            
+
             count = 0
             for line in fasta_file:
                 line = line.strip()
                 if line[0] == ">":
                     count = int(line.split("-")[1])
                 elif len(line) >= min_len and count > 0 and _legal_DNA(line):
-                    if line in all_sequences:
-                        all_sequences[line] += count
-                    else:
-                        all_sequences[line] = count
+                    current_seqs[line] = count
+                    total_seqs += count
                     count = 0
+        
+        for s, c  in current_seqs.iteritems():
+            c_norm = c * 1000000.0 / total_seqs
+            
+            if s in all_sequences:
+                all_sequences[s] += c_norm
+            else:
+                all_sequences[s] = c_norm
     
     return all_sequences
-    
+
+#     ''' merge files in files list, return as lists'''
+#     
+#     all_sequences = {}
+#     
+#     for filename in collapsed_files:
+#         
+#         with open(filename) as fasta_file:
+#             
+#             count = 0
+#             for line in fasta_file:
+#                 line = line.strip()
+#                 if line[0] == ">":
+#                     count = int(line.split("-")[1])
+#                 elif len(line) >= min_len and count > 0 and _legal_DNA(line):
+#                     if line in all_sequences:
+#                         all_sequences[line] += count
+#                     else:
+#                         all_sequences[line] = count
+#                     count = 0
+#     
+#     return all_sequences
+#     
 
 def filter_seqeunces(all_sequences, min_read_len=18):
     

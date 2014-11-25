@@ -103,7 +103,7 @@ def find_candidates(sequence_hits):
                         continue
                     end = interval.end - five_interval.begin # end position
                     name = interval.data[1]
-                    frequency = int(name.split("-")[1])
+                    frequency = float(name.split("-")[1])
                     
                     starts[start] = frequency if start not in starts else starts[start] + frequency
                     ends[end] = frequency if end not in ends else ends[end] + frequency
@@ -184,7 +184,7 @@ def find_candidates(sequence_hits):
                     name = candidate_interval.data[1]
                     if name not in seq_to_candidates:
                         number_id = int(name.split("-")[0])
-                        duplicates = int(name.split("-")[1])
+                        duplicates = float(name.split("-")[1])
                         s = structure.Sequence(number_id, duplicates, candidate_interval.data[2])
                         s.add_candidate(candidate)
                         seq_to_candidates[name] = s
@@ -232,6 +232,9 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, candidate_tree, sequence_tree)
         end_3p =  mature_pos[3] + genome_offset if mature_pos[3] >= 0 else mature_pos[3]
         
         tree = candidate_tree[chromosome]
+        if not tree:
+            print "no:", chromosome
+            continue
         candidates = tree[begin_5p:end_3p]
 #         print tree, 
         
@@ -286,7 +289,7 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, candidate_tree, sequence_tree)
 
 #     for k,v in derp.iteritems():
 #         print k,v
-    assert False
+#     assert False
     return candidate_to_miRNAid
 
 

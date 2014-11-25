@@ -49,7 +49,7 @@ def main():
                     "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed"]
 
     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed"]
-#     fasta_files = ["SRR797062.collapsed"]
+    fasta_files = ["SRR797062.collapsed"]
     
 #     fasta_file = "SRR797062.fa"
 
@@ -148,7 +148,7 @@ def main():
     print "padded all candidates in ", time.clock() - start_time, " seconds"
         
     align_small_seqs(candidates, small_reads, small_reads_count)
-    assert False
+#     assert False
     
     
     print "align miRNAs to other sequences"
@@ -167,9 +167,9 @@ def main():
     vienna.energy_fold(candidates) # slow?
     
     
-#     not_mapped_reads = [structure.Sequence(i,n,read) for i,(read,n) in 
-#                         enumerate(zip(reads, reads_count))
-#                         if read not in seq_to_candidates]
+    not_mapped_reads = [structure.Sequence(i,n,read) for i,(read,n) in 
+                        enumerate(zip(reads, reads_count))
+                        if read not in seq_to_candidates]
 #     
 #     print len(not_mapped_reads)
 #     print len(seq_to_candidates)
@@ -177,10 +177,10 @@ def main():
 #     print len(reads)
 #     
 # #     A/U ends for all remaining candidates
-#     tailing_au(candidates, not_mapped_reads)
+    tailing.tailing_au(candidates, not_mapped_reads)
 # #     
 #     #TODO: 5' and 3' alignment overhang
-#     overhang.find_overhang(candidates)
+    overhang.find_overhang(candidates)
 #     
 #     degree of entropy in structure and nucleotides
     entropy.entropy(candidates)
