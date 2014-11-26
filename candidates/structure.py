@@ -49,9 +49,17 @@ class Candidate:
         self.entropy_nucleotides = entropy_nucleotides
         self.entropy_structure = entropy_structure
         
-    def set_heterogenity(self, heterogenity_5, heterogenity_3):
-        self.heterogenity_5 = heterogenity_5
-        self.heterogenity_3 = heterogenity_3
+    def set_heterogenity(self, h_5_begin, h_5_end, h_3_begin, h_3_end):
+        self.heterogenity_5_begin = h_5_begin
+        self.heterogenity_5_end = h_5_end
+        self.heterogenity_3_begin = h_3_begin
+        self.heterogenity_3_end = h_3_end
+        
+    def set_reads(self, reads_5p_begin, reads_5p_end, reads_3p_begin, reads_3p_end):
+        self.reads_5p_begin = reads_5p_begin
+        self.reads_5p_end = reads_5p_end
+        self.reads_3p_begin = reads_3p_begin
+        self.reads_3p_end = reads_3p_end
         
     def set_quality(self, quality):
         self.quality = quality

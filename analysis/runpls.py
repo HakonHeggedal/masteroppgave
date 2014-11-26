@@ -176,10 +176,10 @@ def main():
 #     print len(not_mapped_reads) + len(seq_to_candidates)
 #     print len(reads)
 #     
-# #     A/U ends for all remaining candidates
+#     A/U ends for all remaining candidates
     tailing.tailing_au(candidates, not_mapped_reads)
-# #     
-#     #TODO: 5' and 3' alignment overhang
+     
+#     TODO: 5' and 3' alignment overhang
     overhang.find_overhang(candidates)
 #     
 #     degree of entropy in structure and nucleotides

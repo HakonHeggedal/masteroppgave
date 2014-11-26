@@ -25,18 +25,21 @@ def heterogenity(candidates, offset=5):
         three_begin = candidate.pos_3p_begin
         three_end = candidate.pos_3p_end
         
+        assert -1 < five_begin < five_end < three_begin < three_end
         
-        begins = [0] * (three_end-five_begin+offset+offset)
-        ends = [0] * (three_end-five_begin+offset+offset)
+        
+        begins = [0] * (three_end-five_begin+offset+offset+1)
+        ends = [0] * (three_end-five_begin+offset+offset+1)
         
         count_sum = 0
         for sequence in sequences:
-            count = int(sequence.data[1].split("-")[1])
+            count = float(sequence.data[1].split("-")[1])
             begin_pos = sequence.begin - five_begin + offset
             end_pos = sequence.end - five_begin + offset
             
             if begin_pos < 0 or end_pos >= len(ends):
                 print "out of range", begin_pos, end_pos
+#                 assert False
                 break
             
             begins[begin_pos] += count
@@ -45,20 +48,67 @@ def heterogenity(candidates, offset=5):
             
         print begins
         print ends
-        print
-        
+
+        print "results:"
         het = 0
-        reads = 0
-        for i, count in enumerate(begins[:2*offset + 1]):
+        reads_5b = 0
+#         0 to 10
+        i = 0
+        
+        s = begins[:2*offset + 1]
+        print len(s), s, # five start
+        for i, count in enumerate(s):
             off = abs(offset - i)
             het += off * count
-            reads += count
+            reads_5b += count
+#         print reads_5b, begins[offset], begins[offset] / reads_5b, i
         
+        h_5p_begin = begins[offset] / (reads_5b + 1.0)
+
+        het = 0
+        reads_5e = 0
+        startpos = five_end - five_begin # five end
+        s = ends[startpos:startpos+2*offset+1]
+        print len(s), s,
+        for i, count in enumerate(s):
+            off = abs(offset - i)
+            het += off * count
+            reads_5e += count
+#         print reads_5e, ends[startpos+offset], ends[startpos+offset] / reads_5e, i
+        
+        h_5p_end = ends[startpos+offset] / (reads_5e + 1.0)
+
+        het = 0
+        reads_3b = 0
+        startpos = three_begin - five_begin # three begin 
+        s = begins[startpos:startpos+2*offset+1]
+        print len(s), s,
+        for i, count in enumerate(s):
+            off = abs(offset - i)
+            het += off * count
+            reads_3b += count
+#         print reads_3b, begins[startpos+offset], begins[startpos+offset] / reads_3b, i
+        h_3p_begin = begins[startpos+offset] / (reads_3b + 1.0)
+
+        het = 0
+        reads_3e = 0
+        s = ends[-(2*offset + 1):]
+        print len(s), s,
+        for i, count in enumerate(s):
+            off = abs(offset - i)
+            het += off * count
+            reads_3e += count
+#         print reads_3e, ends[-offset-1], ends[-offset-1] / reads_3e, i
+        
+        h_3p_end = ends[-offset-1] / (reads_3e + 1)
 #         for i, count in enumerate(ends[]) 
         
+        print h_5p_begin, h_5p_end, h_3p_begin, h_3p_end
+        print reads_5b, reads_5e, reads_3b, reads_3e
+        print
         
-        
-        
+        candidate.set_heterogenity(h_5p_begin, h_5p_end, h_3p_begin, h_3p_end)
+        candidate.set_reads(reads_5b, reads_5e, reads_3b, reads_3e)
 
 
 def frequency_counting(candidates, freq_range=5):

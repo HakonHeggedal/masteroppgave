@@ -20,7 +20,7 @@ def tailing_au(candidates, sequences, align_len=8):
     for nr, candidate in enumerate(candidates):
         # store parts at the end of 5' and 3'
         candidate_seq = candidate.hairpin
-        candidate_len = candidate.pos_3_end - candidate.pos_3_begin
+        candidate_len = candidate.pos_3p_end - candidate.pos_3p_begin
         start = candidate.padding_size + candidate_len - 1
 #         print "starting at", start, candidate.padding_size, candidate_len
         
@@ -28,7 +28,7 @@ def tailing_au(candidates, sequences, align_len=8):
             seq = candidate_seq[i:i+align_len]
             last_parts[seq].append(nr)
         
-        start = candidate.padding_size + candidate.pos_5_end - candidate.pos_5_begin - 1
+        start = candidate.padding_size + candidate.pos_5p_end - candidate.pos_5p_begin - 1
         
         for i in xrange(start, start+4, 1):
             seq = candidate_seq[i:i+align_len]
