@@ -11,7 +11,7 @@ def energy_fold(candidates):
         candidate.set_viennafold(fold, energy)
 
 #         fold, energy = _viennafold(candidate.seq_hairpin_padded)
-
+    assert False
 
 
 def _viennafold(sequence):
@@ -30,7 +30,7 @@ def _viennafold(sequence):
     
     
     match_fold = re.search("[.\(\)]{5,}", ans)
-#     print match_fold.group(0)
+    print match_fold.group(0)
     fold = match_fold.group(0)
 
     

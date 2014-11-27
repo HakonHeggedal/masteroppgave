@@ -21,20 +21,43 @@ def find_overhang(candidates):
         
         
         five_folds = 0
+        five_distance = -1
         
         three_folds = 0
-        
-        level_found = False
+        three_distance = -1
+
         for nr, sign in enumerate(fold):
             
-            
-            if nr == five_start:
-                level_found = True
-            
-            if sign == "-":
-                pass
-            elif sign == "(":
+            if sign == "(":
                 five_folds += 1
             elif sign == ")":
                 five_folds -= 1
+
+            if nr >= five_start:
+                if sign == "(":
+                    five_distance = nr - five_start
+                    break
+      
+      
+        
+        three_end_pos = len(fold) - three_end
+        for nr, sign in enumerate(fold[::-1]):
+            if sign == "(":
+                three_folds -= 1
+            elif sign == ")":
+                three_folds += 1
+                
+            if nr >= three_end_pos:
+                if sign == ")":
+                    three_distance = nr - three_end_pos
+                    break        
+        
+        print five_folds, five_distance
+        print three_folds, three_distance
             
+            
+            
+    
+    
+    
+f1 = ".(((((((((..((((((((.((.................)).))))))))..)))))))))..."
