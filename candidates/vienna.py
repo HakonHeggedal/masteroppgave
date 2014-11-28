@@ -24,7 +24,7 @@ def _viennafold(sequence):
     ans = ans.strip()
     
     match_number = re.search("-?[0-9]+[.][0-9]+", ans)
-#     print "seq", sequence
+    print sequence
 #     print match_number.group(0)
     energy = float(match_number.group(0))
     
