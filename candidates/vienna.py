@@ -6,11 +6,11 @@ import re
 def energy_fold(candidates):
     
     for candidate in candidates:
-
+        print
         fold, energy = _viennafold(candidate.hairpin)
         candidate.set_viennafold(fold, energy)
 
-#         fold, energy = _viennafold(candidate.seq_hairpin_padded)
+        fold, energy = _viennafold(candidate.hairpin_padded)
     assert False
 
 

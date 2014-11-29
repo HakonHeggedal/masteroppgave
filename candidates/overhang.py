@@ -5,7 +5,7 @@ Created on 13. okt. 2014
 '''
 
 
-def get_overhangs(candidates):
+def get_alignment(candidates):
     
     for candidate in candidates:
         fold = candidate.hairpin_fold
@@ -15,6 +15,18 @@ def get_overhangs(candidates):
         
         hairpin_fold = max_fold(fold)
         padded_fold = max_fold(fold_padded)
+        
+        start_5 = candidate.pos_5p_begin
+        end_5 = candidate.pos_5p_end
+        start_3 = candidate.pos_3p_begin
+        end_3 = candidate.pos_3p_end
+        padding = 40
+        
+        folds_out, off_out = find_overhang(fold, start_5, end_3)
+        folds_in, off_in = find_overhang(fold, end_5, start_3)
+        
+        p_folds_out, p_off_out = find_overhang(fold, start_5, end_3)
+        p_folds_in, p_off_in = find_overhang(fold, end_5, start_3)       
 
 
 def max_fold(fold):
@@ -30,7 +42,7 @@ def max_fold(fold):
             
     return max_fold
 
-def find_overhang(fold, startpos, endpos):
+def find_overhang(fold, five_start, three_end):
     ''' calculate alignment of 5' and 3' candidates '''
     
     #TODO vienna needs 10nt on each side of candidate
@@ -39,17 +51,16 @@ def find_overhang(fold, startpos, endpos):
 #     hairpin = candidate.hairpin
 #     fold = candidate.hairpin_fold
     
-    five_start = 4
-    five_end = 20
-    three_start = 30
-    three_end = len(fold)-6
+#     five_start = 10
+
+#     three_end = len(fold)-10
     
     
     five_folds = 0
     five_distance = -1
     
     three_folds = 0
-    three_distance = -1
+
 
     for nr, sign in enumerate(fold):
         
@@ -80,9 +91,21 @@ def find_overhang(fold, startpos, endpos):
     print five_folds, five_distance
     print three_folds, "offset:", three_end_pos - align_pos
     
+    return three_end_pos - align_pos, five_folds
+    
+    
        
     
     
 f1 = ".(((((((((..((((((((.((.................)).))))))))..)))))))))..."
+start = 22
+end = len(f1)-10
 
-find_overhang(f1)
+print max_fold(f1)
+print find_overhang(f1, start, end)
+
+
+
+
+
+
