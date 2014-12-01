@@ -180,7 +180,7 @@ def main():
     tailing.tailing_au(candidates, not_mapped_reads)
      
 #     TODO: 5' and 3' alignment overhang
-    overhang.find_overhang(candidates)
+    overhang.get_alignment(candidates)
 #     
 #     degree of entropy in structure and nucleotides
     entropy.entropy(candidates)

@@ -23,11 +23,11 @@ def align_small_seqs(candidates, small_seqs, small_seqs_copies):
     find_candidates = SubstringDict()
 
     for i, candidate in enumerate(candidates):
-        find_candidates[candidate.hairpin_padded] = i 
+        find_candidates[candidate.hairpin_padded_40] = i 
 
         print "hairpin", i,  candidate.hairpin,
-        print "padded?", candidate.hairpin_padded
-#         assert candidate.hairpin_padded.find(candidate.hairpin) == candidate.padding_size
+        print "padded?", candidate.hairpin_padded_40
+#         assert candidate.hairpin_padded_40.find(candidate.hairpin) == candidate.padding_size
     
     for j, seq in enumerate(small_seqs):
         print len(seq)
@@ -36,7 +36,7 @@ def align_small_seqs(candidates, small_seqs, small_seqs_copies):
 #         print len(candidates)
 #         if candidate_set: print candidate_set, seq
         for cnr in candidate_set:
-            index = candidates[cnr].hairpin_padded.find(seq)
+            index = candidates[cnr].hairpin_padded_40.find(seq)
             copies = small_seqs_copies[j]
             candidates[cnr].set_small_seq(index, copies)
             

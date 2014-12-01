@@ -7,27 +7,56 @@ Created on 13. okt. 2014
 
 def get_alignment(candidates):
     
+    
+    
     for candidate in candidates:
-        fold = candidate.hairpin_fold
-        fold_padded = None
+        fold_10 = candidate.hairpin_fold_10
+        fold_40 = candidate.hairpin_fold_40
+        
+        print "overhang alignment:",
+        print "\t", fold_10
+        print "\t", fold_40
         
         # overhang: level and overhang both padded and not
         
-        hairpin_fold = max_fold(fold)
-        padded_fold = max_fold(fold_padded)
+        print len(fold_10),
+        print candidate.pos_5p_end - candidate.pos_5p_begin,
+        print candidate.pos_3p_end - candidate.pos_3p_begin,
+        print candidate.pos_3p_end - candidate.pos_5p_begin + 20,
+        print candidate.pos_5p_begin, candidate.pos_5p_end,  candidate.pos_3p_begin,  candidate.pos_3p_end
         
-        start_5 = candidate.pos_5p_begin
-        end_5 = candidate.pos_5p_end
-        start_3 = candidate.pos_3p_begin
-        end_3 = candidate.pos_3p_end
-        padding = 40
+        assert candidate.pos_5p_begin < candidate.pos_5p_end < candidate.pos_3p_begin < candidate.pos_3p_end
+        assert len(fold_10) == 20 + candidate.pos_3p_end - candidate.pos_5p_begin
         
-        folds_out, off_out = find_overhang(fold, start_5, end_3)
-        folds_in, off_in = find_overhang(fold, end_5, start_3)
+        folds_10 = max_fold(fold_10)
+        folds_40 = max_fold(fold_40)
         
-        p_folds_out, p_off_out = find_overhang(fold, start_5, end_3)
-        p_folds_in, p_off_in = find_overhang(fold, end_5, start_3)       
+        start_5 = 10 # candidate.pos_5p_begin
+        end_5 = candidate.pos_5p_end - candidate.pos_5p_begin + 10
+        start_3 = candidate.pos_3p_begin - candidate.pos_5p_begin + 10
+        end_3 = candidate.pos_3p_end - candidate.pos_5p_begin + 10
+        
+        folds_out, off_out = find_overhang(fold_10, start_5, end_3)
+        folds_in, off_in = find_overhang(fold_10, end_5, start_3)
+        
+        start_5 = 40 # candidate.pos_5p_begin
+        end_5 = candidate.pos_5p_end - candidate.pos_5p_begin + 40
+        start_3 = candidate.pos_3p_begin - candidate.pos_5p_begin + 40
+        end_3 = candidate.pos_3p_end - candidate.pos_5p_begin + 40
+        
+        p_folds_out, p_off_out = find_overhang(fold_40, start_5, end_3)
+        p_folds_in, p_off_in = find_overhang(fold_40, end_5, start_3)
+        
+        print "\tmaks fold:", folds_10, folds_40
+        print "\t10:", folds_out, off_out, folds_in, off_in
+        print "\t10:", p_folds_out, p_off_out, p_folds_in, p_off_in
+        
+        candidate.set_alignment_10(folds_10, folds_out, off_out, folds_in, off_in)
+        candidate.set_alignment_40(folds_40, p_folds_out, p_off_out, p_folds_in, p_off_in)
 
+
+
+    assert False
 
 def max_fold(fold):
     
@@ -88,8 +117,8 @@ def find_overhang(fold, five_start, three_end):
                 break
 
     
-    print five_folds, five_distance
-    print three_folds, "offset:", three_end_pos - align_pos
+#     print five_folds, five_distance
+#     print three_folds, "offset:", three_end_pos - align_pos
     
     return three_end_pos - align_pos, five_folds
     

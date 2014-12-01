@@ -28,14 +28,23 @@ class Candidate:
             self.mapped_sequences = set(mapped_sequences)
             self.all_mapped_sequences.update(mapped_sequences)
     
-    def set_hairpin_padding(self, hairpin, padded, padding_size=40):
+    def set_hairpin_padding(self, hairpin, padded_40):
         self.hairpin = hairpin
-        self.hairpin_padded = padded
-        self.padding_size = padding_size
+        self.hairpin_padded_40 = padded_40
+
     
-    def set_viennafold(self, hairpin_fold, hairpin_energy):
-        self.hairpin_fold = hairpin_fold 
-        self.hairpin_energy = hairpin_energy
+    def set_viennafold(self, fold, en, fold_10, en_10, fold_40, en_40):
+        
+        assert fold and fold_10 and fold_40
+        assert en and en_10 and en_40
+        
+        self.hairpin_fold = fold 
+        self.hairpin_fold_10 = fold_10
+        self.hairpin_fold_40 = fold_40
+        self.hairpin_energy = en
+        self.hairpin_energy_10 = en_10
+        self.hairpin_energy_40 = en_40
+
         
     def set_hairpin_pos(self, begin, end):
         self.pos_hairpin_begin = begin
@@ -76,22 +85,19 @@ class Candidate:
             self.small_subs_3p += copies
 
         
-        
-    
-#     def __hash__self(self):
-#         return hash(self)
-#     
-#     def __eq__(self, other):
-#         return self == other
-        
-#     def __hash__(self):
-#         return hash( (self.chromosome, self.chromosome_direction, self.pos_5p_begin) )
-# 
-#     def __eq__(self, other):
-#         return ((self.chromosome, self.chromosome_direction, self.pos_5p_begin) ==
-#             (other.chromosome, other.chromosome_direction, other.pos_5p_begin) )
+    def set_alignment_10(self, max_10, lev_10_out, oh_10_out, lev_10_in, oh_10_in):
+        self.bindings_max_10 = max_10
+        self.overhang_level_outer_10 = lev_10_out
+        self.overhang_outer_10 = oh_10_out
+        self.overhang_level_inner_10 = lev_10_in
+        self.overhang_inner_10 = oh_10_in
 
-
+    def set_alignment_40(self, max_40, lev_40_out, oh_40_out, lev_40_in, oh_40_in):
+        self.overhang_outer_40 = oh_40_out
+        self.overhang_inner_40 = oh_40_in
+        self.bindings_max_40 = max_40
+        self.overhang_level_outer_40 = lev_40_out
+        self.overhang_level_inner_40 = lev_40_in
 
 
 class Sequence:

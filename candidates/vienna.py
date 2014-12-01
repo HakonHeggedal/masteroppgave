@@ -6,12 +6,14 @@ import re
 def energy_fold(candidates):
     
     for candidate in candidates:
-        print
-        fold, energy = _viennafold(candidate.hairpin)
-        candidate.set_viennafold(fold, energy)
 
-        fold, energy = _viennafold(candidate.hairpin_padded)
-    assert False
+        fold, energy = _viennafold(candidate.hairpin)
+        fold40, energy40 = _viennafold(candidate.hairpin_padded_40)
+        fold10, energy10 = _viennafold(candidate.hairpin_padded_40[30:-30])
+
+        candidate.set_viennafold(fold, energy, fold10, energy10, fold40, energy40)
+
+#     assert False
 
 
 def _viennafold(sequence):
@@ -24,13 +26,13 @@ def _viennafold(sequence):
     ans = ans.strip()
     
     match_number = re.search("-?[0-9]+[.][0-9]+", ans)
-    print sequence
+#     print sequence
 #     print match_number.group(0)
     energy = float(match_number.group(0))
     
     
     match_fold = re.search("[.\(\)]{5,}", ans)
-    print match_fold.group(0)
+#     print match_fold.group(0)
     fold = match_fold.group(0)
 
     
