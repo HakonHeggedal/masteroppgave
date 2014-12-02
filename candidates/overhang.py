@@ -31,7 +31,7 @@ def get_alignment(candidates):
         folds_10 = max_fold(fold_10)
         folds_40 = max_fold(fold_40)
         
-        start_5 = 10 # candidate.pos_5p_begin
+        start_5 = 10 # start point for hairpin with 10 nt padding
         end_5 = candidate.pos_5p_end - candidate.pos_5p_begin + 10
         start_3 = candidate.pos_3p_begin - candidate.pos_5p_begin + 10
         end_3 = candidate.pos_3p_end - candidate.pos_5p_begin + 10
@@ -39,7 +39,7 @@ def get_alignment(candidates):
         folds_out, off_out = find_overhang(fold_10, start_5, end_3)
         folds_in, off_in = find_overhang(fold_10, end_5, start_3)
         
-        start_5 = 40 # candidate.pos_5p_begin
+        start_5 = 40 # 40 nt padding
         end_5 = candidate.pos_5p_end - candidate.pos_5p_begin + 40
         start_3 = candidate.pos_3p_begin - candidate.pos_5p_begin + 40
         end_3 = candidate.pos_3p_end - candidate.pos_5p_begin + 40

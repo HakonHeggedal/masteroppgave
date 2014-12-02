@@ -7,15 +7,281 @@ Created on 1. okt. 2014
 from intervaltree.bio import GenomeIntervalTree
 import intervaltree
 from candidates import structure
-from gi.overrides.keysyms import percent
 
 
-MAX_HAIRPIN_LEN = 80
-MIN_HAIRPIN_LEN = 46
-
+MAX_CANDIDATE_LEN = 80
+MIN_CANDIDATE_LEN = 46
 MIN_HAIRPIN_LOOP = 10
-# MIN_PRIME_SEQ = 10
+MAX_HAIRPIN_LOOP = 20
+SEARCH_LEN = 200
 
+
+
+def _best_interval(intervals, offset, startpos, endpos):
+        starts = {} # start positions -> frequency
+        best_start = 0
+        best_start_pos = 0
+        best_end_pos = 0
+    
+        for interval in intervals:
+            
+            start = interval.begin - offset
+            end = interval.end - offset
+            
+            #TODO fikse riktig avgrensing
+            if best_end_pos - start > MAX_CANDIDATE_LEN:
+                continue
+            if best_end_pos - end < MIN_CANDIDATE_LEN:
+                continue
+            
+            name = interval.data[1]
+            freq = float(name.split("-")[1])
+            
+            if start in starts:
+                starts[start] += freq
+            else:
+                starts[start] = freq
+                
+            if starts[start] > best_start:
+                best_start = starts[start]
+                best_start_pos = start
+                best_end_pos = end
+#             find 3p end if possible
+
+        ends = {}
+        for interval in intervals:
+            end = interval.end - offset
+            
+            #TODO: fikse riktig sluttposition
+            if end+5 < best_end_pos or end-5 >= best_end_pos:
+                continue # out of bounds
+            
+            name = interval.data[1]
+            freq = float(name.split("-")[1])
+            
+            if end not in ends:
+                ends[end] = freq
+            else:
+                ends[end] += freq
+                
+        best_freq = 0
+        for end, freq in ends:
+            if freq > best_freq:
+                best_freq = freq
+                best_end_pos = end
+        
+        
+        return best_start_pos, best_end_pos
+                
+
+def find_candidates_2(sequence_hits):
+    ''' finds microRNA candidates from bowtie data using interval trees
+    
+        sequence_hits -- an iterable of lists on bowtie output format:
+  0          1    2                                 3           4                           5                           6
+['1-15830', '-', 'gi|224589818|ref|NC_000006.11|', '72113295', 'AGCTTCCAGTCGAGGATGTTTACA', 'IIIIIIIIIIIIIIIIIIIIIIII', '0']
+        returns a list of candidates, and the interval tree with all sequences
+    '''
+    
+    sequence_tree = GenomeIntervalTree()
+    candidate_tree = GenomeIntervalTree() # only candidates here
+    candidate_list = []
+    all_mapped_sequences = set()
+    seq_to_candidates = {}
+    
+    # add all intervals to the tree
+    for prop in sequence_hits:
+#         print prop
+        seq_name = prop[0]
+        strand_dir = prop[1] # forward: + backward: -
+        genome_nr = prop[2].split("|")[3] # which genome (and version)
+        genome_offset = int(prop[3]) # offset into the genome, 0-indexed
+        dna_sequence = prop[4] # the dna_sequence matching this position.
+        sequence_info = [strand_dir, seq_name, dna_sequence]
+        
+        sequence_tree.addi(genome_nr, genome_offset, genome_offset + len(dna_sequence), sequence_info)
+    
+    print "all intervals added to the tree"
+    
+    # test all intervals to find candidates
+    for tree in sequence_tree:
+        print tree
+
+        for interval in sorted(sequence_tree[tree]):
+            if interval in all_mapped_sequences:
+                continue
+            
+            start_pos = interval.begin
+            end_pos = start_pos + SEARCH_LEN
+
+#             find a peak in this interval
+            candidate_sequences = sequence_tree[tree][start_pos:end_pos]
+            if not candidate_sequences:
+                continue
+            
+#             remove intervals starting before  (automatic in _best_interval)
+#             outside_before = sequence_tree[tree][interval.begin-1]           
+#             candidate_sequences.difference_update(outside_before)
+#             if not candidate_sequences:
+#                 continue
+            
+#             filter by direction
+            candidate_sequences = [s for s in candidate_sequences if s.data[0] == interval.data[0]]
+            if len(candidate_sequences) <= 1:
+                continue
+            
+            candidate_sequences  = sorted(candidate_sequences)
+
+
+#             find best peak in this area
+            best_start_pos = 0
+            best_end_pos = 0
+
+
+#             find best start and its end position
+#             TODO: kalle _find_best_pos et par ganger...
+                    
+                    
+            
+#             find 5p if possible
+            if best_end_pos < MIN_CANDIDATE_LEN:
+                starts = {} # start positions -> frequency
+#                 find best peak 
+                for i in candidate_sequences:
+                    start = i.begin - start_pos
+                    end = i.end - start_pos
+                    
+
+                    name = i.data[1]
+                    freq = float(name.split("-")[1])
+                    
+                    if start in starts:
+                        starts[start] += freq
+                    else:
+                        starts[start] = freq
+                        
+                    
+                        
+                    
+            
+#             update search area so that the best peak can be a 5p (possible 3p out of bounds)
+            if best_start_pos + MAX_CANDIDATE_LEN > SEARCH_LEN:
+                
+                end_pos = start_pos + best_start_pos + MAX_CANDIDATE_LEN
+                
+                new_sequences = sequence_tree[tree][start_pos+best_start_pos:end_pos]
+                new_sequences = [s for s in new_sequences if s.data[0] == interval.data[0]]
+                
+                candidate_sequences.update(new_sequences)
+                
+            
+#             find end position of best peak
+#             should be very close to end of interval starting in peak
+
+                
+            
+
+                
+#                 start =  interval.begin - interval.begin # start position
+#                 if start < 0:
+#                     continue
+#                 end = interval.end - interval.begin # end position
+#                 name = interval.data[1]
+#                 frequency = float(name.split("-")[1])
+#                 
+#                 starts[start] = frequency if start not in starts else starts[start] + frequency
+#                 ends[end] = frequency if end not in ends else ends[end] + frequency
+#                 
+#                 # find the largest interval from given start position
+#                 get_start[end] = start if end not in get_start else min(start, get_start[end])
+#                 get_end[start] = end if start not in get_end else max(end, get_end[start])
+#                 
+#                 if starts[start] > best_start:
+#                     best_start = starts[start]
+#                     best_start_pos = start
+#                                             
+#                 if ends[end] > best_end:
+#                     best_end = ends[end]
+#                     best_end_pos = end
+            
+            
+
+            #TODO not overlapping or very close
+#             second_starts = set()
+#             second_ends = set()
+#             
+#             for (start, count) in starts.iteritems():
+#                 if start < best_start_pos: # this is 5'
+#                     if get_end[start] + MIN_HAIRPIN_LOOP < best_start_pos:
+#                         second_starts.add( (start, count) )
+#                 elif get_end[best_start_pos] + MIN_HAIRPIN_LOOP < start:
+#                     second_starts.add( (start, count) )
+#             
+#             for (end, count) in ends.iteritems():
+#                 if end < best_end_pos: # this is 5'
+#                     if end + MIN_HAIRPIN_LOOP < get_start[best_end_pos]: 
+#                         second_ends.add( (end, count) )
+#                 elif best_end_pos + MIN_HAIRPIN_LOOP < get_start[end]: 
+#                     second_ends.add( (end, count) )
+                
+            
+#                 second_starts = [(s,val) for (s,val) in starts.iteritems() if s < best_start_pos-5 or s > get_end[best_start_pos] ]
+#                 second_ends = [(s,v) for (s,v) in ends.iteritems() if s > best_end_pos+5 or s < get_start[best_end_pos]]
+            
+            
+#             if len(second_starts) == 0 or len(second_ends) == 0:
+#                 continue 
+#             
+#             second_start = max(second_starts, key=lambda (k,v): v)
+#             second_end = max(second_ends, key=lambda(k,v):v)
+            
+#                 print "!!!"
+#                 print "second_starts", second_starts, second_start    
+#                 print "second ends", second_ends, second_end
+
+#             begin_5 = interval.begin + min(best_start_pos, second_start[0])
+#             end_5 = interval.begin + min(best_end_pos, second_end[0])
+#             begin_3 = interval.begin + max(best_start_pos, second_start[0])
+#             end_3 = interval.begin + max(best_end_pos, second_end[0])
+#             strand_dir = interval.data[0]
+#             chromosome = tree
+#             
+# 
+#             if tree in candidate_tree:
+#                 if candidate_tree[tree][begin_5:end_3]:
+#                     continue
+# 
+#             candidate = structure.Candidate(chromosome,
+#                                              strand_dir,
+#                                              begin_5,
+#                                              end_5,
+#                                              begin_3,
+#                                              end_3,
+#                                              candidate_sequences)
+#             
+#             for candidate_interval in candidate_sequences:
+#                 name = candidate_interval.data[1]
+#                 if name not in seq_to_candidates:
+#                     number_id = int(name.split("-")[0])
+#                     duplicates = float(name.split("-")[1])
+#                     s = structure.Sequence(number_id, duplicates, candidate_interval.data[2])
+#                     s.add_candidate(candidate)
+#                     seq_to_candidates[name] = s
+#                 else:
+#                     seq_to_candidates[name].add_candidate(candidate)
+#                 
+#             candidate_tree[tree][begin_5:end_3] = candidate
+#             candidate_list.append(candidate)
+# 
+#             if len(all_mapped_sequences) == 0:
+#                 all_mapped_sequences = candidate.all_mapped_sequences
+#                
+#     return candidate_tree, sequence_tree, candidate_list, seq_to_candidates
+
+
+
+## old
+#
 def find_candidates(sequence_hits):
     ''' finds microRNA candidates from bowtie data using interval trees
     
@@ -43,6 +309,8 @@ def find_candidates(sequence_hits):
         
         sequence_tree.addi(genome_nr, genome_offset, genome_offset + len(dna_sequence), sequence_info)
     
+    print "all intervals added to the tree"
+    
     # test all intervals to find candidates
     for tree in sequence_tree:
         print tree
@@ -53,25 +321,27 @@ def find_candidates(sequence_hits):
                 continue
             
             three_range_begin = five_interval.end
-            three_range_end = five_interval.begin + MAX_HAIRPIN_LEN
+            three_range_end = five_interval.begin + MAX_CANDIDATE_LEN
             
 
             
-            #test if this interval is present in another candidate
+            # test if this interval is present in another candidate
 
             # all candidates in allowed range
             candidate_sequences = sequence_tree[tree][five_interval.begin:three_range_end]
-            
+
             if len(candidate_sequences) <= 1:
                 continue
 
-            outside_after = sequence_tree[tree][five_interval.begin+MAX_HAIRPIN_LEN+1]
+            outside_after = sequence_tree[tree][five_interval.begin+MAX_CANDIDATE_LEN+1]
             outside_before = sequence_tree[tree][five_interval.begin-1]           
             
             
             candidate_sequences.difference_update(outside_before, outside_after)
             candidate_sequences = [s for s in candidate_sequences if s.data[0] == five_interval.data[0]]
             
+            if len(candidate_sequences) <= 1:
+                continue
 #             three_sequences = sequence_tree[tree][three_range_begin:three_range_end]
 #             print sequence_tree[tree][five_interval.begin:three_range_begin -1]
 
