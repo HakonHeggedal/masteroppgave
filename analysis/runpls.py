@@ -128,7 +128,7 @@ def main():
 #     assert False
     
 #     using sequence tree to find possible candidates
-    candidate_tree, sequence_tree, candidates, seq_to_candidates = interval_tree_search.find_candidates(fixed_lines)
+    candidate_tree, sequence_tree, candidates, seq_to_candidates = interval_tree_search.find_candidates_2(fixed_lines)
     
     print "found candidates in ", time.clock() - start_time, " seconds"
     print "bowtie hits", len(fixed_lines)

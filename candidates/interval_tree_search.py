@@ -10,29 +10,35 @@ from candidates import structure
 
 
 MAX_CANDIDATE_LEN = 80
-MIN_CANDIDATE_LEN = 46
+# MIN_CANDIDATE_LEN = 46
 MIN_HAIRPIN_LOOP = 10
 MAX_HAIRPIN_LOOP = 20
-SEARCH_LEN = 200
+MIN_MATURE_SEQ = 18
+MAX_MATURE_SEQ = 30
+
+SEARCH_LEN = 100
 
 
 
-def _best_interval(intervals, offset, startpos, endpos):
-        starts = {} # start positions -> frequency
-        best_start = 0
-        best_start_pos = 0
-        best_end_pos = 0
+
+
+
+def _filter_intervals(intervals, offset, startpos, endpos):
+    intervals = [i for i in intervals  if i.begin-offset >= startpos and i.end-offset <= endpos]
+    return intervals
+
+def _best_interval(intervals, offset):
     
+        starts = {} # start positions -> frequency
+        best_start = -1
+        best_start_pos = -1
+        best_end_pos = -1
+        best_end = -1
+
         for interval in intervals:
             
             start = interval.begin - offset
             end = interval.end - offset
-            
-            #TODO fikse riktig avgrensing
-            if best_end_pos - start > MAX_CANDIDATE_LEN:
-                continue
-            if best_end_pos - end < MIN_CANDIDATE_LEN:
-                continue
             
             name = interval.data[1]
             freq = float(name.split("-")[1])
@@ -50,9 +56,10 @@ def _best_interval(intervals, offset, startpos, endpos):
 
         ends = {}
         for interval in intervals:
+            
+            start = interval.begin - offset
             end = interval.end - offset
             
-            #TODO: fikse riktig sluttposition
             if end+5 < best_end_pos or end-5 >= best_end_pos:
                 continue # out of bounds
             
@@ -64,14 +71,13 @@ def _best_interval(intervals, offset, startpos, endpos):
             else:
                 ends[end] += freq
                 
-        best_freq = 0
-        for end, freq in ends:
-            if freq > best_freq:
-                best_freq = freq
+
+        for end, freq in ends.iteritems():
+            if freq > best_end:
+                best_end = freq
                 best_end_pos = end
         
-        
-        return best_start_pos, best_end_pos
+        return best_start_pos, best_start, best_end_pos, best_end
                 
 
 def find_candidates_2(sequence_hits):
@@ -111,133 +117,115 @@ def find_candidates_2(sequence_hits):
             if interval in all_mapped_sequences:
                 continue
             
-            start_pos = interval.begin
-            end_pos = start_pos + SEARCH_LEN
+            start_interval = interval.begin
+            end_interval = start_interval + SEARCH_LEN
 
 #             find a peak in this interval
-            candidate_sequences = sequence_tree[tree][start_pos:end_pos]
-            if not candidate_sequences:
+
+            candidate_intervals = sequence_tree[tree][start_interval:end_interval]
+            if not candidate_intervals:
                 continue
-            
-#             remove intervals starting before  (automatic in _best_interval)
-#             outside_before = sequence_tree[tree][interval.begin-1]           
-#             candidate_sequences.difference_update(outside_before)
-#             if not candidate_sequences:
-#                 continue
             
 #             filter by direction
-            candidate_sequences = [s for s in candidate_sequences if s.data[0] == interval.data[0]]
-            if len(candidate_sequences) <= 1:
+            candidate_intervals = [s for s in candidate_intervals if s.data[0] == interval.data[0]]
+            if len(candidate_intervals) <= 1:
                 continue
             
-            candidate_sequences  = sorted(candidate_sequences)
-
-
-#             find best peak in this area
-            best_start_pos = 0
-            best_end_pos = 0
-
-
-#             find best start and its end position
-#             TODO: kalle _find_best_pos et par ganger...
-                    
-                    
+#             search for more sequences close to this one
+            max_end_interval = max(candidate_intervals, key=lambda x:x.end)
+            max_end = max_end_interval.end
+            candidate_intervals = set(candidate_intervals)
             
-#             find 5p if possible
-            if best_end_pos < MIN_CANDIDATE_LEN:
-                starts = {} # start positions -> frequency
-#                 find best peak 
-                for i in candidate_sequences:
-                    start = i.begin - start_pos
-                    end = i.end - start_pos
-                    
-
-                    name = i.data[1]
-                    freq = float(name.split("-")[1])
-                    
-                    if start in starts:
-                        starts[start] += freq
-                    else:
-                        starts[start] = freq
-                        
-                    
-                        
-                    
-            
-#             update search area so that the best peak can be a 5p (possible 3p out of bounds)
-            if best_start_pos + MAX_CANDIDATE_LEN > SEARCH_LEN:
+            while max_end + MAX_HAIRPIN_LOOP + MAX_MATURE_SEQ > end_interval:
                 
-                end_pos = start_pos + best_start_pos + MAX_CANDIDATE_LEN
+                new_seqs = sequence_tree[tree][end_interval:end_interval+SEARCH_LEN]
+                new_seqs = [s for s in new_seqs if s.data[0] == interval.data[0]]
                 
-                new_sequences = sequence_tree[tree][start_pos+best_start_pos:end_pos]
-                new_sequences = [s for s in new_sequences if s.data[0] == interval.data[0]]
+                if len(new_seqs) == 0:
+                    break
                 
-                candidate_sequences.update(new_sequences)
-                
+                candidate_intervals.update(new_seqs)
+                end_interval += SEARCH_LEN
+                max_end_interval = max(new_seqs, key=lambda x:x.end)
+                max_end = max_end_interval.end 
             
-#             find end position of best peak
-#             should be very close to end of interval starting in peak
+            print
+            
+            all_mapped_sequences.update(candidate_intervals)
+            
+            candidate_intervals = sorted(candidate_intervals) # first interval is picked if several equal.
+
+            # ready to find peaks:
+            start_peak, start_peak_val, end_peak, end_peak_val = _best_interval(candidate_intervals, start_interval)
+            print start_peak, start_peak_val, end_peak, end_peak_val
+            
+            if start_peak_val == -1 or end_peak_val == -1 or start_peak == -1 or end_peak == -1:
+                print "no peak at all error", candidate_intervals
+                continue
+            
+                       
+            no_5p = True
+            no_3p = True
+            
+#             possible 5p before best peak?
+            if start_peak >= MIN_HAIRPIN_LOOP + MIN_MATURE_SEQ:
+                
+                no_5p = False
+                begin = max(0,start_peak - MAX_HAIRPIN_LOOP - MAX_MATURE_SEQ)
+                end = start_peak - MIN_HAIRPIN_LOOP
+                
+                five_intervals = _filter_intervals(candidate_intervals, start_interval, begin, end)
+                
+                start_5p, start_5p_val, end_5p, end_5p_val = _best_interval(five_intervals, start_interval)
+                
+                print start_5p, start_5p_val, end_5p, end_5p_val
+            
+#             possible 3p after peak ? 
+            if start_interval + end_peak + MIN_HAIRPIN_LOOP + MIN_MATURE_SEQ > end_interval:
+                
+                no_3p = False
+                begin = end_peak + MIN_HAIRPIN_LOOP
+                end = end_interval - start_interval
+                
+                three_intervals = _filter_intervals(candidate_intervals, start_interval, begin, end)
+                start_3p, start_3p_val, end_3p, end_3p_val = _best_interval(three_intervals, start_interval)
+            
+                print start_3p, start_3p_val, end_3p, end_3p_val
+            
+#             are peaks before or after best ? 
+            no_3p = no_3p or start_3p == -1 or end_3p == -1
+            no_3p = no_3p or start_3p_val == -1 or end_3p_val == -1
+            
+            no_5p = no_5p or start_5p == -1 or end_5p == -1
+            no_5p = no_5p or start_5p_val == -1 or end_5p_val == -1
+            
+#             sum_3p = start_3p_val + end_3p_val
+#             sum_5p = start_5p_val + end_5p_val
+            
+            
+            
+            if no_3p and no_5p:
+                print "no 3 or 5 sequences"
+            elif no_3p:
+                print "have 5p"
+            elif no_5p:
+                print "have 3p"
+            elif start_3p_val + end_3p_val > start_5p_val + end_5p_val:
+                print "best: 3p"
+            elif start_5p_val + end_5p_val > start_3p_val + end_3p_val:
+                print "best: 5p"
+            else:
+                print "neither is better"
+            
+            
+
+            
+            
 
                 
+
             
 
-                
-#                 start =  interval.begin - interval.begin # start position
-#                 if start < 0:
-#                     continue
-#                 end = interval.end - interval.begin # end position
-#                 name = interval.data[1]
-#                 frequency = float(name.split("-")[1])
-#                 
-#                 starts[start] = frequency if start not in starts else starts[start] + frequency
-#                 ends[end] = frequency if end not in ends else ends[end] + frequency
-#                 
-#                 # find the largest interval from given start position
-#                 get_start[end] = start if end not in get_start else min(start, get_start[end])
-#                 get_end[start] = end if start not in get_end else max(end, get_end[start])
-#                 
-#                 if starts[start] > best_start:
-#                     best_start = starts[start]
-#                     best_start_pos = start
-#                                             
-#                 if ends[end] > best_end:
-#                     best_end = ends[end]
-#                     best_end_pos = end
-            
-            
-
-            #TODO not overlapping or very close
-#             second_starts = set()
-#             second_ends = set()
-#             
-#             for (start, count) in starts.iteritems():
-#                 if start < best_start_pos: # this is 5'
-#                     if get_end[start] + MIN_HAIRPIN_LOOP < best_start_pos:
-#                         second_starts.add( (start, count) )
-#                 elif get_end[best_start_pos] + MIN_HAIRPIN_LOOP < start:
-#                     second_starts.add( (start, count) )
-#             
-#             for (end, count) in ends.iteritems():
-#                 if end < best_end_pos: # this is 5'
-#                     if end + MIN_HAIRPIN_LOOP < get_start[best_end_pos]: 
-#                         second_ends.add( (end, count) )
-#                 elif best_end_pos + MIN_HAIRPIN_LOOP < get_start[end]: 
-#                     second_ends.add( (end, count) )
-                
-            
-#                 second_starts = [(s,val) for (s,val) in starts.iteritems() if s < best_start_pos-5 or s > get_end[best_start_pos] ]
-#                 second_ends = [(s,v) for (s,v) in ends.iteritems() if s > best_end_pos+5 or s < get_start[best_end_pos]]
-            
-            
-#             if len(second_starts) == 0 or len(second_ends) == 0:
-#                 continue 
-#             
-#             second_start = max(second_starts, key=lambda (k,v): v)
-#             second_end = max(second_ends, key=lambda(k,v):v)
-            
-#                 print "!!!"
-#                 print "second_starts", second_starts, second_start    
-#                 print "second ends", second_ends, second_end
 
 #             begin_5 = interval.begin + min(best_start_pos, second_start[0])
 #             end_5 = interval.begin + min(best_end_pos, second_end[0])
@@ -257,9 +245,9 @@ def find_candidates_2(sequence_hits):
 #                                              end_5,
 #                                              begin_3,
 #                                              end_3,
-#                                              candidate_sequences)
+#                                              candidate_intervals)
 #             
-#             for candidate_interval in candidate_sequences:
+#             for candidate_interval in candidate_intervals:
 #                 name = candidate_interval.data[1]
 #                 if name not in seq_to_candidates:
 #                     number_id = int(name.split("-")[0])
