@@ -7,6 +7,7 @@ Created on 1. okt. 2014
 from intervaltree.bio import GenomeIntervalTree
 import intervaltree
 from candidates import structure
+from scipy.constants.constants import pt
 
 
 MAX_CANDIDATE_LEN = 80
@@ -24,6 +25,7 @@ SEARCH_LEN = 100
 
 
 def _filter_intervals(intervals, offset, startpos, endpos):
+    if endpos <= 0: return []
     intervals = [i for i in intervals  if i.begin-offset >= startpos and i.end-offset <= endpos]
     return intervals
 
@@ -81,7 +83,7 @@ def _best_interval(intervals, offset):
                 
 
 def find_candidates_2(sequence_hits):
-    ''' finds microRNA candidates from bowtie data using interval trees
+    ''' finds microRNA candidates from bowtie data (using interval trees)
     
         sequence_hits -- an iterable of lists on bowtie output format:
   0          1    2                                 3           4                           5                           6
@@ -94,6 +96,9 @@ def find_candidates_2(sequence_hits):
     candidate_list = []
     all_mapped_sequences = set()
     seq_to_candidates = {}
+    
+    f = 0
+    a = 0
     
     # add all intervals to the tree
     for prop in sequence_hits:
@@ -111,14 +116,21 @@ def find_candidates_2(sequence_hits):
     
     # test all intervals to find candidates
     for tree in sequence_tree:
+        print
         print tree
-
+        
+        max_forward = 0
+        max_backward = 0
+        
         for interval in sorted(sequence_tree[tree]):
             if interval in all_mapped_sequences:
+                print "fast skip\t", interval
                 continue
             
             start_interval = interval.begin
             end_interval = start_interval + SEARCH_LEN
+            
+
 
 #             find a peak in this interval
 
@@ -149,7 +161,9 @@ def find_candidates_2(sequence_hits):
                 max_end_interval = max(new_seqs, key=lambda x:x.end)
                 max_end = max_end_interval.end 
             
+            
             print
+            print interval.data[0], start_interval, max_end
             
             all_mapped_sequences.update(candidate_intervals)
             
@@ -157,68 +171,70 @@ def find_candidates_2(sequence_hits):
 
             # ready to find peaks:
             start_peak, start_peak_val, end_peak, end_peak_val = _best_interval(candidate_intervals, start_interval)
-            print start_peak, start_peak_val, end_peak, end_peak_val
+            print start_peak, end_peak, end_peak_val, start_peak_val
+            print start_peak, end_peak, [(x.begin - start_interval, x.end-start_interval) for x in candidate_intervals]
             
             if start_peak_val == -1 or end_peak_val == -1 or start_peak == -1 or end_peak == -1:
                 print "no peak at all error", candidate_intervals
                 continue
             
-                       
             no_5p = True
             no_3p = True
             
-#             possible 5p before best peak?
-            if start_peak >= MIN_HAIRPIN_LOOP + MIN_MATURE_SEQ:
+# #             possible 5p before best peak?
+#             if start_peak >= MIN_HAIRPIN_LOOP + MIN_MATURE_SEQ:
                 
-                no_5p = False
-                begin = max(0,start_peak - MAX_HAIRPIN_LOOP - MAX_MATURE_SEQ)
-                end = start_peak - MIN_HAIRPIN_LOOP
-                
-                five_intervals = _filter_intervals(candidate_intervals, start_interval, begin, end)
-                
-                start_5p, start_5p_val, end_5p, end_5p_val = _best_interval(five_intervals, start_interval)
-                
-                print start_5p, start_5p_val, end_5p, end_5p_val
+            no_5p = False
+            begin = max(0,start_peak - MAX_HAIRPIN_LOOP - MAX_MATURE_SEQ)
+            end = max(0, start_peak - MIN_HAIRPIN_LOOP)
+            
+            five_intervals = _filter_intervals(candidate_intervals, start_interval, begin, end)
+            print begin, end, [(x.begin - start_interval, x.end-start_interval) for x in five_intervals]
+            start_5p, start_5p_val, end_5p, end_5p_val = _best_interval(five_intervals, start_interval)
+            
+            print start_5p, start_5p_val, end_5p, end_5p_val
             
 #             possible 3p after peak ? 
-            if start_interval + end_peak + MIN_HAIRPIN_LOOP + MIN_MATURE_SEQ > end_interval:
+#             if start_interval + end_peak + MIN_HAIRPIN_LOOP + MIN_MATURE_SEQ > end_interval:
                 
-                no_3p = False
-                begin = end_peak + MIN_HAIRPIN_LOOP
-                end = end_interval - start_interval
-                
-                three_intervals = _filter_intervals(candidate_intervals, start_interval, begin, end)
-                start_3p, start_3p_val, end_3p, end_3p_val = _best_interval(three_intervals, start_interval)
+            no_3p = False
+            begin = end_peak + MIN_HAIRPIN_LOOP
+            end = end_interval - start_interval
             
-                print start_3p, start_3p_val, end_3p, end_3p_val
+            three_intervals = _filter_intervals(candidate_intervals, start_interval, begin, end)
+            print begin, end, [(x.begin - start_interval, x.end-start_interval) for x in three_intervals]
+            start_3p, start_3p_val, end_3p, end_3p_val = _best_interval(three_intervals, start_interval)
+        
+            print start_3p, start_3p_val, end_3p, end_3p_val
             
-#             are peaks before or after best ? 
+
             no_3p = no_3p or start_3p == -1 or end_3p == -1
             no_3p = no_3p or start_3p_val == -1 or end_3p_val == -1
             
             no_5p = no_5p or start_5p == -1 or end_5p == -1
             no_5p = no_5p or start_5p_val == -1 or end_5p_val == -1
             
-#             sum_3p = start_3p_val + end_3p_val
-#             sum_5p = start_5p_val + end_5p_val
             
-            
+            a += 1
             
             if no_3p and no_5p:
                 print "no 3 or 5 sequences"
+                f += 1
             elif no_3p:
-                print "have 5p"
+                print "only 5p"
             elif no_5p:
-                print "have 3p"
+                print "only 3p"
             elif start_3p_val + end_3p_val > start_5p_val + end_5p_val:
                 print "best: 3p"
-            elif start_5p_val + end_5p_val > start_3p_val + end_3p_val:
+            else:   # start_5p_val + end_5p_val > start_3p_val + end_3p_val:
                 print "best: 5p"
-            else:
-                print "neither is better"
-            
-            
 
+            
+            
+    print
+    print "candidates:", a-f
+    print "tests:", a, (a-f) * 1.0/ a
+    print "fail:", f, f * 1.0 / a
             
             
 

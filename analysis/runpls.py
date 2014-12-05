@@ -126,7 +126,6 @@ def main():
     
 
 #     assert False
-    
 #     using sequence tree to find possible candidates
     candidate_tree, sequence_tree, candidates, seq_to_candidates = interval_tree_search.find_candidates_2(fixed_lines)
     
@@ -137,6 +136,7 @@ def main():
     print "sequence tree", len(sequence_tree)
     print "mapped seqs", len(candidates[0].all_mapped_sequences)
     
+    assert False
 #     candidate_list = gene.find_all(candidates)
 
 # 0            1   2[0] [1]      [2] [3]
