@@ -52,7 +52,7 @@ def align_small_seqs(candidates, small_seqs, small_seqs_copies):
 #             print candidates[cnr].hairpin
             
 
-    print "small seq hits:", len(s_used)  
+    print "small seq hits:", len(s_used)
     print "candidates with small seqs:",len(c_used)
     
     for cnr in c_used:

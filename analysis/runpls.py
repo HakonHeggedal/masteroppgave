@@ -127,6 +127,7 @@ def main():
 
 #     assert False
 #     using sequence tree to find possible candidates
+#     candidate_tree, sequence_tree, candidates, seq_to_candidates = interval_tree_search.find_candidates(fixed_lines)
     candidate_tree, sequence_tree, candidates, seq_to_candidates = interval_tree_search.find_candidates_2(fixed_lines)
     
     print "found candidates in ", time.clock() - start_time, " seconds"
@@ -136,7 +137,7 @@ def main():
     print "sequence tree", len(sequence_tree)
     print "mapped seqs", len(candidates[0].all_mapped_sequences)
     
-    assert False
+#     assert False
 #     candidate_list = gene.find_all(candidates)
 
 # 0            1   2[0] [1]      [2] [3]
@@ -146,7 +147,9 @@ def main():
         
     gene.include_padding(candidates)
     print "padded all candidates in ", time.clock() - start_time, " seconds"
-        
+    
+    assert False
+    
     align_small_seqs(candidates, small_reads, small_reads_count)
 #     assert False
     

@@ -67,13 +67,15 @@ def include_padding(candidate_list, padding=40 ):
                 hairpin = padded[padding:-padding]
                 
 #                 print "hairpin",hairpin
-                ss = candidate.mapped_sequences
-                s = 0
-                for s in ss:
-                    break
+
+                has_seqs = False
+                for s in candidate.mapped_sequences:
+                    has_seqs = has_seqs or s.data[2] in padded
+                    
+                assert has_seqs
 #                 print s.data[2]
-                if s.data[2] not in padded:
-                    print "\t NO MATCH!!!!!!"
+#                 if s.data[2] not in padded:
+#                     print "\t NO MATCH!!!!!!", s.data[2], padded[:10], read_start
                 
                 
 #                 if interval.data[2] not in padded or interval.data[4] not in padded:
