@@ -13,20 +13,26 @@ def get_alignment(candidates):
         fold_10 = candidate.hairpin_fold_10
         fold_40 = candidate.hairpin_fold_40
         
-        print "overhang alignment:",
-        print "\t", fold_10
-        print "\t", fold_40
-        
-        # overhang: level and overhang both padded and not
-        
-        print len(fold_10),
-        print candidate.pos_5p_end - candidate.pos_5p_begin,
-        print candidate.pos_3p_end - candidate.pos_3p_begin,
-        print candidate.pos_3p_end - candidate.pos_5p_begin + 20,
+#         print "overhang alignment:",
+#         print "\t", fold_10
+#         print "\t", fold_40
+#         
+#         # overhang: level and overhang both padded and not
+#         print
+#         print len(fold_10),
+#         print candidate.pos_5p_end - candidate.pos_5p_begin,
+#         print candidate.pos_3p_end - candidate.pos_3p_begin,
+#         print candidate.pos_3p_end - candidate.pos_5p_begin + 20,
         print candidate.pos_5p_begin, candidate.pos_5p_end,  candidate.pos_3p_begin,  candidate.pos_3p_end
         
         assert candidate.pos_5p_begin < candidate.pos_5p_end < candidate.pos_3p_begin < candidate.pos_3p_end
-        assert len(fold_10) == 20 + candidate.pos_3p_end - candidate.pos_5p_begin
+        
+        if len(fold_10) != 20 + candidate.pos_3p_end - candidate.pos_5p_begin:
+            print candidate.hairpin
+            print candidate.hairpin_padded_40
+            print len(candidate.hairpin_padded_40)
+            print len(candidate.hairpin)
+#         assert len(fold_10) == 20 + candidate.pos_3p_end - candidate.pos_5p_begin
         
         folds_10 = max_fold(fold_10)
         folds_40 = max_fold(fold_40)
@@ -56,7 +62,7 @@ def get_alignment(candidates):
 
 
 
-    assert False
+#     assert False
 
 def max_fold(fold):
     

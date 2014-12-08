@@ -35,7 +35,7 @@ def _viennafold(sequence):
 #     print match_fold.group(0)
     fold = match_fold.group(0)
 
-    
+#     print fold, energy
     return fold, energy
     
     

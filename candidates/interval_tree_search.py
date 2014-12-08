@@ -244,6 +244,8 @@ def find_candidates_2(sequence_hits):
             strand_dir = interval.data[0]
             chromosome = tree
             
+            assert end_3p - begin_5p <= MAX_CANDIDATE_LEN
+            
             candidate = structure.Candidate(chromosome,
                                              strand_dir,
                                              begin_5p,

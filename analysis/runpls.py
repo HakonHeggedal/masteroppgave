@@ -127,8 +127,8 @@ def main():
 
 #     assert False
 #     using sequence tree to find possible candidates
-#     candidate_tree, sequence_tree, candidates, seq_to_candidates = interval_tree_search.find_candidates(fixed_lines)
-    candidate_tree, sequence_tree, candidates, seq_to_candidates = interval_tree_search.find_candidates_2(fixed_lines)
+    candidate_tree, sequence_tree, candidates, seq_to_candidates = interval_tree_search.find_candidates(fixed_lines)
+#     candidate_tree, sequence_tree, candidates, seq_to_candidates = interval_tree_search.find_candidates_2(fixed_lines)
     
     print "found candidates in ", time.clock() - start_time, " seconds"
     print "bowtie hits", len(fixed_lines)
@@ -148,7 +148,7 @@ def main():
     gene.include_padding(candidates)
     print "padded all candidates in ", time.clock() - start_time, " seconds"
     
-    assert False
+#     assert False
     
     align_small_seqs(candidates, small_reads, small_reads_count)
 #     assert False
@@ -194,6 +194,7 @@ def main():
 #     candidate quality: nr of sequence hits / all candidate hits for given sequences
     quality.candidate_quality(candidates, seq_to_candidates)
     
+    print
     print "finished features in ", time.clock() - start_time, " seconds"
     
     for k,v in candidate_to_miRNA.iteritems():

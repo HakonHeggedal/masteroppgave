@@ -16,8 +16,8 @@ class Candidate:
         self.pos_3p_begin = begin_3p
         self.pos_3p_end = end_3p
         self.hairpin = None
-        self.hairpin_fold = None
-        self.hairpin_energy = None
+#         self.hairpin_fold = None
+#         self.hairpin_energy = None
         self.mapped_sequences = set()
         self.small_subs = 0
         self.small_subs_5p = 0
@@ -33,11 +33,7 @@ class Candidate:
         self.hairpin_padded_40 = padded_40
 
     
-    def set_viennafold(self, fold, en, fold_10, en_10, fold_40, en_40):
-        
-        assert fold and fold_10 and fold_40
-        assert en and en_10 and en_40
-        
+    def set_viennafold(self, fold, en, fold_10, en_10, fold_40, en_40):        
         self.hairpin_fold = fold 
         self.hairpin_fold_10 = fold_10
         self.hairpin_fold_40 = fold_40
