@@ -127,8 +127,8 @@ def main():
 
 #     assert False
 #     using sequence tree to find possible candidates
-    candidate_tree, sequence_tree, candidates, seq_to_candidates = interval_tree_search.find_candidates(fixed_lines)
-#     candidate_tree, sequence_tree, candidates, seq_to_candidates = interval_tree_search.find_candidates_2(fixed_lines)
+#     candidate_tree, sequence_tree, candidates, seq_to_candidates = interval_tree_search.find_candidates(fixed_lines)
+    candidate_tree, sequence_tree, candidates, seq_to_candidates = interval_tree_search.find_candidates_2(fixed_lines)
     
     print "found candidates in ", time.clock() - start_time, " seconds"
     print "bowtie hits", len(fixed_lines)
@@ -182,9 +182,9 @@ def main():
 #     A/U ends for all remaining candidates
     tailing.tailing_au(candidates, not_mapped_reads)
      
-#     TODO: 5' and 3' alignment overhang
+
     overhang.get_alignment(candidates)
-#     
+
 #     degree of entropy in structure and nucleotides
     entropy.entropy(candidates)
 #      
@@ -246,7 +246,7 @@ def main():
     print "mirna species", len(class_miRNAs)
     print "candidates", len(candidate_array)
     
-    learner = svm.SVC()
+    learner = svm.SVC(probability=True)
     learner.fit(learn_miRNAs, class_miRNAs)
     res = learner.predict(candidate_array)
     print res
