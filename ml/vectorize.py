@@ -27,9 +27,17 @@ def candidates_to_array(candidates):
         g = candidate.heterogenity_3_begin
         h = candidate.heterogenity_3_end
         i = candidate.quality
+        j = candidate.bindings_max_10
+        k = candidate.overhang_level_outer_10 
+        l = candidate.overhang_outer_10 
+        m = candidate.overhang_level_inner_10 
+        n = candidate.overhang_inner_10
+        o = candidate.small_subs
+        p = candidate.small_subs_5p
+        q = candidate.small_subs_3p
         
         
-        features = [a,aa,b,c,d,e,f,g,h,i]
+        features = [a,aa,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q]
         
         all_candidates.append(features)
         

@@ -180,22 +180,19 @@ def find_candidates_2(sequence_hits):
 #             possible 5p before best peak?
 #             if start_peak >= MIN_HAIRPIN_LOOP + MIN_MATURE_SEQ:
                 
-            start_before = max(0,start_peak - MAX_HAIRPIN_LOOP - MAX_MATURE_SEQ)
-            stop_before = max(0, start_peak - MIN_HAIRPIN_LOOP)
+            start_before_limit = max(0,start_peak - MAX_HAIRPIN_LOOP - MAX_MATURE_SEQ)
+            stop_before_limit = max(0, start_peak - MIN_HAIRPIN_LOOP)
             
-            five_intervals = _filter_intervals(candidate_intervals, start_interval, start_before, stop_before)
+            five_intervals = _filter_intervals(candidate_intervals, start_interval, start_before_limit, stop_before_limit)
             start_before, start_before_val, stop_before, stop_before_val = _best_interval(five_intervals, start_interval)
             
 #             print begin_5, end_5, [(x.begin - start_interval, x.end-start_interval) for x in five_intervals]
 #             print start_5p, start_5p_val, stop_5p, end_5p_val
-            
-#             possible 3p after peak ? 
-#             if start_interval + end_peak + MIN_HAIRPIN_LOOP + MIN_MATURE_SEQ > end_interval:
                 
-            start_after = end_peak + MIN_HAIRPIN_LOOP
-            stop_after = end_interval + MAX_HAIRPIN_LOOP + MAX_MATURE_SEQ  # start_interval
+            start_after_limit = end_peak + MIN_HAIRPIN_LOOP
+            stop_after_limit = end_peak + MAX_HAIRPIN_LOOP + MAX_MATURE_SEQ  # start_interval
             
-            three_intervals = _filter_intervals(candidate_intervals, start_interval, start_after, stop_after)
+            three_intervals = _filter_intervals(candidate_intervals, start_interval, start_after_limit, stop_after_limit)
             start_after, start_after_val, stop_after, stop_after_val = _best_interval(three_intervals, start_interval)
         
 #             print start_after, stop_after, [(x.begin - start_interval, x.end-start_interval) for x in three_intervals]
@@ -204,7 +201,7 @@ def find_candidates_2(sequence_hits):
  
             not_before = start_after == -1 or stop_after == -1
             not_before = not_before or start_after_val == -1 or stop_after_val == -1
-             
+            
             not_after = start_before == -1 or stop_before == -1
             not_after = not_after or start_before_val == -1 or stop_before_val == -1
              
@@ -244,6 +241,13 @@ def find_candidates_2(sequence_hits):
             strand_dir = interval.data[0]
             chromosome = tree
             
+#             if end_3p - begin_5p > MAX_CANDIDATE_LEN:
+            print
+            print end_3p-begin_5p
+            print begin_5p-start_interval, end_5p-start_interval, begin_3p-start_interval, end_3p-start_interval,
+            print (start_peak, end_peak),
+            print start_after_limit, stop_after_limit
+                
             assert end_3p - begin_5p <= MAX_CANDIDATE_LEN
             
             candidate = structure.Candidate(chromosome,
@@ -252,7 +256,7 @@ def find_candidates_2(sequence_hits):
                                              end_5p,
                                              begin_3p,
                                              end_3p,
-                                             candidate_intervals)          
+                                             candidate_intervals)        
             
                   
             for candidate_interval in candidate_intervals:
@@ -279,7 +283,8 @@ def find_candidates_2(sequence_hits):
     print "fail:", f, f * 1.0 / a
     print "sum candidates:", interval_sum
 
-                
+    assert False
+    
     return candidate_tree, sequence_tree, candidate_list, seq_to_candidates
 
 

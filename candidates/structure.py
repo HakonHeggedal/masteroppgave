@@ -1,6 +1,4 @@
 
-
-
 class Candidate:
     ''' structure to store a miRNA candidate '''
     
@@ -16,8 +14,6 @@ class Candidate:
         self.pos_3p_begin = begin_3p
         self.pos_3p_end = end_3p
         self.hairpin = None
-#         self.hairpin_fold = None
-#         self.hairpin_energy = None
         self.mapped_sequences = set()
         self.small_subs = 0
         self.small_subs_5p = 0
