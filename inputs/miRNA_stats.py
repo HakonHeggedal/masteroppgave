@@ -45,7 +45,7 @@ for v in hsa_to_mature.itervalues():
 matures = numpy.array(matures)
 hairpins = numpy.array(hairpins)
 
-print matures
+print [x for x in enumerate(matures)]
 print numpy.mean(matures)
 print numpy.median(matures)
 print "min ",next(i for i,x in enumerate(matures) if x != 0 )
@@ -61,9 +61,9 @@ for i in xrange(len(matures)-1, 0, -1):
         print "max", i
         break
 
+print matures[15], matures[16], matures[22], matures[28], matures[29]
 
-
-print hairpins
+print enumerate(hairpins)
 
 print "min ",next(i for i,x in enumerate(hairpins) if x != 0 )
 print "max ",next(len(hairpins)-i-1 for i,x in enumerate(hairpins[::-1]) if x != 0 )
@@ -109,13 +109,11 @@ pyplot.grid(True)
 # pyplot.axis([16,28,0,1200])
 # pyplot.xticks(range(16,28))
 pyplot.locator_params(axis='x', nbins=20)
-
+pyplot.yscale('symlog', nonposy='clip')
 
 pyplot.savefig("mirna_mature_distr.pdf")
 pyplot.savefig("mirna_mature_distr.png")
 pyplot.show()
-# pyplot.
-
 
 
 
