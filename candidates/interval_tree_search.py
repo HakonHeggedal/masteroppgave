@@ -5,16 +5,15 @@ Created on 1. okt. 2014
 '''
 
 from intervaltree.bio import GenomeIntervalTree
-import intervaltree
 from candidates import structure
-from scipy.constants.constants import pt
+
 
 
 MAX_CANDIDATE_LEN = 80
 # MIN_CANDIDATE_LEN = 46
 MIN_HAIRPIN_LOOP = 10
 MAX_HAIRPIN_LOOP = 20
-MIN_MATURE_SEQ = 18
+MIN_MATURE_SEQ = 16
 MAX_MATURE_SEQ = 30
 
 SEARCH_LEN = 100
@@ -123,7 +122,7 @@ def find_candidates_2(sequence_hits):
         print tree
         
         for interval in sorted(sequence_tree[tree]):
-            if interval in all_mapped_sequences:                
+            if interval in all_mapped_sequences:
 #                 print "fast skip\t", interval
                 continue
             
@@ -160,8 +159,6 @@ def find_candidates_2(sequence_hits):
                 max_end = max_end_interval.end 
             
             
-#             print
-#             print interval.data[0], start_interval, max_end
             
             all_mapped_sequences.update(candidate_intervals)
             

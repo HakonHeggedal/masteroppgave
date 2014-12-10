@@ -70,20 +70,55 @@ print "max ",next(len(hairpins)-i-1 for i,x in enumerate(hairpins[::-1]) if x !=
 
 for i,x in enumerate(hairpins):
     if x != 0:
-        print "min",i
+        print "min",i, hairpins[i]
         break
  
 for i in xrange(len(hairpins)-1, 0, -1):
     if hairpins[i] != 0:
-        print "max", i
+        print "max", i, hairpins[i]
         break
     
 print hairpins[180], hairpins[181], hairpins[40], hairpins[41]
 
-pyplot.plot(hairpins)
+
+derp = range(0, len(hairpins))
+derp = [float(x)-0.5 for x in derp]
+
+pyplot.bar( derp, hairpins,width=1.0)
+pyplot.title("Length distribution for miRNA hairpins")
+pyplot.xlabel("length")
+pyplot.ylabel("frequency")
+pyplot.grid(True)
+# pyplot.axis([15,30,0,1200])
+pyplot.savefig("mirna_hairpin_distr.pdf")
+pyplot.savefig("mirna_hairpin_distr.png")
 pyplot.show()
-pyplot.plot(matures)
+
+
+
+
+
+derp = range(len(matures))
+derp = [float(x)-0.3 for x in derp]
+
+pyplot.bar( derp, matures, width=0.6)
+pyplot.title("Length distribution for mature miRNAs")
+pyplot.xlabel("length")
+pyplot.ylabel("frequency")
+pyplot.grid(True)
+# pyplot.axis([16,28,0,1200])
+# pyplot.xticks(range(16,28))
+pyplot.locator_params(axis='x', nbins=20)
+
+
+pyplot.savefig("mirna_mature_distr.pdf")
+pyplot.savefig("mirna_mature_distr.png")
 pyplot.show()
 # pyplot.
-    
-    
+
+
+
+
+
+# pyplot.plot(hairpins)
+# pyplot.show()
