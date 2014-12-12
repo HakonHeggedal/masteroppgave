@@ -113,7 +113,7 @@ def heterogenity(candidates, offset=5):
 
 def frequency_counting(candidates, freq_range=5):
     ''' 
-    compute quality of 5' and 3' positions     
+    compute quality of 5' and 3' positions
     '''
     
     
