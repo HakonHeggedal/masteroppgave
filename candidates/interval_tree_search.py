@@ -6,6 +6,7 @@ Created on 1. okt. 2014
 
 from intervaltree.bio import GenomeIntervalTree
 from candidates import structure
+from nose.tools import ok_
 
 
 
@@ -485,6 +486,7 @@ def find_candidates(sequence_hits):
 
 def align_miRNAs(mirna_hits, hairpinID_to_mature, candidate_tree, sequence_tree):
     print "align candidates with miRNA"
+    print
     candidate_to_miRNAid = {}
     derp = {}
 #     finne kandidater som matcher miRNA
@@ -517,7 +519,6 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, candidate_tree, sequence_tree)
 #         end_5p =  mature_pos[1] + genome_offset if mature_pos[1] >= 0 else mature_pos[1]
 #         begin_3p =  mature_pos[2] + genome_offset if mature_pos[2] >= 0 else mature_pos[2]
 #         end_3p =  mature_pos[3] + genome_offset if mature_pos[3] >= 0 else mature_pos[3]
-        
 
         
         tree = candidate_tree[chromosome]
@@ -532,61 +533,91 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, candidate_tree, sequence_tree)
             miRNA_with_candidates.add(miRNAid)
             candidate_already += 1
             
-            print
+
             print begin_5p, end_5p, begin_3p, end_3p,
-            print (end_3p - begin_3p, end_5p - begin_5p) 
+            print (end_3p - begin_3p, end_5p - begin_5p),
+            print strand_dir
             
             for candidate in candidates:
-                print candidate.data.pos_5p_begin, candidate.data.pos_5p_end, candidate.data.pos_3p_begin, candidate.data.pos_3p_end, 
-                print (candidate.data.pos_5p_end - candidate.data.pos_5p_begin),
-                print (candidate.data.pos_3p_end - candidate.data.pos_3p_begin) 
-                print candidate.data.hairpin_fold_10
                 
-                folds = 0
-                foldstr = ""
-                
-                for c in candidate.data.hairpin_fold_10:
-                    if c == "(":
-                        folds += 1
-                    elif c == ")":
-                        folds += 1
-                    
-                    folds %= 10
-                    foldstr += str(folds)
-                print foldstr
-                
-                print " "*10 + candidate.data.hairpin_fold_10[10:-10]
-                print candidate.data.hairpin_fold_10[10+begin_5p-candidate.data.pos_5p_begin:]
-                
-                sumstarts = {}
-                sumends = {}
+                if candidate.data.chromosome_direction != strand_dir:
+                    continue
 
-                for s in candidate.data.mapped_sequences:
-                    val = float(s.data[1].split("-")[1])
-                    sumstarts[s.begin] = sumstarts[s.begin] + val if s.begin in sumstarts else val 
-                    sumends[s.end] = sumends[s.end] + val if s.end in sumends else val 
-                for k,v in sorted(sumstarts.iteritems()):
-                    print k,v
-                print "------"
-                for k,v in sorted(sumends.iteritems()):
-                    print k,v
 
                 candidate_count += 1
-                similar_pos = 0
+                
+                len_5 = candidate.data.pos_5p_end - candidate.data.pos_5p_begin
+                shift_5 = abs(candidate.data.pos_5p_begin - begin_5p)
+                shift_5 += abs(candidate.data.pos_5p_end - end_5p)
+                
+                len_3 = candidate.data.pos_3p_end - candidate.data.pos_3p_begin
+                shift_3 = abs(candidate.data.pos_3p_begin - begin_3p)
+                shift_3 += abs(candidate.data.pos_3p_end - end_3p)
+                
                 hashval = candidate.data.chromosome + str(candidate.data.pos_5p_begin)
-                if candidate.data.pos_5p_begin == begin_5p:
-                    similar_pos += 1
-                if candidate.data.pos_5p_end == end_5p:
-                    similar_pos += 1
-                if candidate.data.pos_3p_begin == begin_3p:
-                    similar_pos += 1
-                if candidate.data.pos_3p_end == end_3p:
-                    similar_pos += 1
-                if similar_pos >= 2:
-
-                    print  "\tok", similar_pos
-                    hashval = candidate.data.chromosome + str(candidate.data.pos_5p_begin)
+                
+                # miRNA should overlap with candidate
+                if shift_5 < len_5*2 or shift_3 < len_3*2 or shift_5+shift_3 < (len_3+len_5)*2:
                     candidate_to_miRNAid[hashval] = miRNAid
+                else:
+                    print
+                    print mirna_loki[4]
+                    print candidate.data.hairpin
+                    
+                    print candidate.data.pos_5p_begin, candidate.data.pos_5p_end, candidate.data.pos_3p_begin, candidate.data.pos_3p_end, 
+                    print (candidate.data.pos_5p_end - candidate.data.pos_5p_begin),
+                    print (candidate.data.pos_3p_end - candidate.data.pos_3p_begin),
+                    print candidate.data.chromosome_direction
+                    print candidate.data.hairpin_fold_10
+                    print candidate.data.hairpin_fold_40
+                    
+                    print shift_5, shift_3, len_3, len_5
+                    print
+                    
+                    folds = 0
+                    foldstr = ""
+                    
+                    
+                    for c in candidate.data.hairpin_fold_10:
+                        if c == "(":
+                            folds += 1
+                        elif c == ")":
+                            folds -= 1
+                        
+                        folds %= 10
+                        foldstr += str(folds)
+                    print foldstr
+                    
+                    print " "*10 + candidate.data.hairpin_fold_10[10:-10]
+                    print candidate.data.hairpin_fold_10[10+begin_5p-candidate.data.pos_5p_begin:]
+                    
+                    sumstarts = {}
+                    sumends = {}
+                    
+                    
+                    for s in candidate.data.mapped_sequences:
+                        val = float(s.data[1].split("-")[1])
+                        sumstarts[s.begin] = sumstarts[s.begin] + val if s.begin in sumstarts else val 
+                        sumends[s.end] = sumends[s.end] + val if s.end in sumends else val 
+                    for k,v in sorted(sumstarts.iteritems()):
+                        print k,v
+                    print "------"
+                    for k,v in sorted(sumends.iteritems()):
+                        print k,v
+#                 similar_pos = 0
+#                 if candidate.data.pos_5p_begin == begin_5p:
+#                     similar_pos += 1
+#                 if candidate.data.pos_5p_end == end_5p:
+#                     similar_pos += 1
+#                 if candidate.data.pos_3p_begin == begin_3p:
+#                     similar_pos += 1
+#                 if candidate.data.pos_3p_end == end_3p:
+#                     similar_pos += 1
+#                 if similar_pos >= 2:
+# 
+#                     print  "\tok", similar_pos
+#                     hashval = candidate.data.chromosome + str(candidate.data.pos_5p_begin)
+#                     candidate_to_miRNAid[hashval] = miRNAid
 #                 candidates_at_miRNA.add(candidate)
                 derp[hashval] = miRNAid
             continue
@@ -596,7 +627,6 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, candidate_tree, sequence_tree)
         sequences = tree[begin_5p:end_3p]
         if sequences:
             has_seqs.append(miRNAid)
-            
             
 
     print
@@ -609,7 +639,6 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, candidate_tree, sequence_tree)
 
     has_seqs = set(has_seqs)
     print "miRNA only aligning sequences:\t\t", len(set(has_seqs)), len(has_seqs) * 1.0 / len(unique_mirnas)
-    
     
     has_seqs.update(miRNA_with_candidates)
     print "miRNA with candidate or sequences:\t", len(has_seqs), len(has_seqs) * 1.0 / len(unique_mirnas)

@@ -20,6 +20,8 @@ def collapse_collapsed(collapsed_files, min_len=7):
             count = 0
             for line in fasta_file:
                 line = line.strip()
+                if not line:
+                    continue
                 if line[0] == ">":
                     count = int(line.split("-")[1])
                 elif len(line) >= min_len and count > 0 and _legal_DNA(line):

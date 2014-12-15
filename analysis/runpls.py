@@ -48,9 +48,10 @@ def main():
     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed",
                     "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed"]
 
+    fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed", "SRR207111.collapsed"]
 #     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed"]
 #     fasta_files = ["SRR797062.collapsed"]
-    
+#     
 #     fasta_file = "SRR797062.fa"
 
     dict_collapsed = merge.collapse_collapsed(fasta_files)
@@ -149,10 +150,10 @@ def main():
     print "padded all candidates in ", time.clock() - start_time, " seconds"
     
 #     assert False
-    
-    align_small_seqs(candidates, small_reads, small_reads_count)
+
 #     assert False
-    
+    print "\nrunning viennafold"
+    vienna.energy_fold(candidates) # slow?
     
     print "align miRNAs to other sequences"
     candidate_to_miRNA = interval_tree_search.align_miRNAs(miRNA_bowtie_hits,
@@ -160,14 +161,16 @@ def main():
                                                            candidate_tree,
                                                            sequence_tree)
     
-
+    print "aligning small seqs"
+    align_small_seqs(candidates, small_reads, small_reads_count)
+    print "finished aligning small seqs"
     
 #     sequence_freq = reads.readcollapsed(fasta_file)
 #     print len(sequence_freq)    
     
     
     # run and set vienna RNAfold + energy on all candidates
-    vienna.energy_fold(candidates) # slow?
+
     
     
     not_mapped_reads = [structure.Sequence(i,n,read) for i,(read,n) in 
