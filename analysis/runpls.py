@@ -50,7 +50,7 @@ def main():
 
     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed", "SRR207111.collapsed"]
 #     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed"]
-#     fasta_files = ["SRR797062.collapsed"]
+    fasta_files = ["SRR797062.collapsed"]
 #     
 #     fasta_file = "SRR797062.fa"
 

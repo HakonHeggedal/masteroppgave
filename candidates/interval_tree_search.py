@@ -146,7 +146,7 @@ def find_candidates_2(sequence_hits):
             max_end = max_end_interval.end
             candidate_intervals = set(candidate_intervals)
             
-            while max_end + MAX_HAIRPIN_LOOP + MAX_MATURE_SEQ > end_interval:
+            while max_end + MAX_HAIRPIN_LOOP + MAX_MATURE_SEQ > end_interval: # extend search area
                 
                 new_seqs = sequence_tree[tree][end_interval:end_interval+SEARCH_LEN]
                 new_seqs = [s for s in new_seqs if s.data[0] == interval.data[0]]
@@ -161,305 +161,111 @@ def find_candidates_2(sequence_hits):
             
             
             
-            all_mapped_sequences.update(candidate_intervals)
+            all_mapped_sequences.update(candidate_intervals) # do not need to use these next iteration
             
             candidate_intervals = sorted(candidate_intervals) # first interval is picked if several equal.
-
-            # ready to find peaks:
-            start_peak, start_peak_val, end_peak, end_peak_val = _best_interval(candidate_intervals, start_interval)
-#             print start_peak, end_peak, end_peak_val, start_peak_val
-#             print start_peak, end_peak, [(x.begin - start_interval, x.end-start_interval) for x in candidate_intervals]
             
-            if start_peak_val == -1 or end_peak_val == -1 or start_peak == -1 or end_peak == -1:
-#                 print "no peak at all error", candidate_intervals
-                continue
-            
-            
-#             possible 5p before best peak?
-#             if start_peak >= MIN_HAIRPIN_LOOP + MIN_MATURE_SEQ:
+            while candidate_intervals:
                 
-            start_before_limit = max(0,start_peak - MAX_HAIRPIN_LOOP - MAX_MATURE_SEQ)
-            stop_before_limit = max(0, start_peak - MIN_HAIRPIN_LOOP)
-            
-            five_intervals = _filter_intervals(candidate_intervals, start_interval, start_before_limit, stop_before_limit)
-            start_before, start_before_val, stop_before, stop_before_val = _best_interval(five_intervals, start_interval)
-            
-#             print begin_5, end_5, [(x.begin - start_interval, x.end-start_interval) for x in five_intervals]
-#             print start_5p, start_5p_val, stop_5p, end_5p_val
                 
-            start_after_limit = end_peak + MIN_HAIRPIN_LOOP
-            stop_after_limit = end_peak + MAX_HAIRPIN_LOOP + MAX_MATURE_SEQ  # start_interval
-            
-            three_intervals = _filter_intervals(candidate_intervals, start_interval, start_after_limit, stop_after_limit)
-            start_after, start_after_val, stop_after, stop_after_val = _best_interval(three_intervals, start_interval)
-        
-#             print start_after, stop_after, [(x.begin - start_interval, x.end-start_interval) for x in three_intervals]
-#             print start_3p, start_3p_val, stop_3p, end_3p_val
-            
- 
-            not_before = start_after == -1 or stop_after == -1
-            not_before = not_before or start_after_val == -1 or stop_after_val == -1
-            
-            not_after = start_before == -1 or stop_before == -1
-            not_after = not_after or start_before_val == -1 or stop_before_val == -1
-             
-             
-            a += 1
-            
-            if not_before and not_after:
-#                 print "no 3 or 5 sequences"
-                f += 1
-                continue
-            elif not_after or start_after_val + stop_after_val > start_before_val + stop_before_val:
-#                 print "only 3p"
-                begin_5p = start_peak + start_interval
-                end_5p = end_peak + start_interval
-                begin_3p = start_after + start_interval
-                end_3p = stop_after + start_interval
-                assert begin_5p < end_5p < begin_3p < end_3p
-            else:
-#                 print "only 5p"
-                begin_5p = start_before + start_interval
-                end_5p = stop_before + start_interval
-                begin_3p = start_peak + start_interval
-                end_3p = end_peak + start_interval
-                assert begin_5p < end_5p < begin_3p < end_3p
-#             else:
-#                 print "???"
-#                 print not_before, not_after
-#                 print start_before, start_before_val, stop_before, stop_before_val
-#                 print start_peak, start_peak_val, end_peak, end_peak_val
-#                 print start_after, start_after_val, stop_after, stop_after_val
-#                 assert False
-#             elif start_3p_val + end_3p_val > start_5p_val + end_5p_val:
-#                 print "best: 3p"
-#             else:   # start_5p_val + end_5p_val > start_3p_val + end_3p_val:
-#                 print "best: 5p"
-
-            strand_dir = interval.data[0]
-            chromosome = tree
-            
-#             if end_3p - begin_5p > MAX_CANDIDATE_LEN:
-#             print
-#             print end_3p-begin_5p
-#             print begin_5p-start_interval, end_5p-start_interval, begin_3p-start_interval, end_3p-start_interval,
-#             print (start_peak, end_peak),
-#             print start_after_limit, stop_after_limit
+                # ready to find peaks:
+                start_peak, start_peak_val, end_peak, end_peak_val = _best_interval(candidate_intervals, start_interval)
+    #             print start_peak, end_peak, end_peak_val, start_peak_val
+    #             print start_peak, end_peak, [(x.begin - start_interval, x.end-start_interval) for x in candidate_intervals]
                 
-            assert end_3p - begin_5p <= MAX_CANDIDATE_LEN
+                if start_peak_val == -1 or end_peak_val == -1 or start_peak == -1 or end_peak == -1:
+    #                 print "no peak at all error", candidate_intervals
+                    break
+                
+                
+    #             possible 5p before best peak?
+    #             if start_peak >= MIN_HAIRPIN_LOOP + MIN_MATURE_SEQ:
+                    
+                start_before_limit = max(0,start_peak - MAX_HAIRPIN_LOOP - MAX_MATURE_SEQ)
+                stop_before_limit = max(0, start_peak - MIN_HAIRPIN_LOOP)
+                
+                five_intervals = _filter_intervals(candidate_intervals, start_interval, start_before_limit, stop_before_limit)
+                start_before, start_before_val, stop_before, stop_before_val = _best_interval(five_intervals, start_interval)
+                
+    #             print begin_5, end_5, [(x.begin - start_interval, x.end-start_interval) for x in five_intervals]
+    #             print start_5p, start_5p_val, stop_5p, end_5p_val
+                    
+                start_after_limit = end_peak + MIN_HAIRPIN_LOOP
+                stop_after_limit = end_peak + MAX_HAIRPIN_LOOP + MAX_MATURE_SEQ  # start_interval
+                
+                three_intervals = _filter_intervals(candidate_intervals, start_interval, start_after_limit, stop_after_limit)
+                start_after, start_after_val, stop_after, stop_after_val = _best_interval(three_intervals, start_interval)
             
-            candidate = structure.Candidate(chromosome,
-                                             strand_dir,
-                                             begin_5p,
-                                             end_5p,
-                                             begin_3p,
-                                             end_3p,
-                                             candidate_intervals)        
-            
-                  
-            for candidate_interval in candidate_intervals:
-                name = candidate_interval.data[1]
-                if name not in seq_to_candidates:
-                    number_id = int(name.split("-")[0])
-                    duplicates = float(name.split("-")[1])
-                    interval_sum += duplicates
-                    s = structure.Sequence(number_id, duplicates, candidate_interval.data[2])
-                    s.add_candidate(candidate)
-                    seq_to_candidates[name] = s
-                else:
-                    seq_to_candidates[name].add_candidate(candidate)
+    #             print start_after, stop_after, [(x.begin - start_interval, x.end-start_interval) for x in three_intervals]
+    #             print start_3p, start_3p_val, stop_3p, end_3p_val
+                
+     
+                not_before = start_after == -1 or stop_after == -1
+                not_before = not_before or start_after_val == -1 or stop_after_val == -1
+                
+                not_after = start_before == -1 or stop_before == -1
+                not_after = not_after or start_before_val == -1 or stop_before_val == -1
                  
-            candidate_tree[tree][begin_5p:end_3p] = candidate
-            candidate_list.append(candidate)
- 
-            if len(all_mapped_sequences) == 0:
-                all_mapped_sequences = candidate.all_mapped_sequences           
-            
-    print "find candidates 2.0"
-    print "candidates:", a-f
-    print "tests:", a, (a-f) * 1.0/ a
-    print "fail:", f, f * 1.0 / a
-    print "sum candidates:", interval_sum
-
-
+                 
+                a += 1
+                
+                if not_before and not_after:
+    #                 print "no 3 or 5 sequences"
+                    f += 1
+                    break
+                elif not_after or start_after_val + stop_after_val > start_before_val + stop_before_val:
+    #                 print "only 3p"
+                    begin_5p = start_peak + start_interval
+                    end_5p = end_peak + start_interval
+                    begin_3p = start_after + start_interval
+                    end_3p = stop_after + start_interval
+                    assert begin_5p < end_5p < begin_3p < end_3p
+                else:
+    #                 print "only 5p"
+                    begin_5p = start_before + start_interval
+                    end_5p = stop_before + start_interval
+                    begin_3p = start_peak + start_interval
+                    end_3p = end_peak + start_interval
+                    assert begin_5p < end_5p < begin_3p < end_3p
+    #             else:
+    #                 print "???"
+    #                 print not_before, not_after
+    #                 print start_before, start_before_val, stop_before, stop_before_val
+    #                 print start_peak, start_peak_val, end_peak, end_peak_val
+    #                 print start_after, start_after_val, stop_after, stop_after_val
+    #                 assert False
+    #             elif start_3p_val + end_3p_val > start_5p_val + end_5p_val:
+    #                 print "best: 3p"
+    #             else:   # start_5p_val + end_5p_val > start_3p_val + end_3p_val:
+    #                 print "best: 5p"
     
-    return candidate_tree, sequence_tree, candidate_list, seq_to_candidates
-
-
-
-## old
-#
-def find_candidates(sequence_hits):
-    ''' finds microRNA candidates from bowtie data using interval trees
-    
-        sequence_hits -- an iterable of lists on bowtie output format:
-  0          1    2                                 3           4                           5                           6
-['1-15830', '-', 'gi|224589818|ref|NC_000006.11|', '72113295', 'AGCTTCCAGTCGAGGATGTTTACA', 'IIIIIIIIIIIIIIIIIIIIIIII', '0']
-        returns a list of candidates, and the interval tree with all sequences
-    '''
-    
-    sequence_tree = GenomeIntervalTree()
-    candidate_tree = GenomeIntervalTree() # only candidates here
-    candidate_list = []
-    all_mapped_sequences = set()
-    seq_to_candidates = {}
-    
-    interval_sum = 0.0
-    
-    # add all intervals to the tree
-    for prop in sequence_hits:
-#         print prop
-        seq_name = prop[0]
-        strand_dir = prop[1] # forward: + backward: -
-        genome_nr = prop[2].split("|")[3] # which genome (and version)
-        genome_offset = int(prop[3]) # offset into the genome, 0-indexed
-        dna_sequence = prop[4] # the dna_sequence matching this position.
-        sequence_info = [strand_dir, seq_name, dna_sequence]
-        
-        sequence_tree.addi(genome_nr, genome_offset, genome_offset + len(dna_sequence), sequence_info)
-    
-    print "all intervals added to the tree"
-    
-    # test all intervals to find candidates
-    for tree in sequence_tree:
-        print tree
-
-        for five_interval in sorted(sequence_tree[tree]):
-            
-            if five_interval in all_mapped_sequences:
-                continue
-            
-            three_range_begin = five_interval.end
-            three_range_end = five_interval.begin + MAX_CANDIDATE_LEN
-            
-
-            
-            # test if this interval is present in another candidate
-
-            # all candidates in allowed range
-            candidate_sequences = sequence_tree[tree][five_interval.begin:three_range_end]
-
-            if len(candidate_sequences) <= 1:
-                continue
-
-            outside_after = sequence_tree[tree][five_interval.begin+MAX_CANDIDATE_LEN+1]
-            outside_before = sequence_tree[tree][five_interval.begin-1]           
-            
-            
-            candidate_sequences.difference_update(outside_before, outside_after)
-            candidate_sequences = [s for s in candidate_sequences if s.data[0] == five_interval.data[0]]
-            
-            if len(candidate_sequences) <= 1:
-                continue
-#             three_sequences = sequence_tree[tree][three_range_begin:three_range_end]
-#             print sequence_tree[tree][five_interval.begin:three_range_begin -1]
-
-            three_sequences = set(candidate_sequences).difference(sequence_tree[tree][five_interval.begin:three_range_begin -1])
-
-#             three_sequences = [s for s in three_sequences if s.data[0] == five_interval.data[0]] # same strand direction
-
-            
-            if len(three_sequences) > 0:
-
-#                 find 5' start and ends
-                
-                starts = {} # start positions -> frequency
-                ends = {} # end positions -> frequency
-                get_start = {} # end position -> first start position
-                get_end = {} # start positon -> last end position
-                
-                best_start = 0
-                best_start_pos = 0
-                best_end = 0
-                best_end_pos = 0
-
-                
-                # find best start and end position
-                for interval in candidate_sequences:
-                    
-                    start =  interval.begin - five_interval.begin # start position
-                    if start < 0:
-                        continue
-                    end = interval.end - five_interval.begin # end position
-                    name = interval.data[1]
-                    frequency = float(name.split("-")[1])
-                    
-                    starts[start] = frequency if start not in starts else starts[start] + frequency
-                    ends[end] = frequency if end not in ends else ends[end] + frequency
-                    
-                    # find the largest interval from given start position
-                    get_start[end] = start if end not in get_start else min(start, get_start[end])
-                    get_end[start] = end if start not in get_end else max(end, get_end[start])
-                    
-                    if starts[start] > best_start:
-                        best_start = starts[start]
-                        best_start_pos = start
-                                                
-                    if ends[end] > best_end:
-                        best_end = ends[end]
-                        best_end_pos = end
-                
-                
-#                 print "start positions:\n", starts, "goes to:", get_end
-#                 print "ends positions:\n", ends, "starts from:", get_start
-#                 
-#                 print "best start position:", best_start_pos, best_start, get_end[best_start_pos],
-#                 print "best ends position:", best_end_pos, best_end, get_start[best_end_pos]
-                
-                #TODO not overlapping or very close
-                second_starts = set()
-                second_ends = set()
-                
-                for (start, count) in starts.iteritems():
-                    if start < best_start_pos: # this is 5'
-                        if get_end[start] + MIN_HAIRPIN_LOOP < best_start_pos:
-                            second_starts.add( (start, count) )
-                    elif get_end[best_start_pos] + MIN_HAIRPIN_LOOP < start:
-                        second_starts.add( (start, count) )
-                
-                for (end, count) in ends.iteritems():
-                    if end < best_end_pos: # this is 5'
-                        if end + MIN_HAIRPIN_LOOP < get_start[best_end_pos]: 
-                            second_ends.add( (end, count) )
-                    elif best_end_pos + MIN_HAIRPIN_LOOP < get_start[end]: 
-                        second_ends.add( (end, count) )
-                    
-                
-#                 second_starts = [(s,val) for (s,val) in starts.iteritems() if s < best_start_pos-5 or s > get_end[best_start_pos] ]
-#                 second_ends = [(s,v) for (s,v) in ends.iteritems() if s > best_end_pos+5 or s < get_start[best_end_pos]]
-                
-                
-                if len(second_starts) == 0 or len(second_ends) == 0:
-                    continue 
-                
-                second_start = max(second_starts, key=lambda (k,v): v)
-                second_end = max(second_ends, key=lambda(k,v):v)
-                
-#                 print "!!!"
-#                 print "second_starts", second_starts, second_start    
-#                 print "second ends", second_ends, second_end
-
-                begin_5 = five_interval.begin + min(best_start_pos, second_start[0])
-                end_5 = five_interval.begin + min(best_end_pos, second_end[0])
-                begin_3 = five_interval.begin + max(best_start_pos, second_start[0])
-                end_3 = five_interval.begin + max(best_end_pos, second_end[0])
                 strand_dir = interval.data[0]
                 chromosome = tree
                 
-
-                if tree in candidate_tree:
-                    if candidate_tree[tree][begin_5:end_3]:
-                        continue
-
+    #             if end_3p - begin_5p > MAX_CANDIDATE_LEN:
+    #             print
+    #             print end_3p-begin_5p
+    #             print begin_5p-start_interval, end_5p-start_interval, begin_3p-start_interval, end_3p-start_interval,
+    #             print (start_peak, end_peak),
+    #             print start_after_limit, stop_after_limit
+                    
+                assert end_3p - begin_5p <= MAX_CANDIDATE_LEN
+                
+                close_intervals = set(c for c in candidate_intervals if c.begin <= end_3p or c.end >= begin_5p)
+                candidate_intervals = set(candidate_intervals)
+                candidate_intervals -= close_intervals
+                candidate_intervals = list(candidate_intervals)
+                
                 candidate = structure.Candidate(chromosome,
                                                  strand_dir,
-                                                 begin_5,
-                                                 end_5,
-                                                 begin_3,
-                                                 end_3,
-                                                 candidate_sequences)
+                                                 begin_5p,
+                                                 end_5p,
+                                                 begin_3p,
+                                                 end_3p,
+                                                 close_intervals)        
                 
-                for candidate_interval in candidate_sequences:
+                      
+                for candidate_interval in close_intervals:
                     name = candidate_interval.data[1]
                     if name not in seq_to_candidates:
                         number_id = int(name.split("-")[0])
@@ -470,14 +276,20 @@ def find_candidates(sequence_hits):
                         seq_to_candidates[name] = s
                     else:
                         seq_to_candidates[name].add_candidate(candidate)
-                    
-                candidate_tree[tree][begin_5:end_3] = candidate
+                     
+                candidate_tree[tree][begin_5p:end_3p] = candidate
                 candidate_list.append(candidate)
-
+     
                 if len(all_mapped_sequences) == 0:
-                    all_mapped_sequences = candidate.all_mapped_sequences
+                    all_mapped_sequences = candidate.all_mapped_sequences           
+            
+    print "find candidates 2.0"
+    print "candidates:", a-f
+    print "tests:", a, (a-f) * 1.0/ a
+    print "fail:", f, f * 1.0 / a
+    print "sum candidates:", interval_sum
     
-    print "sum all seqs in candidates:", interval_sum
+    assert False
     return candidate_tree, sequence_tree, candidate_list, seq_to_candidates
 
 
@@ -643,18 +455,6 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, candidate_tree, sequence_tree)
     has_seqs.update(miRNA_with_candidates)
     print "miRNA with candidate or sequences:\t", len(has_seqs), len(has_seqs) * 1.0 / len(unique_mirnas)
 
-    assert False
+#     assert False
     return candidate_to_miRNAid
-
-
-# 
-#     def __init__(self, chromosome, strand_dir, begin_5, end_5,
-#                  begin_3, end_3, mapped_sequences):
-
-
-
-
-
-
-
 
