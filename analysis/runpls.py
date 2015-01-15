@@ -45,13 +45,18 @@ def main():
     print "starting"
     
     print "merging collapsed files"
+
+    fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed",
+                    "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed",
+                    "SRR207110.collapsed", "SRR207111.collapsed", "SRR207112.collapsed"]    
+    
     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed",
                     "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed"]
 
-    fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed", "SRR207111.collapsed"]
-#     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed"]
+#     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed", "SRR207111.collapsed"]
+    fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed"]
     fasta_files = ["SRR797062.collapsed"]
-#     
+#     fasta_files =  ["SRR207110.collapsed", "SRR207111.collapsed", "SRR207112.collapsed"] 
 #     fasta_file = "SRR797062.fa"
 
     dict_collapsed = merge.collapse_collapsed(fasta_files)
@@ -155,6 +160,7 @@ def main():
     print "\nrunning viennafold"
     vienna.energy_fold(candidates) # slow?
     
+    print "candidates", len(candidates)
     print "align miRNAs to other sequences"
     candidate_to_miRNA = interval_tree_search.align_miRNAs(miRNA_bowtie_hits,
                                                            hairpinID_to_mature,
@@ -197,6 +203,8 @@ def main():
 #     candidate quality: nr of sequence hits / all candidate hits for given sequences
     quality.candidate_quality(candidates, seq_to_candidates)
     
+    
+    
     print
     print "finished features in ", time.clock() - start_time, " seconds"
     
@@ -231,7 +239,13 @@ def main():
     print len(candidate_to_miRNA)
     print len(only_candidates)
     
-
+    for mi in miRNAs:
+        aaa = mi.small_subs
+        bbb = sum([ float(x.data[1].split("-")[1]) for x in mi.mapped_sequences])
+        ccc = aaa * 1.0 / bbb 
+        print ccc, "\t\t\t", aaa, bbb, ccc
+    
+    assert  False
 
     learn_miRNAs = vectorize.candidates_to_array(miRNAs)
     class_miRNAs = numpy.array(miRNA_annotations)
@@ -239,10 +253,6 @@ def main():
     
     for mi, nr in zip(learn_miRNAs, class_miRNAs):
         print mi, nr
-# 
-#     for mi in candidate_array:
-#         print mi
-    
     
     
     print "mirnas",len(learn_miRNAs)
