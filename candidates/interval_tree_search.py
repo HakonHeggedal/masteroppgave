@@ -300,9 +300,19 @@ def find_candidates_2(sequence_hits):
 
 
 
-def align_miRNAs(mirna_hits, hairpinID_to_mature, candidate_tree, sequence_tree):
+def align_miRNAs(mirna_hits, hairpinID_to_mature, candidate_tree, sequence_tree, miRNA_species):
     print "align candidates with miRNA"
     print
+    for k,v in miRNA_species.iteritems():
+        print k,v 
+        break
+    
+    perfect_hits = [0] * 6
+    shifted_hits = [0] * 6
+    shifted_more = [0] * 6
+    derp_hits = [0] * 6
+    
+    
     candidate_to_miRNAid = {}
     derp = {}
 #     finne kandidater som matcher miRNA
@@ -338,7 +348,6 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, candidate_tree, sequence_tree)
 
         
         tree = candidate_tree[chromosome]
-        
         unique_mirnas.add(miRNAid)
         if not tree:
 #             print "no:", chromosome
@@ -372,6 +381,20 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, candidate_tree, sequence_tree)
                 
                 hashval = candidate.data.chromosome + str(candidate.data.pos_5p_begin)
                 
+                
+                
+                if shift_5 < 3 and shift_3 < 3:
+
+                    perfect_hits[miRNA_species[miRNAid]] += 1
+                    
+                elif shift_5 < len_5/2 and shift_3 < len_3/2:
+                    shifted_hits[miRNA_species[miRNAid]] += 1
+                    
+                elif shift_5 < len_5 and shift_3 < len_3:
+                    shifted_more[miRNA_species[miRNAid]] += 1
+                else:
+                    derp_hits[miRNA_species[miRNAid]] += 1
+                    
                 # miRNA should overlap with candidate
                 if shift_5 < len_5*2 or shift_3 < len_3*2 or shift_5+shift_3 < (len_3+len_5)*2:
                     candidate_to_miRNAid[hashval] = miRNAid
@@ -451,15 +474,19 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, candidate_tree, sequence_tree)
     print "unique miRNAs (after bowtie):\t", len(unique_mirnas)
     print "miRNA aligns with candidate:\t", candidate_already
     print "Unique mirna aligning with candidate:\t", len(miRNA_with_candidates), len(miRNA_with_candidates) * 1.0 / len(unique_mirnas)
-    
+    print
     print "set of candidates with 1+ seq aligning:", len(set(candidate_to_miRNAid.iterkeys())), len(list(candidate_to_miRNAid.iterkeys()))
-
+    print "candidates aligning max 3+3 offset", perfect_hits, sum(perfect_hits)
+    print "candidates shifted some", shifted_hits, sum(shifted_hits)
+    print "candidates shifted a lot", shifted_more, sum(shifted_more)
+    print "candidates derp a lot", derp_hits, sum(derp_hits)
+    
     has_seqs = set(has_seqs)
     print "miRNA only aligning sequences:\t\t", len(set(has_seqs)), len(has_seqs) * 1.0 / len(unique_mirnas)
     
     has_seqs.update(miRNA_with_candidates)
     print "miRNA with candidate or sequences:\t", len(has_seqs), len(has_seqs) * 1.0 / len(unique_mirnas)
 
-#     assert False
+    assert False
     return candidate_to_miRNAid
 

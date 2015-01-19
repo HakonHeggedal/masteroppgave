@@ -22,16 +22,13 @@ from candidates import overhang
 from ml import vectorize
 
 
-
-
-
 def _align_bowtie(bowtie_output_file, collapsed_seq_file):
     from subprocess import check_output
     import os # hack: setting path to bowtie index
     os.environ['BOWTIE_INDEXES'] = "/home/hakon/Skrivebord/h_sapiens_37_asm.ebwt"
 
     human_index = "h_sapiens_37_asm"
-    bowtie_cmds = ["bowtie", "-f", "-v 0", "-a", "-m 10",
+    bowtie_cmds = ["bowtie", "-f", "-v 0", "-a", "-m 4",
                    human_index, collapsed_seq_file, bowtie_output_file]
 
     print check_output(bowtie_cmds)
@@ -52,13 +49,12 @@ def main():
     
     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed",
                     "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed"]
-
 #     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed", "SRR207111.collapsed"]
     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed"]
-    fasta_files = ["SRR797062.collapsed"]
+#     fasta_files = ["SRR797062.collapsed"]
 #     fasta_files =  ["SRR207110.collapsed", "SRR207111.collapsed", "SRR207112.collapsed"] 
 #     fasta_file = "SRR797062.fa"
-
+    
     dict_collapsed = merge.collapse_collapsed(fasta_files)
     
 #     split small and larger sequences
@@ -94,9 +90,9 @@ def main():
     
     hairpinID_to_mature = mirbase.combine_hairpin_mature(hsa_to_hairpin, hsa_to_mature)
     
-    for k,v in miRNA_species.iteritems():
-        if v > 0:
-            print k,v
+#     for k,v in miRNA_species.iteritems():
+#         if v > 0:
+#             print k,v
     
     
 #     assert False
@@ -165,7 +161,8 @@ def main():
     candidate_to_miRNA = interval_tree_search.align_miRNAs(miRNA_bowtie_hits,
                                                            hairpinID_to_mature,
                                                            candidate_tree,
-                                                           sequence_tree)
+                                                           sequence_tree,
+                                                           miRNA_species)
     
     print "aligning small seqs"
     align_small_seqs(candidates, small_reads, small_reads_count)
@@ -215,7 +212,6 @@ def main():
     miRNA_annotations = [] 
     only_candidates = []
     
-    
     mi_keys = set(candidate_to_miRNA.keys())
     candidate_keys = set([c.chromosome + str(c.pos_5p_begin) for c in candidates])
     
@@ -228,7 +224,6 @@ def main():
 #         print candidate, candidate in candidate_to_miRNA
         hashval = candidate.chromosome + str(candidate.pos_5p_begin)
         if hashval in candidate_to_miRNA:
-#             print "ok miRNA!"
             miRNAs.append(candidate)
             mi = candidate_to_miRNA[hashval]
             print mi, miRNA_species[mi]
