@@ -2,13 +2,15 @@
 # from bowtie import bowtie_get
 
 import time
-from candidates.microseqs import align_small_seqs
 start_time = time.clock()
+from candidates.microseqs import align_small_seqs
 import numpy
 from sklearn import svm
 
+
 from inputs import merge
 from inputs import mirbase
+from inputs import miRNA
 from genes import gene
 from candidates import interval_tree_search
 from candidates import heterogenity
@@ -39,7 +41,7 @@ def _align_bowtie(bowtie_output_file, collapsed_seq_file):
 
 def main():
 #     start_time = time.clock()
-    print "starting"
+    print "starting miRNA"
     
     print "merging collapsed files"
 
@@ -50,7 +52,7 @@ def main():
     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed",
                     "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed"]
 #     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed", "SRR207111.collapsed"]
-    fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed"]
+#     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed"]
 #     fasta_files = ["SRR797062.collapsed"]
 #     fasta_files =  ["SRR207110.collapsed", "SRR207111.collapsed", "SRR207112.collapsed"] 
 #     fasta_file = "SRR797062.fa"
@@ -80,6 +82,7 @@ def main():
     hairpin_file = "hairpin.fa"
     mature_seq_file = "mature.fa"
     miRNA_file_name = "mirnas.fa"
+    high_conf_file = "high_conf_hairpin.fa"
     
     print "loading miRNA hairpins:"
     
@@ -89,6 +92,12 @@ def main():
     miRNA_species = mirbase.similar_hairpins(hsa_to_hairpin, other_to_hairpin)
     
     hairpinID_to_mature = mirbase.combine_hairpin_mature(hsa_to_hairpin, hsa_to_mature)
+    miRNA_high_conf = miRNA.read_high_confidence(high_conf_file)
+    
+    print len(miRNA_high_conf)
+    print miRNA_high_conf.issubset(miRNA_species.keys())
+#     assert False
+    
     
 #     for k,v in miRNA_species.iteritems():
 #         if v > 0:
@@ -103,9 +112,6 @@ def main():
 
     
 #     miRNA_species = mirbase.mirna_copies(miRNAid_to_hairpin.values(), "hairpin.fa")
-    
-#     for k,v in miRNA_species.iteritems():
-#         print v
     
 #     run write micro rnas to file
 
@@ -162,7 +168,8 @@ def main():
                                                            hairpinID_to_mature,
                                                            candidate_tree,
                                                            sequence_tree,
-                                                           miRNA_species)
+                                                           miRNA_species,
+                                                           miRNA_high_conf)
     
     print "aligning small seqs"
     align_small_seqs(candidates, small_reads, small_reads_count)

@@ -41,7 +41,7 @@ def _viennafold(sequence):
     
 
 
-# seq2 = "uuggauguuggccuaguucuguguggaagacuagugauuuuguuguuuuuagauaacuaaaucgacaacaaaucacagucugccauauggcacaggccaugccucuacag"
-#  
-#  
-# _viennafold(seq2)
+seq2 = "AGGUUGAGGUAGUAGGUUGUAUAGUUUAGAAUUACAUCAAGGGAGAUAACUGUACAGCCUCCUAGCUUUCCU"
+  
+print  
+print _viennafold(seq2)
