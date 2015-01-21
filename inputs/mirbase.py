@@ -199,11 +199,12 @@ def similar_hairpins(specie_to_hairpin, others_to_hairpin):
     for miRNAid, hairpin in specie_to_hairpin.iteritems():
         
         if hairpin in other_species:
-            if len(other_species[hairpin]) > 5:
-                id_to_speciecount[miRNAid] = 5
-            else:
-#                 id_to_speciecount[miRNAid] = 1
-                id_to_speciecount[miRNAid] = len(other_species[hairpin])
+            id_to_speciecount[miRNAid] = len(other_species[hairpin])
+#             if len(other_species[hairpin]) > 5:
+#                 id_to_speciecount[miRNAid] = 5
+#             else:
+# #                 id_to_speciecount[miRNAid] = 1
+#                 id_to_speciecount[miRNAid] = len(other_species[hairpin])
         else:
 #             print "NO SPECIES"
             id_to_speciecount[miRNAid] = 0

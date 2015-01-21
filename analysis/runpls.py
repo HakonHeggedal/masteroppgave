@@ -83,6 +83,7 @@ def main():
     mature_seq_file = "mature.fa"
     miRNA_file_name = "mirnas.fa"
     high_conf_file = "high_conf_hairpin.fa"
+    miRNA_family_file = "miFam.dat"
     
     print "loading miRNA hairpins:"
     
@@ -96,6 +97,21 @@ def main():
     
     print len(miRNA_high_conf)
     print miRNA_high_conf.issubset(miRNA_species.keys())
+    
+    print "\nmifam\n"
+    miRNA_fam = miRNA.read_family(miRNA_family_file)
+    
+#     assert False
+    
+    print len(miRNA_fam)
+    for x in miRNA_species.keys():
+        print x
+        break
+    for x in miRNA_fam.keys():
+        print x
+        break
+    
+    print len(set(miRNA_species.keys()) & set(miRNA_fam.keys()))
 #     assert False
     
     
@@ -160,7 +176,7 @@ def main():
 
 #     assert False
     print "\nrunning viennafold"
-    vienna.energy_fold(candidates) # slow?
+    vienna.energy_fold(candidates) # slow
     
     print "candidates", len(candidates)
     print "align miRNAs to other sequences"
