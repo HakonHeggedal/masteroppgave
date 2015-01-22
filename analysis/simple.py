@@ -1,4 +1,7 @@
 import time
+import numpy
+from sklearn import cluster
+starttime = time.clock()
 # import draw_graph
 
 
@@ -46,7 +49,7 @@ def hashcluster(string_list, sublen = 3, offset = 1, maxlength = 10, filename = 
     
     # add all substrings to dictionary in range (position +- offset)
     for nr, string in enumerate(string_list):
-        print nr
+#         print nr
         
         for node1 in xrange(len(string) - sublen + 1):
             subs = string[node1:node1+3]
@@ -83,13 +86,13 @@ def hashcluster(string_list, sublen = 3, offset = 1, maxlength = 10, filename = 
     # printing resutls to file: node1, node2, overlap
     with open(filename, "w") as my_out_file:
         for node1,node1_dict in enumerate(a):
-            print node1
-            print [(node2,v) for (node2,v) in node1_dict.iteritems() if v >= min_overlap]
+#             print node1
+#             print [(node2,v) for (node2,v) in node1_dict.iteritems() if v >= min_overlap]
             if node1 < node2:
                 for node2,v in node1_dict.iteritems():
                     if v >= min_overlap:
                         s = str(node2) +" "+ str(node1) +" "+ str(v) + "\n"
-                        print s
+#                         print s
                         my_out_file.write( s )
                         links.append((node1,node2))
     
@@ -127,27 +130,45 @@ def high_confindence_file(all_file, high_file, filename="high_confidence.txt"):
 #
 
 
-starttime = time.clock()
+print
 print "starting"
-file_name = "mature.fa"
-print "\nanalysing ", file_name 
+file_name = "hairpin.fa"
+print "\nanalysing ", file_name
+
+
 
 
 rnas = [node1_dict.strip() for node1_dict in open(file_name) if node1_dict[0] is not ">"]
-inv_rnas = [node1_dict.strip()[::-1] for node1_dict in open(file_name) if node1_dict[0] is not ">"]
+# inv_rnas = [node1_dict.strip()[::-1] for node1_dict in open(file_name) if node1_dict[0] is not ">"]
 
 rna_human = []
+rna_human_names = []
+
 is_human = False
+
+rna = ""
 for line in open(file_name):
-    if line[0] == ">":
-        if line.find("Homo sapiens") > 0:
+    line = line.strip()
+    if line.startswith(">"):
+        if line.startswith(">hsa"):
+            rna_human_names.append(line.split()[0])
             is_human = True
+        else:
+            is_human = False
+        if rna:
+            rna_human.append(rna)
+            rna =  ""
+            
     elif is_human:
-        rna_human.append(line.strip())
-        is_human = False    
-    else:
-        pass
-        
+        rna += line
+
+for l in rna_human:
+    print l
+    
+print
+print len(rna_human_names), len(rna_human)
+print
+
 rnas = rna_human[:]
 # rnas = [node1_dict[::-1] for node1_dict in rnas]
 
@@ -160,24 +181,48 @@ print "symbol frequency: ", freq_dict
 print "most frequent positions:"
 print symbols
 
-for pos, freq in enumerate(positions):
-    print freq, pos
+# for pos, freq in enumerate(positions):
+#     print freq, pos
 
 a = hashcluster(rnas)
  
+print a[0]
 links = []
+
+
+sim_matrix = [[0 for x in range(len(rna_human))] for x in range(len(rna_human))]
+
+for mi_nr, d in enumerate(a):
+#     print mi_nr, d
+    for mi,sim_val in d.iteritems():
+        if mi_nr > mi:
+            sim_matrix[mi_nr][mi] += sim_val
+            
+print sim_matrix[10]
+print sim_matrix[10]
+
+a = numpy.array(a)
+
+cl = cluster.KMeans()
+# 
+cl = cluster.SpectralClustering(affinity="precomputed")
+cl.fit(a)
+
+
 
 with open("human.txt", "w") as my_out_file:
     for node1,node1_dict in enumerate(a):
-        print node1
-        print [(node2,val) for (node2,val) in node1_dict.iteritems() if val > 13]
+#         print node1
+#         print [(node2,val) for (node2,val) in node1_dict.iteritems() if val > 13]
 
         for node2,val in node1_dict.iteritems():
             if node2 > node1 and val > 13:
                 s = str(node1) +" "+ str(node2) +" "+ str(val) + "\n"
-                print s
+#                 print s
                 my_out_file.write( s )
                 links.append((node1,node2))
+
+
 
 print len(a)
 

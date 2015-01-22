@@ -5,7 +5,7 @@ Created on 29. okt. 2014
 '''
 
 
-def collapse_collapsed(collapsed_files, min_len=7):
+def collapse_collapsed(collapsed_files, min_len=7, min_count=2):
     ''' merge files in files list, return as lists'''
     
     all_sequences = {}
@@ -16,7 +16,7 @@ def collapse_collapsed(collapsed_files, min_len=7):
         total_seqs = 0
         
         with open(filename) as fasta_file:
-
+            
             count = 0
             for line in fasta_file:
                 line = line.strip()
@@ -24,9 +24,9 @@ def collapse_collapsed(collapsed_files, min_len=7):
                     continue
                 if line[0] == ">":
                     count = int(line.split("-")[1])
-                elif len(line) >= min_len and count > 0 and _legal_DNA(line):
-                    current_seqs[line] = count
                     total_seqs += count
+                elif len(line) >= min_len and count >= min_count and _legal_DNA(line):
+                    current_seqs[line] = count
                     count = 0
         
         for s, c  in current_seqs.iteritems():
@@ -39,28 +39,6 @@ def collapse_collapsed(collapsed_files, min_len=7):
     
     return all_sequences
 
-#     ''' merge files in files list, return as lists'''
-#     
-#     all_sequences = {}
-#     
-#     for filename in collapsed_files:
-#         
-#         with open(filename) as fasta_file:
-#             
-#             count = 0
-#             for line in fasta_file:
-#                 line = line.strip()
-#                 if line[0] == ">":
-#                     count = int(line.split("-")[1])
-#                 elif len(line) >= min_len and count > 0 and _legal_DNA(line):
-#                     if line in all_sequences:
-#                         all_sequences[line] += count
-#                     else:
-#                         all_sequences[line] = count
-#                     count = 0
-#     
-#     return all_sequences
-#     
 
 def filter_seqeunces(all_sequences, min_read_len=18):
     

@@ -4,6 +4,7 @@ Created on 21. jan. 2015
 @author: hakon
 '''
 from matplotlib import pyplot
+from matplotlib.ticker import ScalarFormatter
 
 
 
@@ -16,9 +17,9 @@ lc_species = [0, 6, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 4, 0, 0, 0, 0, 3, 8, 0, 0, 5, 
 
 
 
-print len(hc_distances)
+print len(hc_distances),
 print len(hc_species)
-print len(lc_distances)
+print len(lc_distances),
 print len(lc_species)
 
 max_dist1 = max(hc_distances)
@@ -29,15 +30,32 @@ max_spe1 = max(hc_species)
 max_spe2 = max(lc_species)
 max_spe = max(max_spe1, max_spe2)
 
-# x_tics = range(-1, )
+doubles = []
 
-pyplot.plot(hc_distances, hc_species, "ro")
-pyplot.plot(lc_distances, lc_species, "go")
-pyplot.xscale("symlog")
-pyplot.yticks(range(-1, max_spe+1, 1))
-pyplot.xticks(range(-1, max_dist+1, 1))  #     (([-1, max_dist, -1, max_spe ]))
-pyplot.get
+i = 1
 
-# pyplot.xscale("log")
+while i < 200:
+    doubles.append(i)
+    i <<= 1
+
+
+pyplot.hist([hc_distances,lc_distances], 30, stacked=True)
+pyplot.yscale("symlog",subsy=range(0,10))
+pyplot.yticks(doubles)
+pyplot.gca().set_xlim( -5, None )
+pyplot.gca().yaxis.set_major_formatter(ScalarFormatter(useOffset=False))
 pyplot.grid(True)
-pyplot.show() 
+pyplot.show()
+
+# x_tics = range(-1, )
+# 
+# pyplot.plot(hc_distances, hc_species, "ro")
+# pyplot.plot(lc_distances, lc_species, "go")
+# pyplot.xscale("symlog")
+# pyplot.yticks(range(-1, max_spe+1, 1))
+# pyplot.xticks(range(-1, max_dist+1, 1))  #     (([-1, max_dist, -1, max_spe ]))
+# pyplot.get
+# 
+# # pyplot.xscale("log")
+# pyplot.grid(True)
+# pyplot.show() 
