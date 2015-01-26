@@ -45,19 +45,19 @@ def main():
     
     print "merging collapsed files"
 
-    fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed",
+    fasta_files = ["SRR797059.collapsed", "SRR797060.collapsed", "SRR797061.collapsed",
                     "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed",
                     "SRR207110.collapsed", "SRR207111.collapsed", "SRR207112.collapsed"]    
     
-#     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed",
-#                     "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed"]
-    fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed", "SRR207111.collapsed"]
+    fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed",
+                    "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed"]
+#     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed", "SRR207111.collapsed"]
 #     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed"]
 #     fasta_files = ["SRR797062.collapsed"]
 #     fasta_files =  ["SRR207110.collapsed", "SRR207111.collapsed", "SRR207112.collapsed"] 
 #     fasta_file = "SRR797062.fa"
     
-    dict_collapsed = merge.collapse_collapsed(fasta_files)
+    dict_collapsed = merge.collapse_collapsed(fasta_files, min_len=10, min_count=2)
     
 #     split small and larger sequences
 #     write reads to file

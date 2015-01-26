@@ -8,12 +8,12 @@ def energy_fold(candidates):
     for candidate in candidates:
 
         fold, energy = _viennafold(candidate.hairpin)
-        fold40, energy40 = _viennafold(candidate.hairpin_padded_40)
+#         fold40, energy40 = _viennafold(candidate.hairpin_padded_40)
         fold10, energy10 = _viennafold(candidate.hairpin_padded_40[30:-30])
 
-        candidate.set_viennafold(fold, energy, fold10, energy10, fold40, energy40)
+#         candidate.set_viennafold(fold, energy, fold10, energy10, fold40, energy40)
+        candidate.set_viennafold(fold, energy, fold10, energy10, 0, 0)
 
-#     assert False
 
 
 def _viennafold(sequence):
