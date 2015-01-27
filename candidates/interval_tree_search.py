@@ -297,7 +297,6 @@ def find_candidates_2(sequence_hits):
     return candidate_tree, sequence_tree, candidate_list, seq_to_candidates
 
 
-
 def align_miRNAs(mirna_hits, hairpinID_to_mature, candidate_tree, sequence_tree,
                  miRNA_species, miRNA_high_conf):
 
@@ -313,28 +312,53 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, candidate_tree, sequence_tree,
     miRNA_with_candidates = set()
     has_seqs = []
     noseqs = 0
+    
+    
     for mirna_loki in mirna_hits:
         miRNAid = ">" + mirna_loki[0]
         
+        unique_mirnas.add(miRNAid)
 
         strand_dir = mirna_loki[1]
         chromosome = mirna_loki[2].split("|")[3]
         genome_offset = int(mirna_loki[3])
+        hairpin = mirna_loki[4]
 
         mature_pos = hairpinID_to_mature[miRNAid]
-        begin_5p = mature_pos[0] + genome_offset 
-        end_5p =  mature_pos[1] + genome_offset 
-        begin_3p =  mature_pos[2] + genome_offset 
-        end_3p =  mature_pos[3] + genome_offset
-
-
+        
+        mature_len = max(mature_pos[3]-mature_pos[2], mature_pos[1]-mature_pos[0])
+        if mature_len < 12:
+            mature_len = 22
+        
+        
+        begin_5p = end_5p = begin_3p = end_3p = genome_offset
+        
+        begin_5p += mature_pos[0]  if mature_pos[0] != -1 else 0
+        end_5p +=  mature_pos[1]  if mature_pos[1] != -1 else  mature_len
+        begin_3p +=  mature_pos[2]  if mature_pos[2] != -1 else  len(hairpin) - mature_len
+        end_3p +=  mature_pos[3] if mature_pos[3] != -1 else  len(hairpin)
+        
+#         print mature_pos, mirna_loki
         
         tree = candidate_tree[chromosome]
-        unique_mirnas.add(miRNAid)
         if not tree:
-#             print "no:", chromosome
+            print "no:", chromosome
             continue
         candidates = tree[begin_5p:end_3p]
+
+        
+        if len(candidates) > 1:
+            print
+            for c in candidates:
+                print c.data.chromosome_direction
+                print "\t", c
+                print "\t", c.data.mapped_sequences
+                print "\t", c.data.hairpin
+                print "\t", c.data.hairpin_fold_10
+                print "\t", miRNAid, miRNAid in miRNA_high_conf
+                for ses in c.data.mapped_sequences:
+                    print "\t\t", ses
+#             print candidates
 
         if candidates:
             miRNA_with_candidates.add(miRNAid)
@@ -381,21 +405,38 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, candidate_tree, sequence_tree,
 
                 derp[hashval] = miRNAid
             continue
-        
+
+
+
 #         no candidates aligns the "miRNA"
         tree = sequence_tree[chromosome]
         sequences = tree[begin_5p:end_3p]
         if sequences:
-            has_seqs.append(miRNAid)
+            best_start_pos, best_start, best_end_pos, best_end = _best_interval(sequences, begin_5p)
             
-            if miRNAid in miRNA_high_conf:
-                print "mirna positions:", begin_5p, end_3p
-                for se in sequences:
-                    print "\t", se.begin-begin_5p, se.end, se.data
-                print
+            avgpos = (best_start_pos + best_end_pos) / 2.0
+            
+            if avgpos < (end_3p - begin_5p) / 2.0 :
+                # peak is 5p
+                begin_5p = best_start_pos
+                end_5p = best_end_pos
+            else:
+                # peak is 3p
+                begin_3p = best_start_pos
+                end_3p = best_end_pos
+            
+            
+            has_seqs.append(miRNAid)
+#             print best_start_pos, best_start, best_end_pos, best_end
+#             if miRNAid in miRNA_high_conf:
+#                 print "mirna positions:", begin_5p, end_3p
+#                 for se in sequences:
+#                     print "\t", se.begin-begin_5p, se.end-begin_5p, se.data
+#                 print
+#             pass
             
         else:
-            # no sequences at all
+#             no sequences at all
             noseqs += 1
             noseq_set.add(miRNAid)
             pass
@@ -406,7 +447,7 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, candidate_tree, sequence_tree,
                          end_5p,
                          begin_3p,
                          end_3p,
-                         sequences) 
+                         sequences)
     
     
     
