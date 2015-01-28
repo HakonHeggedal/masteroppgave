@@ -183,6 +183,7 @@ def main():
     candidate_to_miRNA = interval_tree_search.align_miRNAs(miRNA_bowtie_hits,
                                                            hairpinID_to_mature,
                                                            candidate_tree,
+                                                           candidates,
                                                            sequence_tree,
                                                            miRNA_species,
                                                            miRNA_high_conf)
@@ -263,7 +264,7 @@ def main():
         ccc = aaa * 1.0 / bbb 
         print ccc, "\t\t\t", aaa, bbb, ccc
     
-    assert  False
+    assert False
 
     learn_miRNAs = vectorize.candidates_to_array(miRNAs)
     class_miRNAs = numpy.array(miRNA_annotations)

@@ -297,7 +297,7 @@ def find_candidates_2(sequence_hits):
     return candidate_tree, sequence_tree, candidate_list, seq_to_candidates
 
 
-def align_miRNAs(mirna_hits, hairpinID_to_mature, candidate_tree, sequence_tree,
+def align_miRNAs(mirna_hits, hairpinID_to_mature, candidate_tree, candidate_list, sequence_tree,
                  miRNA_species, miRNA_high_conf):
 
     candidate_to_miRNAid = {}
@@ -315,8 +315,8 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, candidate_tree, sequence_tree,
     
     
     for mirna_loki in mirna_hits:
-        miRNAid = ">" + mirna_loki[0]
         
+        miRNAid = ">" + mirna_loki[0]
         unique_mirnas.add(miRNAid)
 
         strand_dir = mirna_loki[1]
@@ -330,13 +330,14 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, candidate_tree, sequence_tree,
         if mature_len < 12:
             mature_len = 22
         
-        
         begin_5p = end_5p = begin_3p = end_3p = genome_offset
         
-        begin_5p += mature_pos[0]  if mature_pos[0] != -1 else 0
-        end_5p +=  mature_pos[1]  if mature_pos[1] != -1 else  mature_len
-        begin_3p +=  mature_pos[2]  if mature_pos[2] != -1 else  len(hairpin) - mature_len
+        begin_5p += mature_pos[0] if mature_pos[0] != -1 else 0
+        end_5p +=  mature_pos[1] if mature_pos[1] != -1 else  mature_len
+        begin_3p +=  mature_pos[2] if mature_pos[2] != -1 else  len(hairpin) - mature_len
         end_3p +=  mature_pos[3] if mature_pos[3] != -1 else  len(hairpin)
+        
+        is_candidate = False
         
 #         print mature_pos, mirna_loki
         
@@ -393,19 +394,12 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, candidate_tree, sequence_tree,
                 # miRNA should overlap with candidate
                 if shift_5 < len_5*2 or shift_3 < len_3*2 or shift_5+shift_3 < (len_3+len_5)*2:
                     candidate_to_miRNAid[hashval] = miRNAid
-                else:
-                    
-                    sumstarts = {}
-                    sumends = {}
-                    
-                    for s in candidate.data.mapped_sequences:
-                        val = float(s.data[1].split("-")[1])
-                        sumstarts[s.begin] = sumstarts[s.begin] + val if s.begin in sumstarts else val 
-                        sumends[s.end] = sumends[s.end] + val if s.end in sumends else val 
+                    is_candidate = True
+                    break
 
-                derp[hashval] = miRNAid
+
+        if is_candidate:
             continue
-
 
 
 #         no candidates aligns the "miRNA"
@@ -448,8 +442,11 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, candidate_tree, sequence_tree,
                          begin_3p,
                          end_3p,
                          sequences)
-    
-    
+        
+        candidate_list.append(candidate)
+        hashval = strand_dir + str(begin_5p)
+        
+        candidate_to_miRNAid[hashval] = miRNAid
     
     
     print
