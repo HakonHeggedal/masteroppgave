@@ -2,6 +2,7 @@
 # from bowtie import bowtie_get
 
 import time
+from ml.miRNA_group import split_candidates
 start_time = time.clock()
 from candidates.microseqs import align_small_seqs
 import numpy
@@ -187,6 +188,12 @@ def main():
                                                            sequence_tree,
                                                            miRNA_species,
                                                            miRNA_high_conf)
+    
+    
+    # create mirna groups for classification
+    split_candidates(candidates, candidate_to_miRNA, miRNA_fam)
+    
+    assert False
     
     print "aligning small seqs"
     align_small_seqs(candidates, small_reads, small_reads_count)

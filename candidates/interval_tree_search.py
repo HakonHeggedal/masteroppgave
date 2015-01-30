@@ -465,7 +465,7 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, candidate_tree, candidate_list
     print "no sequences aligning at all:\t", noseqs, len(noseq_set)
     print "no seqs vs high confidence:\t", len(noseq_set.intersection(miRNA_high_conf) ), len(miRNA_high_conf)
     
-    assert False
+#     assert False
     return candidate_to_miRNAid
 
 
