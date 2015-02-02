@@ -21,7 +21,7 @@ def split_candidates(candidates, mirna_dict, mirna_groups, folds=5, shuffle=Fals
     
     # split candidate list into only candidate and microRNAs
     for c in candidates:
-        hashval = c.chromosome + str(c.pos_5p_begin)
+        hashval = c.chromosome + c.chromosome_direction + str(c.pos_5p_begin)
         if hashval in mirna_dict:
             mis.append(c)
         else:
@@ -34,7 +34,7 @@ def split_candidates(candidates, mirna_dict, mirna_groups, folds=5, shuffle=Fals
     
     # make miRNA groups: group -> [mirnas]
     for m in mis:
-        hashval = m.chromosome + str(m.pos_5p_begin)
+        hashval = m.chromosome + m.chromosome_direction + str(m.pos_5p_begin)
         mi_name = mirna_dict[hashval]
         
         if mi_name in mirna_groups:

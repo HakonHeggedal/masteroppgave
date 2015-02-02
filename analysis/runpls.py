@@ -104,13 +104,13 @@ def main():
     
 #     assert False
     
-    print len(miRNA_fam)
-    for x in miRNA_species.keys():
-        print x
-        break
-    for x in miRNA_fam.keys():
-        print x
-        break
+#     print len(miRNA_fam)
+#     for x in miRNA_species.keys():
+#         print x
+#         break
+#     for x in miRNA_fam.keys():
+#         print x
+#         break
     
     print len(set(miRNA_species.keys()) & set(miRNA_fam.keys()))
 #     assert False
@@ -169,16 +169,7 @@ def main():
 # ['1-15830', '-', 'gi|224589818|ref|NC_000006.11|',
 #         NC_000006.11
 
-        
-    gene.include_padding(candidates)
-    print "padded all candidates in ", time.clock() - start_time, " seconds"
-    
-#     assert False
 
-#     assert False
-    print "\nrunning viennafold"
-    vienna.energy_fold(candidates) # slow
-    
     print "candidates", len(candidates)
     print "align miRNAs to other sequences"
     candidate_to_miRNA = interval_tree_search.align_miRNAs(miRNA_bowtie_hits,
@@ -190,9 +181,17 @@ def main():
                                                            miRNA_high_conf)
     
     
-    # create mirna groups for classification
-    split_candidates(candidates, candidate_to_miRNA, miRNA_fam)
+    print "padding..."
+    gene.include_padding(candidates)
+    print "padded all candidates in ", time.clock() - start_time, " seconds"
     
+    print "\nrunning viennafold"
+    vienna.energy_fold(candidates) # slow
+    
+    
+    # create mirna groups for classification
+    print "nr of candidates + miRNAS:", len(candidates)
+    split_candidates(candidates, candidate_to_miRNA, miRNA_fam)
     assert False
     
     print "aligning small seqs"
@@ -210,6 +209,7 @@ def main():
     not_mapped_reads = [structure.Sequence(i,n,read) for i,(read,n) in 
                         enumerate(zip(reads, reads_count))
                         if read not in seq_to_candidates]
+
 #     
 #     print len(not_mapped_reads)
 #     print len(seq_to_candidates)

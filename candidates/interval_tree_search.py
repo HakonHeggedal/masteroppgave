@@ -12,14 +12,12 @@ from matplotlib import pyplot
 
 
 MAX_CANDIDATE_LEN = 180
-MIN_CANDIDATE_LEN = 41
+# MIN_CANDIDATE_LEN = 41
 MIN_HAIRPIN_LOOP = 10
 MAX_HAIRPIN_LOOP = 20
-MIN_MATURE_SEQ = 16
+# MIN_MATURE_SEQ = 16
 MAX_MATURE_SEQ = 30
 SEARCH_LEN = 100
-
-
 
 
 
@@ -180,9 +178,7 @@ def find_candidates_2(sequence_hits):
     #                 print "no peak at all error", candidate_intervals
                     break
                 
-                
-    #             possible 5p before best peak?
-    #             if start_peak >= MIN_HAIRPIN_LOOP + MIN_MATURE_SEQ:
+
                     
                 start_before_limit = max(0,start_peak - MAX_HAIRPIN_LOOP - MAX_MATURE_SEQ)
                 stop_before_limit = max(0, start_peak - MIN_HAIRPIN_LOOP)
@@ -301,7 +297,7 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, candidate_tree, candidate_list
                  miRNA_species, miRNA_high_conf):
 
     candidate_to_miRNAid = {}
-    derp = {}
+
     noseq_set = set()
 
     candidate_already = 0
@@ -339,6 +335,9 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, candidate_tree, candidate_list
         
         is_candidate = False
         
+        print begin_5p, end_5p, begin_3p, end_3p
+
+        
 #         print mature_pos, mirna_loki
         
         tree = candidate_tree[chromosome]
@@ -355,7 +354,7 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, candidate_tree, candidate_list
                 print "\t", c
                 print "\t", c.data.mapped_sequences
                 print "\t", c.data.hairpin
-                print "\t", c.data.hairpin_fold_10
+#                 print "\t", c.data.hairpin_fold_10
                 print "\t", miRNAid, miRNAid in miRNA_high_conf
                 for ses in c.data.mapped_sequences:
                     print "\t\t", ses
@@ -400,25 +399,30 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, candidate_tree, candidate_list
 
         if is_candidate:
             continue
-
-
+        
 #         no candidates aligns the "miRNA"
         tree = sequence_tree[chromosome]
         sequences = tree[begin_5p:end_3p]
         if sequences:
-            best_start_pos, best_start, best_end_pos, best_end = _best_interval(sequences, begin_5p)
+            best_start_pos, _, best_end_pos, _ = _best_interval(sequences, begin_5p)
+            
+            print 123
+            print best_start_pos, best_end_pos, begin_5p, end_5p, begin_3p, end_3p
             
             avgpos = (best_start_pos + best_end_pos) / 2.0
             
+            offset = begin_5p
+            
             if avgpos < (end_3p - begin_5p) / 2.0 :
                 # peak is 5p
-                begin_5p = best_start_pos
-                end_5p = best_end_pos
+                begin_5p = best_start_pos + offset
+                end_5p = best_end_pos + offset
             else:
                 # peak is 3p
-                begin_3p = best_start_pos
-                end_3p = best_end_pos
-            
+                begin_3p = best_start_pos + offset
+                end_3p = best_end_pos + offset
+                
+            print best_start_pos, best_end_pos, begin_5p, end_5p, begin_3p, end_3p
             
             has_seqs.append(miRNAid)
 #             print best_start_pos, best_start, best_end_pos, best_end
@@ -443,8 +447,13 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, candidate_tree, candidate_list
                          end_3p,
                          sequences)
         
+        
+        if end_3p - begin_5p > 200:
+            print begin_5p, end_5p, begin_3p, end_3p
+            assert False
+        
         candidate_list.append(candidate)
-        hashval = strand_dir + str(begin_5p)
+        hashval = chromosome + strand_dir + str(begin_5p)
         
         candidate_to_miRNAid[hashval] = miRNAid
     
@@ -478,16 +487,16 @@ def align_miRNAs_stats(mirna_hits, hairpinID_to_mature, candidate_tree, sequence
     print "align candidates with miRNA"
     print
     
-    ph = 0
-    sh = 0
-    sm = 0
-    dh = 0
-    sw = 0
-    perfect_hits = [0] * 6
-    shifted_hits = [0] * 6
-    shifted_more = [0] * 6
-    shifted_wrong = [0] * 6
-    derp_hits = [0] * 6
+#     ph = 0
+#     sh = 0
+#     sm = 0
+#     dh = 0
+#     sw = 0
+#     perfect_hits = [0] * 6
+#     shifted_hits = [0] * 6
+#     shifted_more = [0] * 6
+#     shifted_wrong = [0] * 6
+#     derp_hits = [0] * 6
     
     hc_distances = []
     hc_species = []
@@ -562,7 +571,7 @@ def align_miRNAs_stats(mirna_hits, hairpinID_to_mature, candidate_tree, sequence
                 shift_3 = abs(candidate.data.pos_3p_begin - begin_3p)
                 shift_3 += abs(candidate.data.pos_3p_end - end_3p)
                 
-                hashval = candidate.data.chromosome + str(candidate.data.pos_5p_begin)
+                hashval = candidate.data.chromosome + strand_dir + str(candidate.data.pos_5p_begin)
                 
                 wrong_shift_end = abs(candidate.data.pos_5p_begin - begin_3p)
                 wrong_shift_end += abs(candidate.data.pos_5p_end - end_3p)

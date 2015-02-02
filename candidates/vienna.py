@@ -5,7 +5,11 @@ import re
 
 def energy_fold(candidates):
     
+    i = 0
     for candidate in candidates:
+        i += 1
+        if i % 100 == 0:
+            print ".",
 
         fold, energy = _viennafold(candidate.hairpin)
 #         fold40, energy40 = _viennafold(candidate.hairpin_padded_40)
