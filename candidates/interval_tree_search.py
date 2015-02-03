@@ -6,7 +6,7 @@ Created on 1. okt. 2014
 
 from intervaltree.bio import GenomeIntervalTree
 from candidates import structure
-from matplotlib import pyplot
+
 
 
 
@@ -115,7 +115,7 @@ def find_candidates_2(sequence_hits):
     print "\tall intervals added to the tree" 
     
     interval_sum = 0.0
-    
+
     # test all intervals to find candidates
     for tree in sequence_tree:
         print tree
@@ -166,8 +166,11 @@ def find_candidates_2(sequence_hits):
             
             candidate_intervals = sorted(candidate_intervals) # first interval is picked if several equal.
 #             print len(candidate_intervals)
+            
+            i = 0
             while candidate_intervals:
-                
+                i += 1
+                if i > 1: break
                 
                 # ready to find peaks:
                 start_peak, start_peak_val, end_peak, end_peak_val = _best_interval(candidate_intervals, start_interval)
@@ -212,6 +215,7 @@ def find_candidates_2(sequence_hits):
     #                 print "no 3 or 5 sequences"
                     f += 1
                     break
+                
                 elif not_after or start_after_val + stop_after_val > start_before_val + stop_before_val:
     #                 print "only 3p"
                     begin_5p = start_peak + start_interval
@@ -250,20 +254,53 @@ def find_candidates_2(sequence_hits):
                     
                 assert end_3p - begin_5p <= MAX_CANDIDATE_LEN
                 
-                close_intervals = set(c for c in candidate_intervals if c.begin <= end_3p or c.end >= begin_5p)
+                qwe = len(candidate_intervals) > 50
+
+#                 if  i > 1:
+#                     print "before....", i
+# #                     for c in sorted(candidate_intervals):
+# #                         print c
+#                     print begin_5p, end_3p
+#                     print len(candidate_intervals)
+                
+                close_intervals = set()
+                for c in candidate_intervals:
+                    if begin_5p < c.begin < end_3p or begin_5p < c.end < end_3p:
+                        close_intervals.add(c)
+                
+#                 close_intervals = set(c for c in candidate_intervals if c.begin <= end_3p or c.end >= begin_5p)
                 candidate_intervals = set(candidate_intervals)
                 candidate_intervals -= close_intervals
                 candidate_intervals = list(candidate_intervals)
                 
+#                 if  i > 1:
+#                     
+#                     print len(candidate_intervals)
+#                     print len(close_intervals)
+# #                     for c in sorted(candidate_intervals):
+# #                         print c
+#                     print len(candidate_intervals)
+#                     print i
+#                     print
+                    
+#                     if derp:
+#                         assert False
+#                     derp = True
+#                     assert False
+                    
 #                 print "adding new canididate from", begin_5p ," sequence hits:", len(close_intervals)
+                
+                
+
                 candidate = structure.Candidate(chromosome,
                                                  strand_dir,
                                                  begin_5p,
                                                  end_5p,
                                                  begin_3p,
                                                  end_3p,
-                                                 close_intervals)        
+                                                 close_intervals)
                 
+                assert candidate.pos_5p_begin < candidate.pos_5p_end < candidate.pos_3p_begin < candidate.pos_3p_end
                       
                 for candidate_interval in close_intervals:
                     name = candidate_interval.data[1]
@@ -287,7 +324,7 @@ def find_candidates_2(sequence_hits):
     print "candidates:", a-f
     print "tests:", a, (a-f) * 1.0/ a
     print "fail:", f, f * 1.0 / a
-    print "sum candidates:", interval_sum
+    print "sum interval in candidates:", interval_sum
     
 #     assert False
     return candidate_tree, sequence_tree, candidate_list, seq_to_candidates
@@ -380,7 +417,7 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, candidate_tree, candidate_list
                 shift_3 = abs(candidate.data.pos_3p_begin - begin_3p)
                 shift_3 += abs(candidate.data.pos_3p_end - end_3p)
                 
-                hashval = candidate.data.chromosome + str(candidate.data.pos_5p_begin)
+                hashval = candidate.data.chromosome + strand_dir + str(candidate.data.pos_5p_begin)
                 
                 wrong_shift_end = abs(candidate.data.pos_5p_begin - begin_3p)
                 wrong_shift_end += abs(candidate.data.pos_5p_end - end_3p)
@@ -481,243 +518,257 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, candidate_tree, candidate_list
 
 
 
-def align_miRNAs_stats(mirna_hits, hairpinID_to_mature, candidate_tree, sequence_tree,
-                 miRNA_species, miRNA_high_conf):
-    print
-    print "align candidates with miRNA"
-    print
-    
-#     ph = 0
-#     sh = 0
-#     sm = 0
-#     dh = 0
-#     sw = 0
-#     perfect_hits = [0] * 6
-#     shifted_hits = [0] * 6
-#     shifted_more = [0] * 6
-#     shifted_wrong = [0] * 6
-#     derp_hits = [0] * 6
-    
-    hc_distances = []
-    hc_species = []
-    
-    lc_distances = []
-    lc_species = []
-    
-    
-    candidate_to_miRNAid = {}
-    derp = {}
-#     finne kandidater som matcher miRNA
-#     finne sekvenser fra bowtie som aligner med miRNA
-#     sequence_tree[tree][five_interval.begin:three_range_end]
-    candidate_already = 0
-    
-    unique_mirnas = set()
 
-    candidate_count = 0
-    miRNA_with_candidates = set()
-    has_seqs = []
-    for mirna_loki in mirna_hits:
-        miRNAid = ">" + mirna_loki[0]
-        
-#         print 
-#         print "candidate", miRNAid, hairpinID_to_mature[miRNAid]
-#         assert False
-        strand_dir = mirna_loki[1]
-        chromosome = mirna_loki[2].split("|")[3]
-        genome_offset = int(mirna_loki[3])
-
-        mature_pos = hairpinID_to_mature[miRNAid]
-        begin_5p = mature_pos[0] + genome_offset 
-        end_5p =  mature_pos[1] + genome_offset 
-        begin_3p =  mature_pos[2] + genome_offset 
-        end_3p =  mature_pos[3] + genome_offset
-        
-#         begin_5p = mature_pos[0] + genome_offset if mature_pos[0] >= 0 else mature_pos[0]
-#         end_5p =  mature_pos[1] + genome_offset if mature_pos[1] >= 0 else mature_pos[1]
-#         begin_3p =  mature_pos[2] + genome_offset if mature_pos[2] >= 0 else mature_pos[2]
-#         end_3p =  mature_pos[3] + genome_offset if mature_pos[3] >= 0 else mature_pos[3]
-
-        
-        tree = candidate_tree[chromosome]
-        unique_mirnas.add(miRNAid)
-        if not tree:
-#             print "no:", chromosome
-            continue
-        candidates = tree[begin_5p:end_3p]
-
-        if candidates:
-            miRNA_with_candidates.add(miRNAid)
-            candidate_already += 1
-            
-
-#             print begin_5p, end_5p, begin_3p, end_3p,
-#             print (end_3p - begin_3p, end_5p - begin_5p),
-#             print strand_dir
-            
-            for candidate in candidates:
-                
-                if candidate.data.chromosome_direction != strand_dir:
-                    continue
-
-
-                candidate_count += 1
-                
-                len_5 = candidate.data.pos_5p_end - candidate.data.pos_5p_begin
-                shift_5 = abs(candidate.data.pos_5p_begin - begin_5p)
-                shift_5 += abs(candidate.data.pos_5p_end - end_5p)
-                
-                len_3 = candidate.data.pos_3p_end - candidate.data.pos_3p_begin
-                shift_3 = abs(candidate.data.pos_3p_begin - begin_3p)
-                shift_3 += abs(candidate.data.pos_3p_end - end_3p)
-                
-                hashval = candidate.data.chromosome + strand_dir + str(candidate.data.pos_5p_begin)
-                
-                wrong_shift_end = abs(candidate.data.pos_5p_begin - begin_3p)
-                wrong_shift_end += abs(candidate.data.pos_5p_end - end_3p)
-                
-                wrong_shift_middle = abs(candidate.data.pos_3p_begin - begin_5p)
-                wrong_shift_middle += abs(candidate.data.pos_3p_end - end_5p)
-                
-                
-                if miRNAid in miRNA_high_conf:
-                    hc_distances.append(shift_5 + shift_3)
-                    hc_species.append(miRNA_species[miRNAid])
-                else:
-                    lc_distances.append(shift_5 + shift_3)
-                    lc_species.append(miRNA_species[miRNAid])
-#                 
-#                 if shift_5 < 1 and shift_3 < 1:
+#===============================================================================
 # 
-#                     perfect_hits[miRNA_species[miRNAid]] += 1
-#                     if miRNAid in miRNA_high_conf:
-#                         ph += 1                  
-#                     
-#                 elif shift_5 < len_5/2 and shift_3 < len_3/2:
-#                     shifted_hits[miRNA_species[miRNAid]] += 1
-#                     if miRNAid in miRNA_high_conf:
-#                         sh += 1
-# 
-#                 elif wrong_shift_end < (len_5/2) +1  or wrong_shift_middle < (len_3/2) +1:
-#                     shifted_wrong[miRNA_species[miRNAid]] += 1
-#                     if miRNAid in miRNA_high_conf:
-#                         sw += 1  
-#                                             
-#                 elif shift_5 < len_5 and shift_3 < len_3:
-#                     shifted_more[miRNA_species[miRNAid]] += 1
-#                     if miRNAid in miRNA_high_conf:
-#                         sm += 1
-#                 else:
-#                     derp_hits[miRNA_species[miRNAid]] += 1
-#                     if miRNAid in miRNA_high_conf:
-#                         dh += 1
-                    
-                # miRNA should overlap with candidate
-                if shift_5 < len_5*2 or shift_3 < len_3*2 or shift_5+shift_3 < (len_3+len_5)*2:
-                    candidate_to_miRNAid[hashval] = miRNAid
-                else:
-#                     print
-#                     print mirna_loki[4]
-#                     print candidate.data.hairpin
-#                     
-#                     print candidate.data.pos_5p_begin, candidate.data.pos_5p_end, candidate.data.pos_3p_begin, candidate.data.pos_3p_end, 
-#                     print (candidate.data.pos_5p_end - candidate.data.pos_5p_begin),
-#                     print (candidate.data.pos_3p_end - candidate.data.pos_3p_begin),
-#                     print candidate.data.chromosome_direction
-#                     print candidate.data.hairpin_fold_10
-#                     print candidate.data.hairpin_fold_40
-#                     
-#                     print shift_5, shift_3, len_3, len_5
-#                     print
-                    
-                    folds = 0
-                    foldstr = ""
-                    
-                    
-                    for c in candidate.data.hairpin_fold_10:
-                        if c == "(":
-                            folds += 1
-                        elif c == ")":
-                            folds -= 1
-                        
-                        folds %= 10
-                        foldstr += str(folds)
-#                     print foldstr
-#                     
-#                     print " "*10 + candidate.data.hairpin_fold_10[10:-10]
-#                     print candidate.data.hairpin_fold_10[10+begin_5p-candidate.data.pos_5p_begin:]
-                    
-                    sumstarts = {}
-                    sumends = {}
-                    
-                    
-                    for s in candidate.data.mapped_sequences:
-                        val = float(s.data[1].split("-")[1])
-                        sumstarts[s.begin] = sumstarts[s.begin] + val if s.begin in sumstarts else val 
-                        sumends[s.end] = sumends[s.end] + val if s.end in sumends else val 
-#                     for k,v in sorted(sumstarts.iteritems()):
-#                         print k,v
-#                     print "------"
-#                     for k,v in sorted(sumends.iteritems()):
-#                         print k,v
+#===============================================================================
 
-#                 similar_pos = 0
-#                 if candidate.data.pos_5p_begin == begin_5p:
-#                     similar_pos += 1
-#                 if candidate.data.pos_5p_end == end_5p:
-#                     similar_pos += 1
-#                 if candidate.data.pos_3p_begin == begin_3p:
-#                     similar_pos += 1
-#                 if candidate.data.pos_3p_end == end_3p:
-#                     similar_pos += 1
-#                 if similar_pos >= 2:
-# 
-#                     print  "\tok", similar_pos
-#                     hashval = candidate.data.chromosome + str(candidate.data.pos_5p_begin)
-#                     candidate_to_miRNAid[hashval] = miRNAid
-#                 candidates_at_miRNA.add(candidate)
-                derp[hashval] = miRNAid
-            continue
-        
-#         no candidates aligns the "miRNA"
-        tree = sequence_tree[chromosome]
-        sequences = tree[begin_5p:end_3p]
-        if sequences:
-            has_seqs.append(miRNAid)
-            
-            
-    print hc_distances
-    print hc_species
-    print lc_distances
-    print lc_species
-    
-    pyplot.plot(hc_distances, hc_species, "ro")
-    pyplot.plot(lc_distances, lc_species, "go")
-    pyplot.show()         
 
-    print
-    print "nr of miRNA bowtie hits:\t", len(mirna_hits)
-    print "unique miRNAs (after bowtie):\t", len(unique_mirnas)
-    print "miRNA aligns with candidate:\t", candidate_already
-    print "Unique mirna aligning with candidate:\t", len(miRNA_with_candidates), len(miRNA_with_candidates) * 1.0 / len(unique_mirnas)
-    print
-    print "set of candidates with 1+ seq aligning:", len(set(candidate_to_miRNAid.iterkeys())), len(list(candidate_to_miRNAid.iterkeys()))
-#     print "candidates aligning max 3+3 offset", perfect_hits, sum(perfect_hits), ph, ph*1.0/sum(perfect_hits)
-#     print "candidates shifted some", shifted_hits, sum(shifted_hits), sh, sh*1.0/sum(shifted_hits)
-#     print "candidates wrong hairpin", shifted_wrong, sum(shifted_wrong), sw, sw*1.0/sum(shifted_hits)
-#     print "candidates shifted a lot", shifted_more, sum(shifted_more), sm, sm*1.0/sum(shifted_more)
-#     print "candidates derp a lot", derp_hits, sum(derp_hits), dh, dh*1.0/sum(derp_hits)
+
+
+
+
+#===============================================================================
+# 
+# def align_miRNAs_stats(mirna_hits, hairpinID_to_mature, candidate_tree, sequence_tree,
+#                  miRNA_species, miRNA_high_conf):
+#     print
+#     print "align candidates with miRNA"
+#     print
 #     
-    has_seqs = set(has_seqs)
-    print "miRNA only aligning sequences:\t\t", len(set(has_seqs)), len(has_seqs) * 1.0 / len(unique_mirnas)
-    
-    has_seqs.update(miRNA_with_candidates)
-    print "miRNA with candidate or sequences:\t", len(has_seqs), len(has_seqs) * 1.0 / len(unique_mirnas)
-    
-    
+# #     ph = 0
+# #     sh = 0
+# #     sm = 0
+# #     dh = 0
+# #     sw = 0
+# #     perfect_hits = [0] * 6
+# #     shifted_hits = [0] * 6
+# #     shifted_more = [0] * 6
+# #     shifted_wrong = [0] * 6
+# #     derp_hits = [0] * 6
+#     
+#     hc_distances = []
+#     hc_species = []
+#     
+#     lc_distances = []
+#     lc_species = []
+#     
+#     
+#     candidate_to_miRNAid = {}
+#     derp = {}
+# #     finne kandidater som matcher miRNA
+# #     finne sekvenser fra bowtie som aligner med miRNA
+# #     sequence_tree[tree][five_interval.begin:three_range_end]
+#     candidate_already = 0
+#     
+#     unique_mirnas = set()
+# 
+#     candidate_count = 0
+#     miRNA_with_candidates = set()
+#     has_seqs = []
+#     for mirna_loki in mirna_hits:
+#         miRNAid = ">" + mirna_loki[0]
+#         
+# #         print 
+# #         print "candidate", miRNAid, hairpinID_to_mature[miRNAid]
+# #         assert False
+#         strand_dir = mirna_loki[1]
+#         chromosome = mirna_loki[2].split("|")[3]
+#         genome_offset = int(mirna_loki[3])
+# 
+#         mature_pos = hairpinID_to_mature[miRNAid]
+#         begin_5p = mature_pos[0] + genome_offset 
+#         end_5p =  mature_pos[1] + genome_offset 
+#         begin_3p =  mature_pos[2] + genome_offset 
+#         end_3p =  mature_pos[3] + genome_offset
+#         
+# #         begin_5p = mature_pos[0] + genome_offset if mature_pos[0] >= 0 else mature_pos[0]
+# #         end_5p =  mature_pos[1] + genome_offset if mature_pos[1] >= 0 else mature_pos[1]
+# #         begin_3p =  mature_pos[2] + genome_offset if mature_pos[2] >= 0 else mature_pos[2]
+# #         end_3p =  mature_pos[3] + genome_offset if mature_pos[3] >= 0 else mature_pos[3]
+# 
+#         
+#         tree = candidate_tree[chromosome]
+#         unique_mirnas.add(miRNAid)
+#         if not tree:
+# #             print "no:", chromosome
+#             continue
+#         candidates = tree[begin_5p:end_3p]
+# 
+#         if candidates:
+#             miRNA_with_candidates.add(miRNAid)
+#             candidate_already += 1
+#             
+# 
+# #             print begin_5p, end_5p, begin_3p, end_3p,
+# #             print (end_3p - begin_3p, end_5p - begin_5p),
+# #             print strand_dir
+#             
+#             for candidate in candidates:
+#                 
+#                 if candidate.data.chromosome_direction != strand_dir:
+#                     continue
+# 
+# 
+#                 candidate_count += 1
+#                 
+#                 len_5 = candidate.data.pos_5p_end - candidate.data.pos_5p_begin
+#                 shift_5 = abs(candidate.data.pos_5p_begin - begin_5p)
+#                 shift_5 += abs(candidate.data.pos_5p_end - end_5p)
+#                 
+#                 len_3 = candidate.data.pos_3p_end - candidate.data.pos_3p_begin
+#                 shift_3 = abs(candidate.data.pos_3p_begin - begin_3p)
+#                 shift_3 += abs(candidate.data.pos_3p_end - end_3p)
+#                 
+#                 hashval = candidate.data.chromosome + strand_dir + str(candidate.data.pos_5p_begin)
+#                 
+#                 wrong_shift_end = abs(candidate.data.pos_5p_begin - begin_3p)
+#                 wrong_shift_end += abs(candidate.data.pos_5p_end - end_3p)
+#                 
+#                 wrong_shift_middle = abs(candidate.data.pos_3p_begin - begin_5p)
+#                 wrong_shift_middle += abs(candidate.data.pos_3p_end - end_5p)
+#                 
+#                 
+#                 if miRNAid in miRNA_high_conf:
+#                     hc_distances.append(shift_5 + shift_3)
+#                     hc_species.append(miRNA_species[miRNAid])
+#                 else:
+#                     lc_distances.append(shift_5 + shift_3)
+#                     lc_species.append(miRNA_species[miRNAid])
+# #                 
+# #                 if shift_5 < 1 and shift_3 < 1:
+# # 
+# #                     perfect_hits[miRNA_species[miRNAid]] += 1
+# #                     if miRNAid in miRNA_high_conf:
+# #                         ph += 1                  
+# #                     
+# #                 elif shift_5 < len_5/2 and shift_3 < len_3/2:
+# #                     shifted_hits[miRNA_species[miRNAid]] += 1
+# #                     if miRNAid in miRNA_high_conf:
+# #                         sh += 1
+# # 
+# #                 elif wrong_shift_end < (len_5/2) +1  or wrong_shift_middle < (len_3/2) +1:
+# #                     shifted_wrong[miRNA_species[miRNAid]] += 1
+# #                     if miRNAid in miRNA_high_conf:
+# #                         sw += 1  
+# #                                             
+# #                 elif shift_5 < len_5 and shift_3 < len_3:
+# #                     shifted_more[miRNA_species[miRNAid]] += 1
+# #                     if miRNAid in miRNA_high_conf:
+# #                         sm += 1
+# #                 else:
+# #                     derp_hits[miRNA_species[miRNAid]] += 1
+# #                     if miRNAid in miRNA_high_conf:
+# #                         dh += 1
+#                     
+#                 # miRNA should overlap with candidate
+#                 if shift_5 < len_5*2 or shift_3 < len_3*2 or shift_5+shift_3 < (len_3+len_5)*2:
+#                     candidate_to_miRNAid[hashval] = miRNAid
+#                 else:
+# #                     print
+# #                     print mirna_loki[4]
+# #                     print candidate.data.hairpin
+# #                     
+# #                     print candidate.data.pos_5p_begin, candidate.data.pos_5p_end, candidate.data.pos_3p_begin, candidate.data.pos_3p_end, 
+# #                     print (candidate.data.pos_5p_end - candidate.data.pos_5p_begin),
+# #                     print (candidate.data.pos_3p_end - candidate.data.pos_3p_begin),
+# #                     print candidate.data.chromosome_direction
+# #                     print candidate.data.hairpin_fold_10
+# #                     print candidate.data.hairpin_fold_40
+# #                     
+# #                     print shift_5, shift_3, len_3, len_5
+# #                     print
+#                     
+#                     folds = 0
+#                     foldstr = ""
+#                     
+#                     
+#                     for c in candidate.data.hairpin_fold_10:
+#                         if c == "(":
+#                             folds += 1
+#                         elif c == ")":
+#                             folds -= 1
+#                         
+#                         folds %= 10
+#                         foldstr += str(folds)
+# #                     print foldstr
+# #                     
+# #                     print " "*10 + candidate.data.hairpin_fold_10[10:-10]
+# #                     print candidate.data.hairpin_fold_10[10+begin_5p-candidate.data.pos_5p_begin:]
+#                     
+#                     sumstarts = {}
+#                     sumends = {}
+#                     
+#                     
+#                     for s in candidate.data.mapped_sequences:
+#                         val = float(s.data[1].split("-")[1])
+#                         sumstarts[s.begin] = sumstarts[s.begin] + val if s.begin in sumstarts else val 
+#                         sumends[s.end] = sumends[s.end] + val if s.end in sumends else val 
+# #                     for k,v in sorted(sumstarts.iteritems()):
+# #                         print k,v
+# #                     print "------"
+# #                     for k,v in sorted(sumends.iteritems()):
+# #                         print k,v
+# 
+# #                 similar_pos = 0
+# #                 if candidate.data.pos_5p_begin == begin_5p:
+# #                     similar_pos += 1
+# #                 if candidate.data.pos_5p_end == end_5p:
+# #                     similar_pos += 1
+# #                 if candidate.data.pos_3p_begin == begin_3p:
+# #                     similar_pos += 1
+# #                 if candidate.data.pos_3p_end == end_3p:
+# #                     similar_pos += 1
+# #                 if similar_pos >= 2:
+# # 
+# #                     print  "\tok", similar_pos
+# #                     hashval = candidate.data.chromosome + str(candidate.data.pos_5p_begin)
+# #                     candidate_to_miRNAid[hashval] = miRNAid
+# #                 candidates_at_miRNA.add(candidate)
+#                 derp[hashval] = miRNAid
+#             continue
+#         
+# #         no candidates aligns the "miRNA"
+#         tree = sequence_tree[chromosome]
+#         sequences = tree[begin_5p:end_3p]
+#         if sequences:
+#             has_seqs.append(miRNAid)
+#             
+#             
+#     print hc_distances
+#     print hc_species
+#     print lc_distances
+#     print lc_species
+#     
+#     pyplot.plot(hc_distances, hc_species, "ro")
+#     pyplot.plot(lc_distances, lc_species, "go")
+#     pyplot.show()         
+# 
+#     print
+#     print "nr of miRNA bowtie hits:\t", len(mirna_hits)
+#     print "unique miRNAs (after bowtie):\t", len(unique_mirnas)
+#     print "miRNA aligns with candidate:\t", candidate_already
+#     print "Unique mirna aligning with candidate:\t", len(miRNA_with_candidates), len(miRNA_with_candidates) * 1.0 / len(unique_mirnas)
+#     print
+#     print "set of candidates with 1+ seq aligning:", len(set(candidate_to_miRNAid.iterkeys())), len(list(candidate_to_miRNAid.iterkeys()))
+# #     print "candidates aligning max 3+3 offset", perfect_hits, sum(perfect_hits), ph, ph*1.0/sum(perfect_hits)
+# #     print "candidates shifted some", shifted_hits, sum(shifted_hits), sh, sh*1.0/sum(shifted_hits)
+# #     print "candidates wrong hairpin", shifted_wrong, sum(shifted_wrong), sw, sw*1.0/sum(shifted_hits)
+# #     print "candidates shifted a lot", shifted_more, sum(shifted_more), sm, sm*1.0/sum(shifted_more)
+# #     print "candidates derp a lot", derp_hits, sum(derp_hits), dh, dh*1.0/sum(derp_hits)
+# #     
+#     has_seqs = set(has_seqs)
+#     print "miRNA only aligning sequences:\t\t", len(set(has_seqs)), len(has_seqs) * 1.0 / len(unique_mirnas)
+#     
+#     has_seqs.update(miRNA_with_candidates)
+#     print "miRNA with candidate or sequences:\t", len(has_seqs), len(has_seqs) * 1.0 / len(unique_mirnas)
+#     
+#     
+# 
+#     
+#     
+#     assert False
+#     return candidate_to_miRNAid
+#===============================================================================
 
-    
-    
-    assert False
-    return candidate_to_miRNAid
 

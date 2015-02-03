@@ -5,7 +5,7 @@ Created on 6. okt. 2014
 '''
 import os
 
-def include_padding(candidate_list, padding=40 ):
+def include_padding(candidate_list_unsort, padding=40 ):
     
     # such hack...
     p =  os.getcwd()
@@ -13,7 +13,11 @@ def include_padding(candidate_list, padding=40 ):
     os.chdir("genes")
         
     i = 0
-    print "candidates:", len(candidate_list)
+    print "candidates:", len(candidate_list_unsort)
+    
+#    sort the candidate list by genome... much faster
+    candidate_list = candidate_list_unsort[:]
+    candidate_list = sorted(candidate_list, key=lambda x: x.chromosome)
 
     while i < len(candidate_list):
         
@@ -97,8 +101,8 @@ def include_padding(candidate_list, padding=40 ):
                     break
                 
                 if candidate_list[i].chromosome != gene_name:
-                    print "wrong chromosome error", candidate_list[i].chromosome, gene_name
-                    assert False
+#                     print "must change chromosome"
+#                     assert False
                     break
                 
                 candidate = candidate_list[i]

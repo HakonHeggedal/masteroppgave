@@ -11,7 +11,7 @@ def get_alignment(candidates):
     
     for candidate in candidates:
         fold_10 = candidate.hairpin_fold_10
-        fold_40 = candidate.hairpin_fold_40
+#         fold_40 = candidate.hairpin_fold_40
         
 #         print "overhang alignment:",
 #         print "\t", fold_10
@@ -35,7 +35,7 @@ def get_alignment(candidates):
 #         assert len(fold_10) == 20 + candidate.pos_3p_end - candidate.pos_5p_begin
         
         folds_10 = max_fold(fold_10)
-        folds_40 = max_fold(fold_40)
+#         folds_40 = max_fold(fold_40)
         
         start_5 = 10 # start point for hairpin with 10 nt padding
         end_5 = candidate.pos_5p_end - candidate.pos_5p_begin + 10
@@ -50,15 +50,15 @@ def get_alignment(candidates):
         start_3 = candidate.pos_3p_begin - candidate.pos_5p_begin + 40
         end_3 = candidate.pos_3p_end - candidate.pos_5p_begin + 40
         
-        p_folds_out, p_off_out = find_overhang(fold_40, start_5, end_3)
-        p_folds_in, p_off_in = find_overhang(fold_40, end_5, start_3)
+#         p_folds_out, p_off_out = find_overhang(fold_40, start_5, end_3)
+#         p_folds_in, p_off_in = find_overhang(fold_40, end_5, start_3)
         
-        print "\tmaks fold:", folds_10, folds_40
+#         print "\tmaks fold:", folds_10, folds_40
         print "\t10:", folds_out, off_out, folds_in, off_in
-        print "\t10:", p_folds_out, p_off_out, p_folds_in, p_off_in
+#         print "\t10:", p_folds_out, p_off_out, p_folds_in, p_off_in
         
         candidate.set_alignment_10(folds_10, folds_out, off_out, folds_in, off_in)
-        candidate.set_alignment_40(folds_40, p_folds_out, p_off_out, p_folds_in, p_off_in)
+#         candidate.set_alignment_40(folds_40, p_folds_out, p_off_out, p_folds_in, p_off_in)
 
 
 

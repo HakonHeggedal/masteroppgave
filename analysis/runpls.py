@@ -50,11 +50,11 @@ def main():
                     "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed",
                     "SRR207110.collapsed", "SRR207111.collapsed", "SRR207112.collapsed"]    
     
-    fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed",
-                    "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed"]
+#     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed",
+#                     "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed"]
 #     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed", "SRR207111.collapsed"]
     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed"]
-#     fasta_files = ["SRR797062.collapsed"]
+    fasta_files = ["SRR797062.collapsed"]
 #     fasta_files =  ["SRR207110.collapsed", "SRR207111.collapsed", "SRR207112.collapsed"] 
 #     fasta_file = "SRR797062.fa"
     
@@ -192,7 +192,7 @@ def main():
     # create mirna groups for classification
     print "nr of candidates + miRNAS:", len(candidates)
     split_candidates(candidates, candidate_to_miRNA, miRNA_fam)
-    assert False
+#     assert False
     
     print "aligning small seqs"
     align_small_seqs(candidates, small_reads, small_reads_count)
@@ -232,7 +232,6 @@ def main():
     quality.candidate_quality(candidates, seq_to_candidates)
     
     
-    
     print
     print "finished features in ", time.clock() - start_time, " seconds"
     
@@ -243,17 +242,17 @@ def main():
     miRNA_annotations = [] 
     only_candidates = []
     
-    mi_keys = set(candidate_to_miRNA.keys())
-    candidate_keys = set([c.chromosome + str(c.pos_5p_begin) for c in candidates])
-    
-    print "miRNAs:", len(mi_keys)
-    print "all:", len(candidate_keys)
-    print "pls be gone:", len(candidate_keys - mi_keys)
+#     mi_keys = set(candidate_to_miRNA.keys())
+#     candidate_keys = set([c.chromosome + str(c.pos_5p_begin) for c in candidates])
+#     
+#     print "miRNAs:", len(mi_keys)
+#     print "all:", len(candidate_keys)
+#     print "pls be gone:", len(candidate_keys - mi_keys)
     
     
     for candidate in candidates:
 #         print candidate, candidate in candidate_to_miRNA
-        hashval = candidate.chromosome + str(candidate.pos_5p_begin)
+        hashval = candidate.chromosome + candidate.chromosome_direction + str(candidate.pos_5p_begin)
         if hashval in candidate_to_miRNA:
             miRNAs.append(candidate)
             mi = candidate_to_miRNA[hashval]
