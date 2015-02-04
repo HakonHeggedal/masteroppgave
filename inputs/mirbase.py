@@ -3,23 +3,8 @@ Created on 29. okt. 2014
 
 @author: hakon
 '''
+from candidates.interval_tree_search import MIN_HAIRPIN_LOOP
 
-# class Micro_RNA:
-#     def __init__(self,hairpin):
-#         self.hairpin = hairpin
-#         self.pos_5_begin = None
-#         self.pos_5_end = None
-#         self.pos_3_begin = None
-#         self.pos_3_end = None
-#     
-#     def set_five_prime(self,pos_5_begin, pos_5_end):
-#         self.pos_5_begin = pos_5_begin
-#         self.pos_5_end = pos_5_end
-#     
-#     def set_three_prime(self, pos_3_begin, pos_3_end):
-#         self.pos_3_begin = pos_3_begin
-#         self.pos_3_end = pos_3_end
-#         
 
 def read_miRNA_fasta(fasta_file):
     ''' reads miRNAs from mirbase file, and returns {id: dna_seq}'''
@@ -80,26 +65,44 @@ def _add_mature_pos(miRNAid, miRNA_dict, hairpin_dict, startpos, endpos, is_5p, 
     assert startpos >= 0
     assert startpos < endpos
     
+#     Todo: a<b<c<d
 
-    old = miRNA_dict[miRNAid]
+    mipos = miRNA_dict[miRNAid]
     
+#     print mipos
     if is_5p:
-        miRNA_dict[miRNAid] = [startpos, endpos, old[2], old[3]]
+        miRNA_dict[miRNAid] = [startpos, endpos, mipos[2], mipos[3]]
         if startpos+5 >= len(hairpin_dict[miRNAid]) / 2:
             print "strange behavior 5p", miRNA_dict[miRNAid], miRNAid, startpos, len(hairpin_dict[miRNAid])
     elif is_3p:
-        miRNA_dict[miRNAid] = [old[0], old[1], startpos, endpos]
+        miRNA_dict[miRNAid] = [mipos[0], mipos[1], startpos, endpos]
         if startpos+5 < len(hairpin_dict[miRNAid]) / 2:
             print "strange behavior 3p", miRNA_dict[miRNAid], miRNAid, startpos, len(hairpin_dict[miRNAid])
-    elif startpos+5 < len(hairpin_dict[miRNAid]) / 2: # not given, but aligns with 5' end
-        miRNA_dict[miRNAid] = [startpos, endpos, old[2], old[3]]
+    
+    elif startpos+5 < len(hairpin_dict[miRNAid]) / 2: # not given, but starts in 5' end
+        if mipos[0] == -1 and (endpos + MIN_HAIRPIN_LOOP < mipos[2] or mipos[2] == -1):
+            miRNA_dict[miRNAid] = [startpos, endpos, mipos[2], mipos[3]]
+    elif mipos[2] == -1 and (mipos[1] + MIN_HAIRPIN_LOOP < startpos or mipos[1] == -1):
+        miRNA_dict[miRNAid] = [mipos[0], mipos[1], startpos, endpos]
     else:
-        miRNA_dict[miRNAid] = [old[0], old[1], startpos, endpos]
+        print "no match---"
+        print miRNA_dict[miRNAid], miRNAid, is_5p, is_3p, startpos, len(hairpin_dict[miRNAid])
     
     if miRNA_dict[miRNAid][1] != -1 and miRNA_dict[miRNAid][2] != -1:
         if miRNA_dict[miRNAid][1] >= miRNA_dict[miRNAid][2]:
             print "!error!", miRNA_dict[miRNAid], miRNAid, is_5p, is_3p, startpos, len(hairpin_dict[miRNAid])
             print "-!!!", startpos+5, len(hairpin_dict[miRNAid]) / 2
+#             assert False
+    if ">hsa-mir-4456" in miRNA_dict:
+        print "!error!", miRNA_dict[miRNAid], miRNAid, is_5p, is_3p, startpos, len(hairpin_dict[miRNAid])
+        assert False
+#     print mipos
+    
+    assert mipos[0] == -1 or miRNA_dict[miRNAid][0] < miRNA_dict[miRNAid][1]
+    assert mipos[1] == -1 or mipos[2] == -1 or mipos[1] < mipos[2]
+    assert mipos[2] == -1 or mipos[2] < mipos[3]
+    
+#     assert miRNA_dict[miRNAid][0] < miRNA_dict[miRNAid][1] < miRNA_dict[miRNAid][2] < miRNA_dict[miRNAid][3]
 #         assert miRNA_dict[miRNAid][1] < miRNA_dict[miRNAid][2]
 
 
@@ -165,6 +168,10 @@ def combine_hairpin_mature(id_to_hairpin, id_to_mature):
         if not found_hairpin:
             print "\tno hit", mature_id, x, c, is_3p, is_5p
     
+    
+    print ">hsa-mir-4456" in harpinID_to_mature
+    print harpinID_to_mature[">hsa-mir-4456"]
+    assert False
     print "FINISHED assembling miRNAs"
     return harpinID_to_mature
 
@@ -212,4 +219,19 @@ def similar_hairpins(specie_to_hairpin, others_to_hairpin):
     return id_to_speciecount
         
         
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

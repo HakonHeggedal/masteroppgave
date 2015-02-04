@@ -9,7 +9,7 @@ def get_alignment(candidates):
     
     
     
-    for candidate in candidates:
+    for i, candidate in enumerate(candidates):
         fold_10 = candidate.hairpin_fold_10
 #         fold_40 = candidate.hairpin_fold_40
         
@@ -23,7 +23,7 @@ def get_alignment(candidates):
 #         print candidate.pos_5p_end - candidate.pos_5p_begin,
 #         print candidate.pos_3p_end - candidate.pos_3p_begin,
 #         print candidate.pos_3p_end - candidate.pos_5p_begin + 20,
-        print candidate.pos_5p_begin, candidate.pos_5p_end,  candidate.pos_3p_begin,  candidate.pos_3p_end
+        print i, candidate.pos_5p_begin, candidate.pos_5p_end,  candidate.pos_3p_begin,  candidate.pos_3p_end
         
         assert candidate.pos_5p_begin < candidate.pos_5p_end < candidate.pos_3p_begin < candidate.pos_3p_end
         

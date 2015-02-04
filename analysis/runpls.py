@@ -3,6 +3,7 @@
 
 import time
 from ml.miRNA_group import split_candidates
+from inputs import special_types
 start_time = time.clock()
 from candidates.microseqs import align_small_seqs
 import numpy
@@ -85,16 +86,20 @@ def main():
     miRNA_file_name = "mirnas.fa"
     high_conf_file = "high_conf_hairpin.fa"
     miRNA_family_file = "miFam.dat"
+    other_types = "mirTrons_other.txt"
     
     print "loading miRNA hairpins:"
     
     hsa_to_hairpin, other_to_hairpin = mirbase.read_miRNA_fasta(hairpin_file)
     hsa_to_mature, other_to_mature = mirbase.read_miRNA_fasta(mature_seq_file)
     
+    special_types.remove_mirTrons(hsa_to_hairpin, other_types)
+    special_types.remove_mirTrons(hsa_to_mature, other_types)
     miRNA_species = mirbase.similar_hairpins(hsa_to_hairpin, other_to_hairpin)
     
     hairpinID_to_mature = mirbase.combine_hairpin_mature(hsa_to_hairpin, hsa_to_mature)
     miRNA_high_conf = miRNA.read_high_confidence(high_conf_file)
+    assert False
     
     print len(miRNA_high_conf)
     print miRNA_high_conf.issubset(miRNA_species.keys())

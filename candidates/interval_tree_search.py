@@ -372,7 +372,10 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, candidate_tree, candidate_list
         
         is_candidate = False
         
+        print str(123) + " " + miRNAid
+        print mature_pos
         print begin_5p, end_5p, begin_3p, end_3p
+        assert begin_5p < end_5p < begin_3p < end_3p
 
         
 #         print mature_pos, mirna_loki
@@ -437,6 +440,9 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, candidate_tree, candidate_list
         if is_candidate:
             continue
         
+#         print 
+#         assert candidate.pos_5p_begin < candidate.pos_5p_end < candidate.pos_3p_begin < candidate.pos_3p_end
+        
 #         no candidates aligns the "miRNA"
         tree = sequence_tree[chromosome]
         sequences = tree[begin_5p:end_3p]
@@ -476,6 +482,8 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, candidate_tree, candidate_list
             noseq_set.add(miRNAid)
             pass
         
+        assert begin_5p < end_5p < begin_3p < end_3p
+        
         candidate = structure.Candidate(chromosome,
                          strand_dir,
                          begin_5p,
@@ -488,6 +496,8 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, candidate_tree, candidate_list
         if end_3p - begin_5p > 200:
             print begin_5p, end_5p, begin_3p, end_3p
             assert False
+        
+        assert candidate.pos_5p_begin < candidate.pos_5p_end < candidate.pos_3p_begin < candidate.pos_3p_end
         
         candidate_list.append(candidate)
         hashval = chromosome + strand_dir + str(begin_5p)
