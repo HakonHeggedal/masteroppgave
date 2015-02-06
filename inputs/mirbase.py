@@ -65,37 +65,48 @@ def _add_mature_pos(miRNAid, miRNA_dict, hairpin_dict, startpos, endpos, is_5p, 
     assert startpos >= 0
     assert startpos < endpos
     
+    is_added = False
 #     Todo: a<b<c<d
 
     mipos = miRNA_dict[miRNAid]
     
 #     print mipos
     if is_5p:
+        is_added = True
         miRNA_dict[miRNAid] = [startpos, endpos, mipos[2], mipos[3]]
         if startpos+5 >= len(hairpin_dict[miRNAid]) / 2:
             print "strange behavior 5p", miRNA_dict[miRNAid], miRNAid, startpos, len(hairpin_dict[miRNAid])
     elif is_3p:
+        is_added = True
         miRNA_dict[miRNAid] = [mipos[0], mipos[1], startpos, endpos]
         if startpos+5 < len(hairpin_dict[miRNAid]) / 2:
             print "strange behavior 3p", miRNA_dict[miRNAid], miRNAid, startpos, len(hairpin_dict[miRNAid])
     
     elif startpos+5 < len(hairpin_dict[miRNAid]) / 2: # not given, but starts in 5' end
         if mipos[0] == -1 and (endpos + MIN_HAIRPIN_LOOP < mipos[2] or mipos[2] == -1):
+            is_added = True
             miRNA_dict[miRNAid] = [startpos, endpos, mipos[2], mipos[3]]
     elif mipos[2] == -1 and (mipos[1] + MIN_HAIRPIN_LOOP < startpos or mipos[1] == -1):
+        is_added = True
         miRNA_dict[miRNAid] = [mipos[0], mipos[1], startpos, endpos]
-    else:
+        
+#     else:
+#         print "no match---"
+#         print miRNA_dict[miRNAid], miRNAid, is_5p, is_3p, startpos, len(hairpin_dict[miRNAid])
+    
+    if not is_added:
         print "no match---"
         print miRNA_dict[miRNAid], miRNAid, is_5p, is_3p, startpos, len(hairpin_dict[miRNAid])
+
     
     if miRNA_dict[miRNAid][1] != -1 and miRNA_dict[miRNAid][2] != -1:
         if miRNA_dict[miRNAid][1] >= miRNA_dict[miRNAid][2]:
             print "!error!", miRNA_dict[miRNAid], miRNAid, is_5p, is_3p, startpos, len(hairpin_dict[miRNAid])
             print "-!!!", startpos+5, len(hairpin_dict[miRNAid]) / 2
 #             assert False
-    if ">hsa-mir-4456" in miRNA_dict:
-        print "!error!", miRNA_dict[miRNAid], miRNAid, is_5p, is_3p, startpos, len(hairpin_dict[miRNAid])
-        assert False
+#     if ">hsa-mir-4456" in miRNA_dict:
+#         print "!error!", miRNA_dict[miRNAid], miRNAid, is_5p, is_3p, startpos, len(hairpin_dict[miRNAid])
+#         assert False
 #     print mipos
     
     assert mipos[0] == -1 or miRNA_dict[miRNAid][0] < miRNA_dict[miRNAid][1]
@@ -171,7 +182,7 @@ def combine_hairpin_mature(id_to_hairpin, id_to_mature):
     
     print ">hsa-mir-4456" in harpinID_to_mature
     print harpinID_to_mature[">hsa-mir-4456"]
-    assert False
+#     assert False
     print "FINISHED assembling miRNAs"
     return harpinID_to_mature
 

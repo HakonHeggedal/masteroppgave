@@ -25,7 +25,7 @@ def heterogenity(candidates, offset=5):
         three_begin = candidate.pos_3p_begin
         three_end = candidate.pos_3p_end
         
-        assert -1 < five_begin < five_end < three_begin < three_end
+        assert -1 < five_begin < five_end <= three_begin < three_end
         
         
         begins = [0] * (three_end-five_begin+offset+offset+1)

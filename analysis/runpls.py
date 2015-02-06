@@ -4,6 +4,7 @@
 import time
 from ml.miRNA_group import split_candidates
 from inputs import special_types
+import analysis
 start_time = time.clock()
 from candidates.microseqs import align_small_seqs
 import numpy
@@ -22,6 +23,8 @@ from candidates import entropy
 from candidates import quality
 from candidates import structure
 from candidates import overhang
+
+from misc import energy
 
 from ml import vectorize
 
@@ -51,11 +54,11 @@ def main():
                     "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed",
                     "SRR207110.collapsed", "SRR207111.collapsed", "SRR207112.collapsed"]    
     
-#     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed",
-#                     "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed"]
+    fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed",
+                    "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed"]
 #     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed", "SRR207111.collapsed"]
-    fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed"]
-    fasta_files = ["SRR797062.collapsed"]
+#     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed"]
+#     fasta_files = ["SRR797062.collapsed"]
 #     fasta_files =  ["SRR207110.collapsed", "SRR207111.collapsed", "SRR207112.collapsed"] 
 #     fasta_file = "SRR797062.fa"
     
@@ -99,7 +102,7 @@ def main():
     
     hairpinID_to_mature = mirbase.combine_hairpin_mature(hsa_to_hairpin, hsa_to_mature)
     miRNA_high_conf = miRNA.read_high_confidence(high_conf_file)
-    assert False
+#     assert False
     
     print len(miRNA_high_conf)
     print miRNA_high_conf.issubset(miRNA_species.keys())
@@ -182,6 +185,7 @@ def main():
                                                            candidate_tree,
                                                            candidates,
                                                            sequence_tree,
+                                                           seq_to_candidates,
                                                            miRNA_species,
                                                            miRNA_high_conf)
     
@@ -192,7 +196,11 @@ def main():
     
     print "\nrunning viennafold"
     vienna.energy_fold(candidates) # slow
+    print "...done"
     
+    
+    #stats out here:
+    energy.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
     
     # create mirna groups for classification
     print "nr of candidates + miRNAS:", len(candidates)
@@ -269,13 +277,13 @@ def main():
     print len(candidate_to_miRNA)
     print len(only_candidates)
     
-    for mi in miRNAs:
-        aaa = mi.small_subs
-        bbb = sum([ float(x.data[1].split("-")[1]) for x in mi.mapped_sequences])
-        ccc = aaa * 1.0 / bbb 
-        print ccc, "\t\t\t", aaa, bbb, ccc
+#     for mi in miRNAs:
+#         aaa = mi.small_subs
+#         bbb = sum([ float(x.data[1].split("-")[1]) for x in mi.mapped_sequences])
+#         ccc = aaa * 1.0 / bbb 
+#         print ccc, "\t\t\t", aaa, bbb, ccc
     
-    assert False
+#     assert False
 
     learn_miRNAs = vectorize.candidates_to_array(miRNAs)
     class_miRNAs = numpy.array(miRNA_annotations)
