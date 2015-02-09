@@ -8,7 +8,6 @@ Created on 13. okt. 2014
 def get_alignment(candidates):
     
     
-    
     for i, candidate in enumerate(candidates):
         fold_10 = candidate.hairpin_fold_10
 #         fold_40 = candidate.hairpin_fold_40
@@ -82,14 +81,6 @@ def find_overhang(fold, five_start, three_end):
     
     #TODO vienna needs 10nt on each side of candidate
 #     for candidate in candidates:
-        
-#     hairpin = candidate.hairpin
-#     fold = candidate.hairpin_fold
-    
-#     five_start = 10
-
-#     three_end = len(fold)-10
-    
     
     five_folds = 0
     five_distance = -1
@@ -131,11 +122,11 @@ def find_overhang(fold, five_start, three_end):
     
        
     
-    
+#     
 f1 = ".(((((((((..((((((((.((.................)).))))))))..)))))))))..."
 start = 22
 end = len(f1)-10
-
+ 
 print max_fold(f1)
 print find_overhang(f1, start, end)
 

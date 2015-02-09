@@ -24,7 +24,8 @@ from candidates import quality
 from candidates import structure
 from candidates import overhang
 
-from misc import energy
+from misc import energy, plot_overhang_outer
+from misc import print_max_bindings
 
 from ml import vectorize
 
@@ -56,7 +57,7 @@ def main():
     
     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed",
                     "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed"]
-#     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed", "SRR207111.collapsed"]
+    fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed", "SRR207111.collapsed"]
 #     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed"]
 #     fasta_files = ["SRR797062.collapsed"]
 #     fasta_files =  ["SRR207110.collapsed", "SRR207111.collapsed", "SRR207112.collapsed"] 
@@ -200,11 +201,11 @@ def main():
     
     
     #stats out here:
-    energy.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
+#     energy.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
     
     # create mirna groups for classification
-    print "nr of candidates + miRNAS:", len(candidates)
-    split_candidates(candidates, candidate_to_miRNA, miRNA_fam)
+#     print "nr of candidates + miRNAS:", len(candidates)
+#     training_lists, test_lists = split_candidates(candidates, candidate_to_miRNA, miRNA_fam)
 #     assert False
     
     print "aligning small seqs"
@@ -212,17 +213,14 @@ def main():
     print "finished aligning small seqs"
     
 #     sequence_freq = reads.readcollapsed(fasta_file)
-#     print len(sequence_freq)    
-    
-    
-    # run and set vienna RNAfold + energy on all candidates
+#     print len(sequence_freq)
 
     
     
     not_mapped_reads = [structure.Sequence(i,n,read) for i,(read,n) in 
                         enumerate(zip(reads, reads_count))
                         if read not in seq_to_candidates]
-
+    
 #     
 #     print len(not_mapped_reads)
 #     print len(seq_to_candidates)
@@ -234,6 +232,9 @@ def main():
      
 
     overhang.get_alignment(candidates)
+    
+#     print_max_bindings.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
+    plot_overhang_outer.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
 
 #     degree of entropy in structure and nucleotides
     entropy.entropy(candidates)
@@ -297,7 +298,7 @@ def main():
     print "mirna species", len(class_miRNAs)
     print "candidates", len(candidate_array)
     
-    learner = svm.SVC(probability=True)
+    learner = svm.SVC(probability=True, cache_size=1000)
     learner.fit(learn_miRNAs, class_miRNAs)
     res = learner.predict(candidate_array)
     print res

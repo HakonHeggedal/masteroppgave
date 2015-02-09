@@ -1,4 +1,3 @@
-
 class Candidate:
     ''' structure to store a miRNA candidate '''
     
@@ -6,7 +5,7 @@ class Candidate:
     
     def __init__(self, chromosome, strand_dir, begin_5p, end_5p,
                  begin_3p, end_3p, mapped_sequences):
-        
+
         self.chromosome = chromosome
         self.chromosome_direction = strand_dir
         self.pos_5p_begin = begin_5p
