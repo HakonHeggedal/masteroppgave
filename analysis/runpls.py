@@ -24,8 +24,10 @@ from candidates import quality
 from candidates import structure
 from candidates import overhang
 
-from misc import energy, plot_overhang_outer
-from misc import print_max_bindings
+from misc import energy
+from misc import plot_overhang_outer
+from misc import 
+from misc import plot_max_bindings
 
 from ml import vectorize
 
@@ -233,7 +235,8 @@ def main():
 
     overhang.get_alignment(candidates)
     
-#     print_max_bindings.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
+#     plot_max_bindings.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
+    plot_overhang_inner.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
     plot_overhang_outer.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
 
 #     degree of entropy in structure and nucleotides
