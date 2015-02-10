@@ -36,7 +36,6 @@ class Candidate:
         self.hairpin_energy_10 = en_10
         self.hairpin_energy_40 = en_40
 
-        
     def set_hairpin_pos(self, begin, end):
         self.pos_hairpin_begin = begin
         self.pos_hairpin_end = end
@@ -66,7 +65,6 @@ class Candidate:
         
     def set_tailing(self,tailing):
         self.tailing = tailing
-    
     
     def set_small_seq(self, index, copies):
         self.small_subs += copies

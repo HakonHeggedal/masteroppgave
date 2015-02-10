@@ -1,36 +1,32 @@
 '''
-Created on 9. feb. 2015
+Created on 10. feb. 2015
 
 @author: hakon
 '''
-'''
-Created on 6. feb. 2015
 
-@author: hakon
-'''
 
 from matplotlib import pyplot
 import numpy
 from scipy import stats
-
-
-
-
+import math
 
 def plot(candidates, candidate_to_miRNAid, mirna_high_conf ):
     
     print
-    print "plot overhang outer:"
+    print "plot read count log:"
     
     
     candidate_only = []
     mirna_high = []
     mirna_low = []
-    minval = 100000
+    minval = 1000000
     maxval = -1000000
+    
     for c in candidates:
         hashval = c.chromosome + c.chromosome_direction + str(c.pos_5p_begin)
-        param = c.overhang_level_outer_10
+        param = len(c.mapped_sequences)
+        param = 0 if param == 0 else math.log(param)
+        
         if param > maxval:
             maxval = param
         elif param < minval:
@@ -62,19 +58,11 @@ def plot(candidates, candidate_to_miRNAid, mirna_high_conf ):
     y = numpy.arange( minval, maxval, .1)
     z = numpy.arange( minval, maxval, .1)
     
-#     x = numpy.arange( -100.0, 10.0, .1)
-#     y = numpy.arange( -100.0, 10.0, .1)
-#     z = numpy.arange( -100.0, 10.0, .1)
 
-#  
     pyplot.plot(x, dens_cand(x))
     pyplot.plot(y, dens_high(y), "r")
     pyplot.plot(z, dens_low(z), "g")
-    pyplot.savefig('overhang_outer.png')
-    pyplot.xlabel("overhang outer")
+    pyplot.savefig('log_reads.png')
+    pyplot.xlabel("log(reads)")
     pyplot.ylabel("frequency")
     pyplot.show()
-    
-#     assert False
-
-    

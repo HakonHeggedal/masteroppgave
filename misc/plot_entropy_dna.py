@@ -1,13 +1,9 @@
 '''
-Created on 9. feb. 2015
+Created on 10. feb. 2015
 
 @author: hakon
 '''
-'''
-Created on 6. feb. 2015
 
-@author: hakon
-'''
 
 from matplotlib import pyplot
 import numpy
@@ -20,7 +16,7 @@ from scipy import stats
 def plot(candidates, candidate_to_miRNAid, mirna_high_conf ):
     
     print
-    print "plot overhang outer:"
+    print "plot nucleotide entropy:"
     
     
     candidate_only = []
@@ -30,7 +26,7 @@ def plot(candidates, candidate_to_miRNAid, mirna_high_conf ):
     maxval = -1000000
     for c in candidates:
         hashval = c.chromosome + c.chromosome_direction + str(c.pos_5p_begin)
-        param = c.overhang_level_outer_10
+        param = c.entropy_nucleotides
         if param > maxval:
             maxval = param
         elif param < minval:
@@ -52,6 +48,8 @@ def plot(candidates, candidate_to_miRNAid, mirna_high_conf ):
     print mirna_low
     
 #     print minval, maxval
+    
+    
 #     pyplot.hist(candidate_only)
     
     dens_cand = stats.kde.gaussian_kde(candidate_only)
@@ -70,8 +68,8 @@ def plot(candidates, candidate_to_miRNAid, mirna_high_conf ):
     pyplot.plot(x, dens_cand(x))
     pyplot.plot(y, dens_high(y), "r")
     pyplot.plot(z, dens_low(z), "g")
-    pyplot.savefig('overhang_outer.png')
-    pyplot.xlabel("overhang outer")
+    pyplot.savefig('entr_nu.png')
+    pyplot.xlabel("nucleotide entropy")
     pyplot.ylabel("frequency")
     pyplot.show()
     

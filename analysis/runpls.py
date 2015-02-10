@@ -5,10 +5,12 @@ import time
 from ml.miRNA_group import split_candidates
 from inputs import special_types
 import analysis
+from misc.h_3_b import plot
+import misc
 start_time = time.clock()
 from candidates.microseqs import align_small_seqs
 import numpy
-from sklearn import svm
+from sklearn import svm, preprocessing
 
 
 from inputs import merge
@@ -24,10 +26,19 @@ from candidates import quality
 from candidates import structure
 from candidates import overhang
 
-from misc import energy
+from misc import energy, plot_tailing
+from misc import plot_read_quality
+from misc import plot_entropy_dna
+from misc import plot_entropy_struct
+from misc import plot_inner_level
 from misc import plot_overhang_outer
-from misc import 
+from misc import plot_overhang_inner
 from misc import plot_max_bindings
+from misc import h_5_b
+from misc import h_5_e
+from misc import h_3_b
+from misc import h_3_e
+from misc import plot_reads
 
 from ml import vectorize
 
@@ -192,7 +203,7 @@ def main():
                                                            miRNA_species,
                                                            miRNA_high_conf)
     
-    
+#     plot_reads.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
     print "padding..."
     gene.include_padding(candidates)
     print "padded all candidates in ", time.clock() - start_time, " seconds"
@@ -231,23 +242,33 @@ def main():
 #     
 #     A/U ends for all remaining candidates
     tailing.tailing_au(candidates, not_mapped_reads)
-     
+#     plot_tailing.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
 
     overhang.get_alignment(candidates)
     
 #     plot_max_bindings.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
-    plot_overhang_inner.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
-    plot_overhang_outer.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
+#     plot_overhang_inner.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
+#     plot_overhang_outer.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
+#     plot_inner_level.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
 
 #     degree of entropy in structure and nucleotides
     entropy.entropy(candidates)
+    
+#     plot_entropy_dna.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
+#     plot_entropy_struct.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
+    
 #      
 #     heterogenity (position counting)
     heterogenity.heterogenity(candidates)
+#     h_5_b.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
+#     h_5_e.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
+#     h_3_b.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
+#     h_3_e.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
 #      
 #     candidate quality: nr of sequence hits / all candidate hits for given sequences
     quality.candidate_quality(candidates, seq_to_candidates)
-    
+#     plot_read_quality.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
+
     
     print
     print "finished features in ", time.clock() - start_time, " seconds"
@@ -256,7 +277,7 @@ def main():
         print k,v
     
     miRNAs = []
-    miRNA_annotations = [] 
+    miRNA_annotations = []
     only_candidates = []
     
 #     mi_keys = set(candidate_to_miRNA.keys())
@@ -293,6 +314,12 @@ def main():
     class_miRNAs = numpy.array(miRNA_annotations)
     candidate_array = vectorize.candidates_to_array(only_candidates)
     
+    print 123
+    print preprocessing.scale(learn_miRNAs)
+    print preprocessing.scale(candidate_array)
+    
+    
+    assert False
     for mi, nr in zip(learn_miRNAs, class_miRNAs):
         print mi, nr
     
@@ -302,8 +329,12 @@ def main():
     print "candidates", len(candidate_array)
     
     learner = svm.SVC(probability=True, cache_size=1000)
+    print "fit"
     learner.fit(learn_miRNAs, class_miRNAs)
+    print "learn"
     res = learner.predict(candidate_array)
+    
+    print max(res)
     print res
 
 

@@ -4,17 +4,6 @@ Created on 10. okt. 2014
 @author: hakon
 '''
 
-
-
-
-
-
-
-
-
-
-
-
 def heterogenity(candidates, offset=5):
     
     for candidate in candidates:
