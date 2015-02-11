@@ -7,6 +7,8 @@ from inputs import special_types
 import analysis
 from misc.h_3_b import plot
 import misc
+from ml.miRNA_conf_group import create_folds
+import itertools
 start_time = time.clock()
 from candidates.microseqs import align_small_seqs
 import numpy
@@ -172,7 +174,6 @@ def main():
 
     
 
-#     assert False
 #     using sequence tree to find possible candidates
 #     candidate_tree, sequence_tree, candidates, seq_to_candidates = interval_tree_search.find_candidates(fixed_lines)
     candidate_tree, sequence_tree, candidates, seq_to_candidates = interval_tree_search.find_candidates_2(fixed_lines)
@@ -218,8 +219,10 @@ def main():
     
     # create mirna groups for classification
 #     print "nr of candidates + miRNAS:", len(candidates)
-#     training_lists, test_lists = split_candidates(candidates, candidate_to_miRNA, miRNA_fam)
-#     assert False
+    training_lists, test_lists = split_candidates(candidates, candidate_to_miRNA, miRNA_fam)
+                                
+    
+    training_data, annotations, test_data = create_folds(candidates, candidate_to_miRNA, miRNA_high_conf, miRNA_fam)
     
     print "aligning small seqs"
     align_small_seqs(candidates, small_reads, small_reads_count)
@@ -273,8 +276,8 @@ def main():
     print
     print "finished features in ", time.clock() - start_time, " seconds"
     
-    for k,v in candidate_to_miRNA.iteritems():
-        print k,v
+#     for k,v in candidate_to_miRNA.iteritems():
+#         print k,v
     
     miRNAs = []
     miRNA_annotations = []
@@ -307,40 +310,70 @@ def main():
 #         bbb = sum([ float(x.data[1].split("-")[1]) for x in mi.mapped_sequences])
 #         ccc = aaa * 1.0 / bbb 
 #         print ccc, "\t\t\t", aaa, bbb, ccc
-    
-#     assert False
 
-    learn_miRNAs = vectorize.candidates_to_array(miRNAs)
-    class_miRNAs = numpy.array(miRNA_annotations)
-    candidate_array = vectorize.candidates_to_array(only_candidates)
+
+
+#     learn_miRNAs = vectorize.candidates_to_array(miRNAs)
+#     class_miRNAs = numpy.array(miRNA_annotations)
+#     candidate_array = vectorize.candidates_to_array(only_candidates)
+# #     
+#     print 123
+#     print preprocessing.scale(learn_miRNAs)
+#     print 4567
+#     print preprocessing.scale(candidate_array)
+
     
-    print 123
-    print preprocessing.scale(learn_miRNAs)
-    print preprocessing.scale(candidate_array)
     
+    # flatten
+    training_data = list(itertools.chain.from_iterable(training_data))
+    annotations = list(itertools.chain.from_iterable(annotations))
+    test_data = list(itertools.chain.from_iterable(test_data))
+
+    # create vectors
+    training_data = vectorize.candidates_to_array(training_data)
+    annotations = numpy.array(annotations)
+    test_data = vectorize.candidates_to_array(test_data)
     
-    assert False
-    for mi, nr in zip(learn_miRNAs, class_miRNAs):
-        print mi, nr
+    # scale data 0-1
+    training_data = preprocessing.scale(training_data)
+    test_data = preprocessing.scale(test_data)
     
-    
-    print "mirnas",len(learn_miRNAs)
-    print "mirna species", len(class_miRNAs)
-    print "candidates", len(candidate_array)
     
     learner = svm.SVC(probability=True, cache_size=1000)
     print "fit"
-    learner.fit(learn_miRNAs, class_miRNAs)
+    learner.fit(training_data, annotations)
     print "learn"
-    res = learner.predict(candidate_array)
-    
-    print max(res)
+    res = learner.predict(test_data)
     print res
+    print max(res)
+    print sum(res)
+    print len(res)
 
 
-    with open("profit.txt", "w") as outfile:
-        for r in res:
-            outfile.write(str(r) + "\n")
+
+#     assert False
+#     for mi, nr in zip(learn_miRNAs, class_miRNAs):
+#         print mi, nr
+    
+    
+#     print "mirnas",len(learn_miRNAs)
+#     print "mirna species", len(class_miRNAs)
+#     print "candidates", len(candidate_array)
+#     
+    
+#     learner = svm.SVC(probability=True, cache_size=1000)
+#     print "fit"
+#     learner.fit(learn_miRNAs, class_miRNAs)
+#     print "learn"
+#     res = learner.predict(candidate_array)
+#     
+#     print max(res)
+#     print res
+# 
+# 
+#     with open("profit.txt", "w") as outfile:
+#         for r in res:
+#             outfile.write(str(r) + "\n")
         
 
 # if __name__ == "__main__":
@@ -352,5 +385,75 @@ print "finished everything in ", time.clock() - start_time, " seconds"
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#     learn_one = training_lists[0]
+#     train_one = training_lists[1] + training_lists[2] + training_lists[3] + training_lists[4]
+#     print len(learn_one), len(train_one)
+#     
+#     learn_one_v = vectorize.candidates_to_array(learn_one)
+#     train_one_v = vectorize.candidates_to_array(train_one)
+#     
+#     learn_one_s = preprocessing.scale(learn_one_v)
+#     train_one_s = preprocessing.scale(train_one_v)
+#     
+#     one_learner = svm.OneClassSVM() #nu=0.1, kernel="rbf", gamma=0.1)
+#     one_learner.fit(train_one_s)
+#     res = one_learner.predict(learn_one_s)
+#     
+#     print max(res)
+#     print len(res)
+#     print sum(res)
+#     print res
+#     
+#     # nr of high confidence among -1s
+#     
+#     hc_plus = 0
+#     hc_minus = 0
+#     for val, c in zip(res, learn_one):
+#         hashval = c.chromosome + c.chromosome_direction + str(c.pos_5p_begin)
+#         
+#         if hashval not in candidate_to_miRNA: 
+#             continue
+#         
+#         mi = candidate_to_miRNA[hashval]
+#         if mi in miRNA_high_conf:
+#             print val, mi
+#         
+#         if mi in miRNA_high_conf:
+#             hc_plus += 1
+#         else:
+#             hc_minus += 1
+#             
+#     print "high confidence:"
+#     print "+", hc_plus
+#     print "-", hc_minus
+#     print "total:", hc_plus * 1.0 / (hc_plus + hc_minus)
 
 
