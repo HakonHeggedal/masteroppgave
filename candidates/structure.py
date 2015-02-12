@@ -72,7 +72,9 @@ class Candidate:
             self.small_subs_5p += copies
         elif index == self.padding_size + self.pos_3p_begin - self.pos_5p_begin:
             self.small_subs_3p += copies
-
+    
+    def set_bitpair_entropy(self, bitpair_dict):
+        self.bitpair_entropy_dict = bitpair_dict
         
     def set_alignment_10(self, max_10, lev_10_out, oh_10_out, lev_10_in, oh_10_in):
         self.bindings_max_10 = max_10

@@ -213,6 +213,7 @@ def main():
     vienna.energy_fold(candidates) # slow
     print "...done"
     
+#     assert False
     
     #stats out here:
 #     energy.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
@@ -297,7 +298,7 @@ def main():
         if hashval in candidate_to_miRNA:
             miRNAs.append(candidate)
             mi = candidate_to_miRNA[hashval]
-            print mi, miRNA_species[mi]
+#             print mi, miRNA_species[mi]
             miRNA_annotations.append(miRNA_species[mi])
         else:
             only_candidates.append(candidate)
@@ -324,31 +325,39 @@ def main():
 
     
     
-    # flatten
+    # flatten lists (for easy testing only)
     training_data = list(itertools.chain.from_iterable(training_data))
     annotations = list(itertools.chain.from_iterable(annotations))
-    test_data = list(itertools.chain.from_iterable(test_data))
+    test_data_candidates = list(itertools.chain.from_iterable(test_data))
 
     # create vectors
     training_data = vectorize.candidates_to_array(training_data)
     annotations = numpy.array(annotations)
-    test_data = vectorize.candidates_to_array(test_data)
+    test_data = vectorize.candidates_to_array(test_data_candidates)
     
     # scale data 0-1
     training_data = preprocessing.scale(training_data)
     test_data = preprocessing.scale(test_data)
     
     
-    learner = svm.SVC(probability=True, cache_size=1000)
+    learner = svm.SVR(probability=True, cache_size=1000)
+#     classer = svm.SVC(probability=True, cache_size=1000)
     print "fit"
     learner.fit(training_data, annotations)
+#     classer.fit(training_data, annotations)
     print "learn"
     res = learner.predict(test_data)
+#     cls = learner.predict(test_data)
+    
     print res
     print max(res)
     print sum(res)
     print len(res)
-
+    
+    
+    for val, c in sorted(zip(res, test_data_candidates), reverse=True):
+        hashval = c.chromosome + c.chromosome_direction + str(c.pos_5p_begin)
+        print val, "  \t", c.hairpin_energy_10, candidate_to_miRNA[hashval]
 
 
 #     assert False

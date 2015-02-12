@@ -20,6 +20,7 @@ def candidates_to_array(candidates):
         a = len(candidate.mapped_sequences)  # not scaled
 
         b = candidate.hairpin_energy
+        bb = candidate.hairpin_energy_10
         c = candidate.entropy_nucleotides
         d = candidate.entropy_structure
         e = candidate.heterogenity_5_begin
@@ -37,7 +38,7 @@ def candidates_to_array(candidates):
         q = candidate.small_subs_3p
         
         
-        features = [a,aa,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q]
+        features = [a,aa,b,bb,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q]
         
         all_candidates.append(features)
         
