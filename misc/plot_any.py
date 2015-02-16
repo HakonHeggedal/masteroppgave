@@ -1,5 +1,5 @@
 '''
-Created on 9. feb. 2015
+Created on 16. feb. 2015
 
 @author: hakon
 '''
@@ -7,26 +7,31 @@ Created on 9. feb. 2015
 
 from matplotlib import pyplot
 import numpy
+import math
 from scipy import stats
 
 
 
-
-
-def plot(candidates, candidate_to_miRNAid, mirna_high_conf ):
-    
+def plot(candidates, candidate_to_miRNAid, mirna_high_conf, name, isLog=False):
+    """ plot any candidate feature given its name and candidate/miRNA classes """
     print
-    print "plot overhang outer:"
+    print "plot" + name
     
+    plot_name = name.replace("_", " ")
+    outfile = name + ".png"
     
     candidate_only = []
     mirna_high = []
     mirna_low = []
-    minval = 100000
+    
+    minval = 1000000
     maxval = -1000000
     for c in candidates:
         hashval = c.chromosome + c.chromosome_direction + str(c.pos_5p_begin)
-        param = c.overhang_level_outer_10
+        param = getattr(c, name) #.overhang_level_outer_10
+        if isLog and param != 0:
+            param = math.log(param)
+        
         if param > maxval:
             maxval = param
         elif param < minval:
@@ -41,36 +46,32 @@ def plot(candidates, candidate_to_miRNAid, mirna_high_conf ):
                 mirna_low.append(param)
         else:
             candidate_only.append(param)
-        
-        
-    print candidate_only
-    print mirna_high
-    print mirna_low
-    
-#     print minval, maxval
-#     pyplot.hist(candidate_only)
     
     dens_cand = stats.kde.gaussian_kde(candidate_only)
     dens_high = stats.kde.gaussian_kde(mirna_high)
     dens_low = stats.kde.gaussian_kde(mirna_low)
-#     
+  
     x = numpy.arange( minval, maxval, .1)
     y = numpy.arange( minval, maxval, .1)
     z = numpy.arange( minval, maxval, .1)
     
-#     x = numpy.arange( -100.0, 10.0, .1)
-#     y = numpy.arange( -100.0, 10.0, .1)
-#     z = numpy.arange( -100.0, 10.0, .1)
+    ks_val, p_2s =  stats.ks_2samp(mirna_high, mirna_low)
+    print "Kolmogorov-Smirnov test: miRNA high/low conf:"
+    print "\tKS:\t\t\t", ks_val
+    print "\ttwo sided p val:\t", p_2s
 
-#  
-    pyplot.plot(x, dens_cand(x))
+    pyplot.plot(x, dens_cand(x), "b")
     pyplot.plot(y, dens_high(y), "r")
     pyplot.plot(z, dens_low(z), "g")
-    pyplot.savefig('overhang_outer.png')
-    pyplot.xlabel("overhang outer")
+    pyplot.savefig(outfile)
+    pyplot.xlabel(plot_name)
     pyplot.ylabel("frequency")
     pyplot.show()
     
-#     assert False
 
+
+#     print candidate_only
+#     print mirna_high
+#     print mirna_low
+    assert False
     

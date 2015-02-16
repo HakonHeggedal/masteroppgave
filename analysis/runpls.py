@@ -4,12 +4,11 @@
 import time
 from ml.miRNA_group import split_candidates
 from inputs import special_types
-import analysis
-from misc.h_3_b import plot
-import misc
+
+
 from ml.miRNA_conf_group import create_folds
 import itertools
-start_time = time.clock()
+
 from candidates.microseqs import align_small_seqs
 import numpy
 from sklearn import svm, preprocessing
@@ -18,7 +17,9 @@ from sklearn import svm, preprocessing
 from inputs import merge
 from inputs import mirbase
 from inputs import miRNA
+
 from genes import gene
+
 from candidates import interval_tree_search
 from candidates import heterogenity
 from candidates import vienna
@@ -28,22 +29,25 @@ from candidates import quality
 from candidates import structure
 from candidates import overhang
 
-from misc import energy, plot_tailing
-from misc import plot_read_quality
-from misc import plot_entropy_dna
-from misc import plot_entropy_struct
-from misc import plot_inner_level
-from misc import plot_overhang_outer
-from misc import plot_overhang_inner
-from misc import plot_max_bindings
-from misc import h_5_b
-from misc import h_5_e
-from misc import h_3_b
-from misc import h_3_e
-from misc import plot_reads
+# from misc import energy, plot_tailing
+# from misc import plot_read_quality
+# from misc import plot_entropy_dna
+# from misc import plot_entropy_struct
+# from misc import plot_inner_level
+# from misc import plot_overhang_outer
+# from misc import plot_overhang_inner
+# from misc import plot_max_bindings
+# from misc import h_5_b
+# from misc import h_5_e
+# from misc import h_3_b
+# from misc import h_3_e
+# from misc import plot_reads
+from misc import plot_any
 
 from ml import vectorize
 
+
+start_time = time.clock()
 
 def _align_bowtie(bowtie_output_file, collapsed_seq_file):
     from subprocess import check_output
@@ -74,7 +78,7 @@ def main():
                     "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed"]
     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed", "SRR207111.collapsed"]
 #     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed"]
-#     fasta_files = ["SRR797062.collapsed"]
+    fasta_files = ["SRR797062.collapsed"]
 #     fasta_files =  ["SRR207110.collapsed", "SRR207111.collapsed", "SRR207112.collapsed"] 
 #     fasta_file = "SRR797062.fa"
     
@@ -204,7 +208,7 @@ def main():
                                                            miRNA_species,
                                                            miRNA_high_conf)
     
-#     plot_reads.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
+
     print "padding..."
     gene.include_padding(candidates)
     print "padded all candidates in ", time.clock() - start_time, " seconds"
@@ -216,6 +220,7 @@ def main():
 #     assert False
     
     #stats out here:
+    plot_any.plot(candidates, candidate_to_miRNA, miRNA_high_conf, "hairpin_energy_10")
 #     energy.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
     
     # create mirna groups for classification
@@ -241,7 +246,7 @@ def main():
 #     
 #     print len(not_mapped_reads)
 #     print len(seq_to_candidates)
-#     print len(not_mapped_reads) + len(seq_to_candidates)
+#     print len(not_mapped_reas) + len(seq_to_candidates)
 #     print len(reads)
 #     
 #     A/U ends for all remaining candidates
@@ -340,7 +345,7 @@ def main():
     test_data = preprocessing.scale(test_data)
     
     
-    learner = svm.SVR(probability=True, cache_size=1000)
+    learner = svm.SVC(probability=True, cache_size=1000)
 #     classer = svm.SVC(probability=True, cache_size=1000)
     print "fit"
     learner.fit(training_data, annotations)
@@ -355,9 +360,14 @@ def main():
     print len(res)
     
     
-    for val, c in sorted(zip(res, test_data_candidates), reverse=True):
-        hashval = c.chromosome + c.chromosome_direction + str(c.pos_5p_begin)
-        print val, "  \t", c.hairpin_energy_10, candidate_to_miRNA[hashval]
+    
+
+
+    
+    
+#     for val, c in sorted(zip(res, test_data_candidates), reverse=True):
+#         hashval = c.chromosome + c.chromosome_direction + str(c.pos_5p_begin)
+#         print val, "  \t", c.hairpin_energy_10, candidate_to_miRNA[hashval]
 
 
 #     assert False

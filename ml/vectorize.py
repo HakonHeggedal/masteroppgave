@@ -9,8 +9,13 @@ def candidates_to_array(candidates):
     
     all_candidates = []
     
+    pos_to_feat = []
+    pos_to_feat.append("mapped sequences")
+    pos_to_feat.append("hairpin energy")
+    pos_to_feat.append("hairpin energy")
+
+    
     for candidate in candidates:
-        
         
         aa = 0.0
         for el in candidate.mapped_sequences:
@@ -18,7 +23,6 @@ def candidates_to_array(candidates):
             aa += float(name.split("-")[1])
         
         a = len(candidate.mapped_sequences)  # not scaled
-
         b = candidate.hairpin_energy
         bb = candidate.hairpin_energy_10
         c = candidate.entropy_nucleotides
@@ -43,3 +47,24 @@ def candidates_to_array(candidates):
         all_candidates.append(features)
         
     return numpy.array(all_candidates)
+
+
+
+
+
+#     pos_to_feat[1] = "hairpin energy"
+#     pos_to_feat[2] = "hairpin energy"
+#     pos_to_feat[3] = "hairpin energy"
+#     pos_to_feat[4] = "hairpin energy"
+#     pos_to_feat[5] = "hairpin energy"
+#     pos_to_feat[6] = "hairpin energy"
+#     pos_to_feat[7] = "hairpin energy"
+#     pos_to_feat[8] = "hairpin energy"
+#     pos_to_feat[9] = "hairpin energy"
+#     pos_to_feat[10] = "hairpin energy"
+#     pos_to_feat[11] = "hairpin energy"
+#     pos_to_feat[12] = "hairpin energy"
+#     pos_to_feat[13] = "hairpin energy"
+#     pos_to_feat[14] = "hairpin energy"
+#     pos_to_feat[15] = "hairpin energy"
+#     pos_to_feat[16] = "hairpin energy"

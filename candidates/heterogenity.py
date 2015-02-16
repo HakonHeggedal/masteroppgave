@@ -134,11 +134,11 @@ def frequency_counting(candidates, freq_range=5):
                 five_end -freq_range <= seq.end <= five_end+freq_range):
 #                 print five_begin-freq_range, seq.begin, five_begin-freq_range <= seq.begin
 #                 print seq.begin, five_begin+freq_range, seq.begin >= five_begin+freq_range
-                pos = freq_range + seq.begin - five_begin
-                begin_5s[pos] += count
+                pos_to_feat = freq_range + seq.begin - five_begin
+                begin_5s[pos_to_feat] += count
                 
-                pos = freq_range + seq.end - five_end
-                end_5s[pos] += count
+                pos_to_feat = freq_range + seq.end - five_end
+                end_5s[pos_to_feat] += count
 
             
             elif (three_begin-freq_range <= seq.begin and
@@ -146,11 +146,11 @@ def frequency_counting(candidates, freq_range=5):
                   three_end-freq_range <= seq.end and
                   seq.end <= three_end+freq_range):
                 
-                pos = freq_range + seq.begin - three_begin
-                begin_3s[pos] += count
+                pos_to_feat = freq_range + seq.begin - three_begin
+                begin_3s[pos_to_feat] += count
                 
-                pos = freq_range + seq.end - three_end
-                end_3s[pos] += count
+                pos_to_feat = freq_range + seq.end - three_end
+                end_3s[pos_to_feat] += count
 
             else:
                 misses += count

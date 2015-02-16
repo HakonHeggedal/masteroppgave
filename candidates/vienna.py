@@ -2,40 +2,88 @@
 from subprocess import PIPE, Popen
 import re
 import numpy
+from multiprocessing import Pool, current_process
+import candidates
 
+
+
+def energy_fold2(candidates):
+    """ concurrent vienna energy+fold+entropy  """
+    
+    cores = 15
+    pool = Pool(cores)
+    
+    def get_hp(candidate):
+        return candidate.hairpin
+    
+    def get_hp_10(candidate):
+        return candidate.hairpin_padded_40[30:-30]
+
+    
+    param_iter = map(get_hp, candidates)
+    fold_energy = pool.map(_viennafold, param_iter)
+    
+    for c, fold, en in zip(candidates, fold_energy):
+        c.set_fold_hairpin(fold, en)
+        
+    param_iter = map(get_hp_10, candidates)
+    fold_energy_bitpair = pool.map(_wrap_fold_entropy, param_iter)
+    
+    for c, fold, en, bp in zip(candidates, fold_energy_bitpair):
+        c.set_fold_10(fold, en)
+        c.set_bitpair_entropy(bp)
+    
+    print "lol it may have worked..."
+    assert False
+    
 
 def energy_fold(candidates):
     
-    normal_filename = "retarded"
+    normal_filename = "pool"
     ps_filename = ">" + normal_filename # super retarded?
     derpy_filename = normal_filename + "_dp.ps"
     i = 0
-    
+
     for candidate in candidates:
         i += 1
         if i % 100 == 0:
             print ".",
-            
+             
         fold, energy = _viennafold(candidate.hairpin, do_ps=False)
-        
+         
         fold_part = candidate.hairpin_padded_40[30:-30]
-        fold10, energy10 = _viennafold(fold_part, filename=ps_filename, do_ps=True)
         
+        fold10, energy10 = _viennafold(fold_part, filename=ps_filename, do_ps=True)
+         
         bitpair_probs = _read_bitpair_probs(derpy_filename)
         bitpair_entropy_dict = _shannon_entropy(bitpair_probs)
-        
+         
 #         fold40, energy40 = _viennafold(candidate.hairpin_padded_40)
 #         candidate.set_viennafold(fold, energy, fold10, energy10, fold40, energy40)
-        
-        
-        candidate.set_viennafold(fold, energy, fold10, energy10, 0, 0)
+         
+        candidate.set_fold_hairpin(fold, energy)
+        candidate.set_fold_10(fold10, energy10)
         candidate.set_bitpair_entropy(bitpair_entropy_dict)
         
         
+def _wrap_fold_entropy(fold_part):
+    
+    file_name = current_process().name()
+    
+    fold, energy = _viennafold(fold_part, do_ps=True)
 
+    normal_filename = "pool"
+    
+    ps_filename = ">" + normal_filename
+    read_ps = normal_filename + "_dp.ps"
+    
+    bitpair_probs = _read_bitpair_probs(read_ps)
+    bp_dict = _shannon_entropy(bitpair_probs)
 
-def _viennafold(sequence, filename="", do_ps=True):
-    # all at once? meh
+    return fold, energy, bp_dict
+    
+
+def _viennafold(sequence, filename="", do_ps=False):
     """runs vienna folding, returns folding (string) and energy (double)"""
     
     cmds = ["RNAfold", "-p"] if do_ps else ["RNAfold"]

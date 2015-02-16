@@ -28,12 +28,18 @@ class Candidate:
         self.hairpin_padded_40 = padded_40
 
     
-    def set_viennafold(self, fold, en, fold_10, en_10, fold_40, en_40):        
+    def set_fold_hairpin(self, fold, en):
         self.hairpin_fold = fold 
-        self.hairpin_fold_10 = fold_10
-        self.hairpin_fold_40 = fold_40
         self.hairpin_energy = en
+
+    
+    def set_fold_10(self, fold_10, en_10):        
         self.hairpin_energy_10 = en_10
+        self.hairpin_fold_10 = fold_10
+
+    
+    def set_fold_40(self, fold_40, en_40):
+        self.hairpin_fold_40 = fold_40
         self.hairpin_energy_40 = en_40
 
     def set_hairpin_pos(self, begin, end):

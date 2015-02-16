@@ -61,8 +61,8 @@ def compare(rnas, frequencies):
     for nr, rna in enumerate(rna):
         if nr not in superstrings:
             # substring
-            for nranr, pos in substringdict:
-                for i in xrange(pos-len(rna), pos, 1):
+            for nranr, pos_to_feat in substringdict:
+                for i in xrange(pos_to_feat-len(rna), pos_to_feat, 1):
                     results[rnas[rnanr]] += frequencies[rnanr]
     
     return results
