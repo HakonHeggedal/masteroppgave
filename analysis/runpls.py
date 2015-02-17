@@ -13,7 +13,7 @@ from candidates.microseqs import align_small_seqs
 import numpy
 from sklearn import svm, preprocessing
 
-
+import random
 from inputs import merge
 from inputs import mirbase
 from inputs import miRNA
@@ -76,9 +76,9 @@ def main():
     
     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed",
                     "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed"]
-    fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed", "SRR207111.collapsed"]
+#     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed", "SRR207111.collapsed"]
 #     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed"]
-    fasta_files = ["SRR797062.collapsed"]
+#     fasta_files = ["SRR797062.collapsed"]
 #     fasta_files =  ["SRR207110.collapsed", "SRR207111.collapsed", "SRR207112.collapsed"] 
 #     fasta_file = "SRR797062.fa"
     
@@ -213,21 +213,28 @@ def main():
     gene.include_padding(candidates)
     print "padded all candidates in ", time.clock() - start_time, " seconds"
     
+
     print "\nrunning viennafold"
-    vienna.energy_fold(candidates) # slow
-    print "...done"
+    vienna.energy_fold2(candidates) # slow
+    
+    print len(candidates)
+
+
+    
     
 #     assert False
     
     #stats out here:
-    plot_any.plot(candidates, candidate_to_miRNA, miRNA_high_conf, "hairpin_energy_10")
+#     plot_any.plot(candidates, candidate_to_miRNA, miRNA_high_conf, "hairpin_energy_10")
+#     assert False
 #     energy.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
     
     # create mirna groups for classification
 #     print "nr of candidates + miRNAS:", len(candidates)
     training_lists, test_lists = split_candidates(candidates, candidate_to_miRNA, miRNA_fam)
-                                
     
+    print "finished making training/testsets ", time.clock()-start_time, "seconds"                             
+#     assert False
     training_data, annotations, test_data = create_folds(candidates, candidate_to_miRNA, miRNA_high_conf, miRNA_fam)
     
     print "aligning small seqs"
@@ -281,7 +288,7 @@ def main():
     
     print
     print "finished features in ", time.clock() - start_time, " seconds"
-    
+#     assert False
 #     for k,v in candidate_to_miRNA.iteritems():
 #         print k,v
     
@@ -311,54 +318,85 @@ def main():
     print len(candidate_to_miRNA)
     print len(only_candidates)
     
-#     for mi in miRNAs:
-#         aaa = mi.small_subs
-#         bbb = sum([ float(x.data[1].split("-")[1]) for x in mi.mapped_sequences])
-#         ccc = aaa * 1.0 / bbb 
-#         print ccc, "\t\t\t", aaa, bbb, ccc
 
 
 
-#     learn_miRNAs = vectorize.candidates_to_array(miRNAs)
-#     class_miRNAs = numpy.array(miRNA_annotations)
-#     candidate_array = vectorize.candidates_to_array(only_candidates)
-# #     
-#     print 123
-#     print preprocessing.scale(learn_miRNAs)
-#     print 4567
-#     print preprocessing.scale(candidate_array)
+    # feature selection:
+    # only one fold first:
+    
+    
+    
+    
+    test = training_data[0]
+    test_annotations = annotations[0]
+
+    train = list(itertools.chain.from_iterable(training_data[1:]))
+    train_annotations = list(itertools.chain.from_iterable(annotations[1:]))
+    
+    
+    test = preprocessing.scale(test)
+    train = preprocessing.scale(train)
+    
+#     test = preprocessing.normalize(test)
+#     train = preprocessing.normalize(train)
+    
+    train = vectorize.candidates_to_array(train)
+    test = vectorize.candidates_to_array(test)
+    
+    learner = svm.SVC(probability=True, cache_size=500)
+    
+    learner.fit(train, train_annotations)
+    base_score = learner.score(test, test_annotations)
+    
+    print base_score
+    print random.choice(zip(train, train_annotations))
+    print random.choice(zip(test, test_annotations))
+    
+    
+    assert False
+#     for i in range(len(test)):
+#         pass
+
+
+
+
 
     
     
-    # flatten lists (for easy testing only)
-    training_data = list(itertools.chain.from_iterable(training_data))
-    annotations = list(itertools.chain.from_iterable(annotations))
-    test_data_candidates = list(itertools.chain.from_iterable(test_data))
+#     # flatten lists (for easy testing purposes only)
+#     training_data = list(itertools.chain.from_iterable(training_data))
+#     annotations = list(itertools.chain.from_iterable(annotations))
+#     test_data_candidates = list(itertools.chain.from_iterable(test_data))
+# 
+#     # create vectors
+#     training_data = vectorize.candidates_to_array(training_data)
+#     annotations = numpy.array(annotations)
+#     test_data = vectorize.candidates_to_array(test_data_candidates)
+#     
+#     # scale data 0-1
+#     training_data = preprocessing.scale(training_data)
+#     test_data = preprocessing.scale(test_data)
+#     
+#     
+#     learner = svm.SVR(probability=True, cache_size=1000)
+# #     classer = svm.SVC(probability=True, cache_size=1000)
+#     print "fit"
+#     learner.fit(training_data, annotations)
+# #     classer.fit(training_data, annotations)
+# 
+#     print "learn"
+#     res = learner.predict(test_data)
+# #     cls = learner.predict(test_data)
+#     
+#     print res
+#     print max(res)
+#     print sum(res)
+#     print len(res)
+#     
+    
+    
+    
 
-    # create vectors
-    training_data = vectorize.candidates_to_array(training_data)
-    annotations = numpy.array(annotations)
-    test_data = vectorize.candidates_to_array(test_data_candidates)
-    
-    # scale data 0-1
-    training_data = preprocessing.scale(training_data)
-    test_data = preprocessing.scale(test_data)
-    
-    
-    learner = svm.SVC(probability=True, cache_size=1000)
-#     classer = svm.SVC(probability=True, cache_size=1000)
-    print "fit"
-    learner.fit(training_data, annotations)
-#     classer.fit(training_data, annotations)
-    print "learn"
-    res = learner.predict(test_data)
-#     cls = learner.predict(test_data)
-    
-    print res
-    print max(res)
-    print sum(res)
-    print len(res)
-    
     
     
 

@@ -73,5 +73,5 @@ def plot(candidates, candidate_to_miRNAid, mirna_high_conf, name, isLog=False):
 #     print candidate_only
 #     print mirna_high
 #     print mirna_low
-    assert False
+#     assert False
     

@@ -2,43 +2,61 @@
 from subprocess import PIPE, Popen
 import re
 import numpy
-from multiprocessing import Pool, current_process
-import candidates
-
-
+from multiprocessing import Pool
+from multiprocessing import current_process
+from multiprocessing import cpu_count
+import time
 
 def energy_fold2(candidates):
     """ concurrent vienna energy+fold+entropy  """
     
-    cores = 15
+    start_time = time.time()
+    cores = cpu_count() * 2
     pool = Pool(cores)
+    
+    print "using ", cores, "cores"
     
     def get_hp(candidate):
         return candidate.hairpin
     
     def get_hp_10(candidate):
         return candidate.hairpin_padded_40[30:-30]
-
+    
+    def get_hp_40(candidate):
+        return candidate.hairpin_padded_40
     
     param_iter = map(get_hp, candidates)
     fold_energy = pool.map(_viennafold, param_iter)
     
-    for c, fold, en in zip(candidates, fold_energy):
+    for c, (fold, en) in zip(candidates, fold_energy):
         c.set_fold_hairpin(fold, en)
+    
+    print "first part ok maybe", time.time() - start_time, "seconds"
+    param_iter = map(get_hp_10, candidates)
+    fold_energy = pool.map(_viennafold, param_iter)
+    
+    for c, (fold, en) in zip(candidates, fold_energy):
+        c.set_fold_10(fold, en)
+#         c.set_bitpair_entropy(bp)
         
+    print "also 40 extra...", time.time() - start_time, "seconds"
+    
     param_iter = map(get_hp_10, candidates)
     fold_energy_bitpair = pool.map(_wrap_fold_entropy, param_iter)
     
-    for c, fold, en, bp in zip(candidates, fold_energy_bitpair):
-        c.set_fold_10(fold, en)
+    for c, (fold, en, bp) in zip(candidates, fold_energy_bitpair):
+        c.set_fold_40(fold, en)
         c.set_bitpair_entropy(bp)
     
-    print "lol it may have worked..."
-    assert False
+    
+    print "used", time.time() - start_time, "seconds"
+#     assert False
+#     return cores
+
     
 
 def energy_fold(candidates):
-    
+    start_time = time.time()
     normal_filename = "pool"
     ps_filename = ">" + normal_filename # super retarded?
     derpy_filename = normal_filename + "_dp.ps"
@@ -64,18 +82,16 @@ def energy_fold(candidates):
         candidate.set_fold_hairpin(fold, energy)
         candidate.set_fold_10(fold10, energy10)
         candidate.set_bitpair_entropy(bitpair_entropy_dict)
-        
-        
+    print "used", time.time() - start_time, "seconds"
+#     assert False    
+
 def _wrap_fold_entropy(fold_part):
     
-    file_name = current_process().name()
+    file_name = "ps/"+str(current_process().pid)
+    ps_filename = ">" + file_name
+    read_ps = file_name + "_dp.ps"
     
-    fold, energy = _viennafold(fold_part, do_ps=True)
-
-    normal_filename = "pool"
-    
-    ps_filename = ">" + normal_filename
-    read_ps = normal_filename + "_dp.ps"
+    fold, energy = _viennafold(fold_part, ps_filename, do_ps=True)
     
     bitpair_probs = _read_bitpair_probs(read_ps)
     bp_dict = _shannon_entropy(bitpair_probs)
@@ -96,7 +112,6 @@ def _viennafold(sequence, filename="", do_ps=False):
 
     assert errors is None
 
-
     ans = ans.strip()
     
     match_number = re.search("-?[0-9]+[.][0-9]+", ans)
@@ -115,7 +130,6 @@ def _viennafold(sequence, filename="", do_ps=False):
 
 def _read_bitpair_probs(filename):
     """ extract the bp probatilities from the RNAfold dotplot postscript file"""
-    
     bitpair_score = {}
     
     with open(filename) as tmp_plot:
