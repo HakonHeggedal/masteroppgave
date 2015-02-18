@@ -11,10 +11,10 @@ def energy_fold2(candidates):
     """ concurrent vienna energy+fold+entropy  """
     
     start_time = time.time()
-    cores = cpu_count() * 2
-    pool = Pool(cores)
+    threads = cpu_count() * 2
+    pool = Pool(threads)
     
-    print "using ", cores, "cores"
+    print "using", threads, "threads"
     
     def get_hp(candidate):
         return candidate.hairpin
@@ -31,7 +31,7 @@ def energy_fold2(candidates):
     for c, (fold, en) in zip(candidates, fold_energy):
         c.set_fold_hairpin(fold, en)
     
-    print "first part ok maybe", time.time() - start_time, "seconds"
+    print "first part ok", time.time() - start_time, "seconds"
     param_iter = map(get_hp_10, candidates)
     fold_energy = pool.map(_viennafold, param_iter)
     
@@ -39,19 +39,19 @@ def energy_fold2(candidates):
         c.set_fold_10(fold, en)
 #         c.set_bitpair_entropy(bp)
         
-    print "also 40 extra...", time.time() - start_time, "seconds"
+    print "second part ok", time.time() - start_time, "seconds"
     
-    param_iter = map(get_hp_10, candidates)
-    fold_energy_bitpair = pool.map(_wrap_fold_entropy, param_iter)
-    
-    for c, (fold, en, bp) in zip(candidates, fold_energy_bitpair):
-        c.set_fold_40(fold, en)
-        c.set_bitpair_entropy(bp)
+#     param_iter = map(get_hp_10, candidates)
+#     fold_energy_bitpair = pool.map(_wrap_fold_entropy, param_iter)
+#     
+#     for c, (fold, en, bp) in zip(candidates, fold_energy_bitpair):
+#         c.set_fold_40(fold, en)
+#         c.set_bitpair_entropy(bp)
     
     
     print "used", time.time() - start_time, "seconds"
 #     assert False
-#     return cores
+#     return threads
 
     
 

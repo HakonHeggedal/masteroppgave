@@ -18,6 +18,8 @@ from inputs import merge
 from inputs import mirbase
 from inputs import miRNA
 
+import math
+
 from genes import gene
 
 from candidates import interval_tree_search
@@ -45,9 +47,11 @@ from candidates import overhang
 from misc import plot_any
 
 from ml import vectorize
+from ml.vectorize import feature_names
+
+from multiprocessing import Pool
 
 
-start_time = time.clock()
 
 def _align_bowtie(bowtie_output_file, collapsed_seq_file):
     from subprocess import check_output
@@ -65,7 +69,7 @@ def _align_bowtie(bowtie_output_file, collapsed_seq_file):
 
 
 def main():
-#     start_time = time.clock()
+    start_time = time.clock()
     print "starting miRNA"
     
     print "merging collapsed files"
@@ -110,6 +114,9 @@ def main():
     high_conf_file = "high_conf_hairpin.fa"
     miRNA_family_file = "miFam.dat"
     other_types = "mirTrons_other.txt"
+    
+    
+    ml_folds = 5
     
     print "loading miRNA hairpins:"
     
@@ -231,11 +238,12 @@ def main():
     
     # create mirna groups for classification
 #     print "nr of candidates + miRNAS:", len(candidates)
-    training_lists, test_lists = split_candidates(candidates, candidate_to_miRNA, miRNA_fam)
+
+    training_lists, test_lists = split_candidates(candidates, candidate_to_miRNA, miRNA_fam, ml_folds)
     
     print "finished making training/testsets ", time.clock()-start_time, "seconds"                             
 #     assert False
-    training_data, annotations, test_data = create_folds(candidates, candidate_to_miRNA, miRNA_high_conf, miRNA_fam)
+    annotated_data, annotations, unknown_data = create_folds(candidates, candidate_to_miRNA, miRNA_high_conf, miRNA_fam)
     
     print "aligning small seqs"
     align_small_seqs(candidates, small_reads, small_reads_count)
@@ -288,119 +296,184 @@ def main():
     
     print
     print "finished features in ", time.clock() - start_time, " seconds"
-#     assert False
-#     for k,v in candidate_to_miRNA.iteritems():
-#         print k,v
+
     
-    miRNAs = []
-    miRNA_annotations = []
-    only_candidates = []
-    
-#     mi_keys = set(candidate_to_miRNA.keys())
-#     candidate_keys = set([c.chromosome + str(c.pos_5p_begin) for c in candidates])
-#     
-#     print "miRNAs:", len(mi_keys)
-#     print "all:", len(candidate_keys)
-#     print "pls be gone:", len(candidate_keys - mi_keys)
-    
-    
-    for candidate in candidates:
-#         print candidate, candidate in candidate_to_miRNA
-        hashval = candidate.chromosome + candidate.chromosome_direction + str(candidate.pos_5p_begin)
-        if hashval in candidate_to_miRNA:
-            miRNAs.append(candidate)
-            mi = candidate_to_miRNA[hashval]
-#             print mi, miRNA_species[mi]
-            miRNA_annotations.append(miRNA_species[mi])
-        else:
-            only_candidates.append(candidate)
+    def param_estimate_fold(all_data, all_annotations, test_fold_nr):
+        
+        training = numpy.delete(all_data, test_fold_nr, 0)
+        training_annotation = numpy.delete(all_annotations, test_fold_nr, 0)
+        
+        
+        print len(training_annotation), training_annotation
+        training = numpy.vstack(training)
+        training_annotation = list(itertools.chain.from_iterable(training_annotation) )
+        
+
+        testing = all_data[test_fold_nr]
+        testing_annotations = all_annotations[test_fold_nr]
+        
+        print len(testing), testing
+        
+        print
+        print len(training), training
+#         assert False
+        features = len(testing[0])
+        scores = [0]*features
+        
+        learner = svm.SVC(probability=True, cache_size=500)
+        learner.fit(training, training_annotation)
+        base_score = learner.score(testing, testing_annotations)
+        
+
+        for i in xrange(features):
+            train_removed = numpy.delete(training, i, 1)
+            test_removed = numpy.delete(testing, i, 1)
+            learner.fit(train_removed, training_annotation)
+            removed_score = learner.score(test_removed, testing_annotations)
+            scores[i] = base_score - removed_score
             
-    print len(candidate_to_miRNA)
-    print len(only_candidates)
+        return scores
+
+    
+#     annotations = list(itertools.chain.from_iterable(annotations))
+#     all_annotated = list(itertools.chain.from_iterable(annotated_data))
+    
+    vector_data = [vectorize.candidates_to_array(d) for d in annotated_data]
+    single_vector_data = list(itertools.chain.from_iterable(vector_data) )
+    
+#     print len(vector_data)
+    
+    scaler = preprocessing.StandardScaler().fit(single_vector_data)
+    
+    scaled_vectors = [scaler.transform(d) for d in vector_data]
+
+    learner = svm.SVC(probability=True, cache_size=500)
+    
+    threads = ml_folds
+    pool = Pool(threads)
+    
+    print "nr of threads:", threads
     
 
+    res_lists = map(param_estimate_fold,
+                    [scaled_vectors]*ml_folds, 
+                    [annotations]*ml_folds,
+                    range(ml_folds) )
+    
+    
+    feat_list = zip(*res_lists)
+    for name, res in zip(feature_names, feat_list):
+        print sum(res)/len(res), name
+    
+    
 
+        
 
     # feature selection:
     # only one fold first:
     
     
+    derp = annotated_data
+    
+    derp = map(vectorize.candidates_to_array, derp)
     
     
-    test = training_data[0]
+    
+    test = annotated_data[0]
     test_annotations = annotations[0]
 
-    train = list(itertools.chain.from_iterable(training_data[1:]))
+    train = list(itertools.chain.from_iterable(annotated_data[1:]))
     train_annotations = list(itertools.chain.from_iterable(annotations[1:]))
-    
-    
-    test = preprocessing.scale(test)
-    train = preprocessing.scale(train)
-    
-#     test = preprocessing.normalize(test)
-#     train = preprocessing.normalize(train)
-    
+
     train = vectorize.candidates_to_array(train)
     test = vectorize.candidates_to_array(test)
+
+    test = preprocessing.scale(test)
+    train = preprocessing.scale(train)
+
+    # parameter selection:
     
     learner = svm.SVC(probability=True, cache_size=500)
-    
     learner.fit(train, train_annotations)
+    
     base_score = learner.score(test, test_annotations)
     
     print base_score
-    print random.choice(zip(train, train_annotations))
-    print random.choice(zip(test, test_annotations))
+
     
+    features = len(train[0])
     
-    assert False
-#     for i in range(len(test)):
+    scores = [0]*features
+    
+    for i in xrange(features):
+        
+        train_removed = numpy.delete(train,i, 1)
+        test_removed = numpy.delete(test,i, 1)
+        
+        learner = svm.SVC(probability=True, cache_size=500) 
+        learner.fit(train_removed, train_annotations)
+        removed_score = learner.score(test_removed, test_annotations)
+        scores[i] = base_score - removed_score
+        
+    print "each feature removed:"
+    print scores
+    
+    for score, name in sorted(zip(scores, feature_names)):
+        print  score,"\t", name
+
+
+#     def score_features(train, train_annotations, test, test_annotations):
 #         pass
+#         
+#         
+# 
+#     
+#     
+#     for i in xrange(len(train[0])):
+        
 
+        
 
+#     print train[0]
+#     print
+#     train = numpy.delete(train,0, 1)
+#     print train[0]
 
-
-
+#     scaler = preprocessing.StandardScaler().fit(test)
     
+#     test = preprocessing.normalize(test) #shit
+#     train = preprocessing.normalize(train)
     
 #     # flatten lists (for easy testing purposes only)
-#     training_data = list(itertools.chain.from_iterable(training_data))
+#     annotated_data = list(itertools.chain.from_iterable(annotated_data))
 #     annotations = list(itertools.chain.from_iterable(annotations))
-#     test_data_candidates = list(itertools.chain.from_iterable(test_data))
+#     test_data_candidates = list(itertools.chain.from_iterable(unknown_data))
 # 
 #     # create vectors
-#     training_data = vectorize.candidates_to_array(training_data)
+#     annotated_data = vectorize.candidates_to_array(annotated_data)
 #     annotations = numpy.array(annotations)
-#     test_data = vectorize.candidates_to_array(test_data_candidates)
+#     unknown_data = vectorize.candidates_to_array(test_data_candidates)
 #     
-#     # scale data 0-1
-#     training_data = preprocessing.scale(training_data)
-#     test_data = preprocessing.scale(test_data)
+#     # scale data -1, 1
+#     annotated_data = preprocessing.scale(annotated_data)
+#     unknown_data = preprocessing.scale(unknown_data)
 #     
 #     
 #     learner = svm.SVR(probability=True, cache_size=1000)
 # #     classer = svm.SVC(probability=True, cache_size=1000)
 #     print "fit"
-#     learner.fit(training_data, annotations)
-# #     classer.fit(training_data, annotations)
+#     learner.fit(annotated_data, annotations)
+# #     classer.fit(annotated_data, annotations)
 # 
 #     print "learn"
-#     res = learner.predict(test_data)
-# #     cls = learner.predict(test_data)
+#     res = learner.predict(unknown_data)
+# #     cls = learner.predict(unknown_data)
 #     
 #     print res
 #     print max(res)
 #     print sum(res)
 #     print len(res)
 #     
-    
-    
-    
-
-    
-    
-
-
     
     
 #     for val, c in sorted(zip(res, test_data_candidates), reverse=True):
@@ -436,37 +509,36 @@ def main():
 # if __name__ == "__main__":
 #     main()
 main()
-print "finished everything in ", time.clock() - start_time, " seconds"
+# print "finished everything in ", time.clock() - start_time, " seconds"
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#     miRNAs = []
+#     miRNA_annotations = []
+#     only_candidates = []
+#     
+# #     mi_keys = set(candidate_to_miRNA.keys())
+# #     candidate_keys = set([c.chromosome + str(c.pos_5p_begin) for c in candidates])
+# #     
+# #     print "miRNAs:", len(mi_keys)
+# #     print "all:", len(candidate_keys)
+# #     print "pls be gone:", len(candidate_keys - mi_keys)
+#     
+#     
+#     for candidate in candidates:
+# #         print candidate, candidate in candidate_to_miRNA
+#         hashval = candidate.chromosome + candidate.chromosome_direction + str(candidate.pos_5p_begin)
+#         if hashval in candidate_to_miRNA:
+#             miRNAs.append(candidate)
+#             mi = candidate_to_miRNA[hashval]
+# #             print mi, miRNA_species[mi]
+#             miRNA_annotations.append(miRNA_species[mi])
+#         else:
+#             only_candidates.append(candidate)
+#             
+#     print len(candidate_to_miRNA)
+#     print len(only_candidates)
 
 
 

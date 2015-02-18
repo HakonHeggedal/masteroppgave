@@ -15,8 +15,8 @@ def position_frequency(string_list, symbol_set):
         symbol_pos[s] = node1
         
     for string in string_list:
-        for pos_to_feat, letter in enumerate(string):
-            results[pos_to_feat][symbol_pos[letter]] += 1
+        for feature_names, letter in enumerate(string):
+            results[feature_names][symbol_pos[letter]] += 1
             
     return results
 
@@ -181,8 +181,8 @@ print "symbol frequency: ", freq_dict
 print "most frequent positions:"
 print symbols
 
-# for pos_to_feat, freq in enumerate(positions):
-#     print freq, pos_to_feat
+# for feature_names, freq in enumerate(positions):
+#     print freq, feature_names
 
 a = hashcluster(rnas)
  

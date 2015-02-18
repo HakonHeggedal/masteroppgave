@@ -4,16 +4,38 @@ Created on 4. nov. 2014
 @author: hakon
 '''
 import numpy
+import math
+
+
+
+
+
+feature_names = []
+feature_names.append("log mapped sequences")
+feature_names.append("mapped sequences rpm count")
+feature_names.append("hairpin energy")
+feature_names.append("hairpin + 10nt energy")
+feature_names.append("entropy nucleotides")
+feature_names.append("entropy structure")
+feature_names.append("heterogenity 5p start")
+feature_names.append("heterogenity 5p end")
+feature_names.append("heterogenity 3p start")
+feature_names.append("heterogenity 3p end")
+feature_names.append("candidate quality")
+feature_names.append("nr of bindings hairpin+10nt")
+feature_names.append("overhang level outer")
+feature_names.append("overhang outer")
+feature_names.append("overhang level inner")
+feature_names.append("overhang inner")
+feature_names.append("small sequences aligned")
+feature_names.append("small sequences aligned 5p")
+feature_names.append("small sequences aligned 3p")
 
 def candidates_to_array(candidates):
     
-    all_candidates = []
-    
-    pos_to_feat = []
-    pos_to_feat.append("mapped sequences")
-    pos_to_feat.append("hairpin energy")
-    pos_to_feat.append("hairpin energy")
 
+    
+    all_candidates = []
     
     for candidate in candidates:
         
@@ -22,7 +44,8 @@ def candidates_to_array(candidates):
             name = el.data[1]
             aa += float(name.split("-")[1])
         
-        a = len(candidate.mapped_sequences)  # not scaled
+        a = len(candidate.mapped_sequences)
+        a = math.log(a) if a > 0 else a
         b = candidate.hairpin_energy
         bb = candidate.hairpin_energy_10
         c = candidate.entropy_nucleotides
@@ -52,19 +75,19 @@ def candidates_to_array(candidates):
 
 
 
-#     pos_to_feat[1] = "hairpin energy"
-#     pos_to_feat[2] = "hairpin energy"
-#     pos_to_feat[3] = "hairpin energy"
-#     pos_to_feat[4] = "hairpin energy"
-#     pos_to_feat[5] = "hairpin energy"
-#     pos_to_feat[6] = "hairpin energy"
-#     pos_to_feat[7] = "hairpin energy"
-#     pos_to_feat[8] = "hairpin energy"
-#     pos_to_feat[9] = "hairpin energy"
-#     pos_to_feat[10] = "hairpin energy"
-#     pos_to_feat[11] = "hairpin energy"
-#     pos_to_feat[12] = "hairpin energy"
-#     pos_to_feat[13] = "hairpin energy"
-#     pos_to_feat[14] = "hairpin energy"
-#     pos_to_feat[15] = "hairpin energy"
-#     pos_to_feat[16] = "hairpin energy"
+#     feature_names[1] = "hairpin energy"
+#     feature_names[2] = "hairpin energy"
+#     feature_names[3] = "hairpin energy"
+#     feature_names[4] = "hairpin energy"
+#     feature_names[5] = "hairpin energy"
+#     feature_names[6] = "hairpin energy"
+#     feature_names[7] = "hairpin energy"
+#     feature_names[8] = "hairpin energy"
+#     feature_names[9] = "hairpin energy"
+#     feature_names[10] = "hairpin energy"
+#     feature_names[11] = "hairpin energy"
+#     feature_names[12] = "hairpin energy"
+#     feature_names[13] = "hairpin energy"
+#     feature_names[14] = "hairpin energy"
+#     feature_names[15] = "hairpin energy"
+#     feature_names[16] = "hairpin energy"
