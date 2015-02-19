@@ -29,7 +29,6 @@ def include_padding(candidate_list_unsort, padding=40 ):
         print "reading from", file_name
         
         with open(file_name) as chr_file:
-#             print "reading from", file_name
             
             _ = chr_file.readline() # first line is info, not used
             chr_lines = chr_file.readlines() # current genome
@@ -39,7 +38,6 @@ def include_padding(candidate_list_unsort, padding=40 ):
 #             print len(chr_lines) * line_len, len(chr_lines)
             
             while True:
-                # fix every candidate
                 
                 read_start = candidate.pos_5p_begin - padding
                 start_line = read_start // line_len
@@ -52,8 +50,6 @@ def include_padding(candidate_list_unsort, padding=40 ):
                 #assembling sequence
                 padded = chr_lines[start_line][start_pos:].strip()
                 for x in xrange(start_line+1, end_line):
-#                     print "-", start_line, end_line
-#                     print "-"
                     padded += chr_lines[x].strip()
                 padded += chr_lines[end_line][:end_pos].strip() if start_line != end_line else ""
                 
@@ -62,22 +58,6 @@ def include_padding(candidate_list_unsort, padding=40 ):
                 padded = padded.strip("\n")
                 
                 hairpin = padded[padding:-padding]
-                
-#                 print "hairpin",hairpin
-
-
-#                 has_seqs = False
-#                 for s in candidate.mapped_sequences:
-#                     has_seqs = has_seqs or s.data[2] in padded
-#                 assert has_seqs
-                  
-#                 print s.data[2]
-#                 if s.data[2] not in padded:
-#                     print "\t NO MATCH!!!!!!", s.data[2], padded[:10], read_start
-
-#                 if interval.data[2] not in padded or interval.data[4] not in padded:
-#                     fails += 1
-
 
                 if not hairpin:
                     print "hairpin", i, hairpin
@@ -108,12 +88,9 @@ def include_padding(candidate_list_unsort, padding=40 ):
                 candidate = candidate_list[i]
                 gene_name = candidate.chromosome
                 
-#                 print "123"
                 
-                
-    os.chdir(p)
+    os.chdir(p) # change folder again
     
-#     assert False
     return 
         
 

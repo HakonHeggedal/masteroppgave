@@ -5,11 +5,11 @@ Created on 4. feb. 2015
 '''
 
 def remove_mirTrons(miRNA_set, filename):
-    print "removing from miRNA set"
+    print "removing special miRNA from miRNA set"
     with open(filename) as mirTrons:
         for special in mirTrons:
             special = ">" + special.strip()
             
             if special in miRNA_set:
                 del(miRNA_set[special])
-                print special, "is special"
+#                 print special, "is special"

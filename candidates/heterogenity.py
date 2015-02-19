@@ -6,6 +6,8 @@ Created on 10. okt. 2014
 
 def heterogenity(candidates, offset=5):
     
+    print "\n\tcalculating variation in 5p and 3p start positions"
+    
     for candidate in candidates:
         sequences = candidate.mapped_sequences
         
@@ -27,7 +29,7 @@ def heterogenity(candidates, offset=5):
             end_pos = sequence.end - five_begin + offset
             
             if begin_pos < 0 or end_pos >= len(ends):
-                print "out of range", begin_pos, end_pos
+#                 print "out of range", begin_pos, end_pos
 #                 assert False
                 break
             
@@ -35,17 +37,17 @@ def heterogenity(candidates, offset=5):
             ends[end_pos] += count
             count_sum += count
             
-        print begins
-        print ends
-
-        print "results:"
+#         print begins
+#         print ends
+# 
+#         print "results:"
         het = 0
         reads_5b = 0
 #         0 to 10
         i = 0
         
         s = begins[:2*offset + 1]
-        print len(s), s, # five start
+#         print len(s), s, # five start
         for i, count in enumerate(s):
             off = abs(offset - i)
             het += off * count
@@ -58,7 +60,7 @@ def heterogenity(candidates, offset=5):
         reads_5e = 0
         startpos = five_end - five_begin # five end
         s = ends[startpos:startpos+2*offset+1]
-        print len(s), s,
+#         print len(s), s,
         for i, count in enumerate(s):
             off = abs(offset - i)
             het += off * count
@@ -71,7 +73,7 @@ def heterogenity(candidates, offset=5):
         reads_3b = 0
         startpos = three_begin - five_begin # three begin 
         s = begins[startpos:startpos+2*offset+1]
-        print len(s), s,
+#         print len(s), s,
         for i, count in enumerate(s):
             off = abs(offset - i)
             het += off * count
@@ -82,7 +84,7 @@ def heterogenity(candidates, offset=5):
         het = 0
         reads_3e = 0
         s = ends[-(2*offset + 1):]
-        print len(s), s,
+#         print len(s), s,
         for i, count in enumerate(s):
             off = abs(offset - i)
             het += off * count
@@ -92,9 +94,9 @@ def heterogenity(candidates, offset=5):
         h_3p_end = ends[-offset-1] / (reads_3e + 1)
 #         for i, count in enumerate(ends[]) 
         
-        print h_5p_begin, h_5p_end, h_3p_begin, h_3p_end
-        print reads_5b, reads_5e, reads_3b, reads_3e
-        print
+#         print h_5p_begin, h_5p_end, h_3p_begin, h_3p_end
+#         print reads_5b, reads_5e, reads_3b, reads_3e
+#         print
         
         candidate.set_heterogenity(h_5p_begin, h_5p_end, h_3p_begin, h_3p_end)
         candidate.set_reads(reads_5b, reads_5e, reads_3b, reads_3e)
@@ -157,14 +159,14 @@ def frequency_counting(candidates, freq_range=5):
                 
                 
             
-        print begin_5s
-        print end_5s
-        print begin_3s
-        print end_3s
-        print misses
-        print count_all
-        print misses * 1.0 / count_all
-        print
-            
+#         print begin_5s
+#         print end_5s
+#         print begin_3s
+#         print end_3s
+#         print misses
+#         print count_all
+#         print misses * 1.0 / count_all
+#         print
+#             
         
 

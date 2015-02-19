@@ -22,15 +22,15 @@ def get_alignment(candidates):
 #         print candidate.pos_5p_end - candidate.pos_5p_begin,
 #         print candidate.pos_3p_end - candidate.pos_3p_begin,
 #         print candidate.pos_3p_end - candidate.pos_5p_begin + 20,
-        print i, candidate.pos_5p_begin, candidate.pos_5p_end,  candidate.pos_3p_begin,  candidate.pos_3p_end
+#         print i, candidate.pos_5p_begin, candidate.pos_5p_end,  candidate.pos_3p_begin,  candidate.pos_3p_end
         
         assert candidate.pos_5p_begin < candidate.pos_5p_end <= candidate.pos_3p_begin < candidate.pos_3p_end
         
-        if len(fold_10) != 20 + candidate.pos_3p_end - candidate.pos_5p_begin:
-            print candidate.hairpin
-            print candidate.hairpin_padded_40
-            print len(candidate.hairpin_padded_40)
-            print len(candidate.hairpin)
+#         if len(fold_10) != 20 + candidate.pos_3p_end - candidate.pos_5p_begin:
+#             print candidate.hairpin
+#             print candidate.hairpin_padded_40
+#             print len(candidate.hairpin_padded_40)
+#             print len(candidate.hairpin)
 #         assert len(fold_10) == 20 + candidate.pos_3p_end - candidate.pos_5p_begin
         
         folds_10 = max_fold(fold_10)
@@ -53,7 +53,7 @@ def get_alignment(candidates):
 #         p_folds_in, p_off_in = find_overhang(fold_40, end_5, start_3)
         
 #         print "\tmaks fold:", folds_10, folds_40
-        print "\t10:", folds_out, off_out, folds_in, off_in
+#         print "\t10:", folds_out, off_out, folds_in, off_in
 #         print "\t10:", p_folds_out, p_off_out, p_folds_in, p_off_in
         
         candidate.set_alignment_10(folds_10, folds_out, off_out, folds_in, off_in)
@@ -123,12 +123,12 @@ def find_overhang(fold, five_start, three_end):
        
     
 #     
-f1 = ".(((((((((..((((((((.((.................)).))))))))..)))))))))..."
-start = 22
-end = len(f1)-10
- 
-print max_fold(f1)
-print find_overhang(f1, start, end)
+# f1 = ".(((((((((..((((((((.((.................)).))))))))..)))))))))..."
+# start = 22
+# end = len(f1)-10
+#  
+# print max_fold(f1)
+# print find_overhang(f1, start, end)
 
 
 

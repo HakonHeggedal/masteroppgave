@@ -46,10 +46,10 @@ def read_miRNA_fasta(fasta_file):
             other_to_seq[miRNAid] = dna_seq
             
     
-    print
-    print "last one human?", is_human, dna_seq
-    print "human miRNAs", len(human_to_seq)
-    print "other miRNAs", len(other_to_seq)        
+#     print
+#     print "last one human?", is_human, dna_seq
+    print "\thuman miRNAs", len(human_to_seq)
+    print "\tother miRNAs", len(other_to_seq)        
     
     return human_to_seq, other_to_seq
 
@@ -74,13 +74,13 @@ def _add_mature_pos(miRNAid, miRNA_dict, hairpin_dict, startpos, endpos, is_5p, 
     if is_5p:
         is_added = True
         miRNA_dict[miRNAid] = [startpos, endpos, mipos[2], mipos[3]]
-        if startpos+5 >= len(hairpin_dict[miRNAid]) / 2:
-            print "strange behavior 5p", miRNA_dict[miRNAid], miRNAid, startpos, len(hairpin_dict[miRNAid])
+#         if startpos+5 >= len(hairpin_dict[miRNAid]) / 2:
+#             print "strange behavior 5p", miRNA_dict[miRNAid], miRNAid, startpos, len(hairpin_dict[miRNAid])
     elif is_3p:
         is_added = True
         miRNA_dict[miRNAid] = [mipos[0], mipos[1], startpos, endpos]
-        if startpos+5 < len(hairpin_dict[miRNAid]) / 2:
-            print "strange behavior 3p", miRNA_dict[miRNAid], miRNAid, startpos, len(hairpin_dict[miRNAid])
+#         if startpos+5 < len(hairpin_dict[miRNAid]) / 2:
+#             print "strange behavior 3p", miRNA_dict[miRNAid], miRNAid, startpos, len(hairpin_dict[miRNAid])
     
     elif startpos+5 < len(hairpin_dict[miRNAid]) / 2: # not given, but starts in 5' end
         if mipos[0] == -1 and (endpos + MIN_HAIRPIN_LOOP < mipos[2] or mipos[2] == -1):
@@ -94,15 +94,14 @@ def _add_mature_pos(miRNAid, miRNA_dict, hairpin_dict, startpos, endpos, is_5p, 
 #         print "no match---"
 #         print miRNA_dict[miRNAid], miRNAid, is_5p, is_3p, startpos, len(hairpin_dict[miRNAid])
     
-    if not is_added:
-        print "no match---"
-        print miRNA_dict[miRNAid], miRNAid, is_5p, is_3p, startpos, len(hairpin_dict[miRNAid])
+#     if not is_added:
+#         print "\tno match:",miRNA_dict[miRNAid], miRNAid, is_5p, is_3p, startpos, len(hairpin_dict[miRNAid])
 
     
-    if miRNA_dict[miRNAid][1] != -1 and miRNA_dict[miRNAid][2] != -1:
-        if miRNA_dict[miRNAid][1] >= miRNA_dict[miRNAid][2]:
-            print "!error!", miRNA_dict[miRNAid], miRNAid, is_5p, is_3p, startpos, len(hairpin_dict[miRNAid])
-            print "-!!!", startpos+5, len(hairpin_dict[miRNAid]) / 2
+#     if miRNA_dict[miRNAid][1] != -1 and miRNA_dict[miRNAid][2] != -1:
+#         if miRNA_dict[miRNAid][1] >= miRNA_dict[miRNAid][2]:
+#             print "\tno hairpin, or overlapping!", miRNA_dict[miRNAid], miRNAid, is_5p, is_3p, startpos, len(hairpin_dict[miRNAid])
+#             print "-!!!", startpos+5, len(hairpin_dict[miRNAid]) / 2
 #             assert False
 #     if ">hsa-mir-4456" in miRNA_dict:
 #         print "!error!", miRNA_dict[miRNAid], miRNAid, is_5p, is_3p, startpos, len(hairpin_dict[miRNAid])
@@ -124,7 +123,8 @@ def combine_hairpin_mature(id_to_hairpin, id_to_mature):
     '''
     
     harpinID_to_mature = {}
-
+    
+    print "\n\t combining hairpin and mature seq miRNA..."
     
     for mature_id, mature_seq in id_to_mature.iteritems():
 #         print mature_id, mature_seq
@@ -176,12 +176,12 @@ def combine_hairpin_mature(id_to_hairpin, id_to_mature):
                                 startpos, endpos, is_5p, is_3p)
             c += chr(ord(c) + 1)
                              
-        if not found_hairpin:
-            print "\tno hit", mature_id, x, c, is_3p, is_5p
+#         if not found_hairpin:
+#             print "\tno hit", mature_id, x, c, is_3p, is_5p
     
     
-    print ">hsa-mir-4456" in harpinID_to_mature
-    print harpinID_to_mature[">hsa-mir-4456"]
+#     print ">hsa-mir-4456" in harpinID_to_mature
+#     print harpinID_to_mature[">hsa-mir-4456"]
 #     assert False
     print "FINISHED assembling miRNAs"
     return harpinID_to_mature

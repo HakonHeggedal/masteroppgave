@@ -6,14 +6,15 @@ Created on 9. okt. 2014
 import math
 
 def entropy(candidates):
+    print "\n\tcalculating simple entropy"
     
     for candidate in candidates:
         
         hairpin_entropy = _entropy(candidate.hairpin, 2)
         structure_entropy = _entropy(candidate.hairpin_fold, 4)
         
-        print hairpin_entropy
-        print structure_entropy
+#         print hairpin_entropy
+#         print structure_entropy
         candidate.set_entropy(hairpin_entropy, structure_entropy)
 
 

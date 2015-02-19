@@ -5,7 +5,7 @@ Created on 28. jan. 2015
 '''
 import random
 
-def split_candidates(candidates, mirna_dict, mirna_groups, folds=5, shuffle=False):
+def split_candidates(candidates, mirna_dict, mirna_groups, folds, shuffle=False):
     
     print
     print "splitting data into", folds, "folds"

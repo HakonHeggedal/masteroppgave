@@ -8,7 +8,7 @@ class Candidate:
 
         self.chromosome = chromosome
         self.chromosome_direction = strand_dir
-        self.pos_5p_begin = begin_5p
+        self.pos_5p_begin = begin_5p # in the genome... large value
         self.pos_5p_end = end_5p
         self.pos_3p_begin = begin_3p
         self.pos_3p_end = end_3p
@@ -81,6 +81,13 @@ class Candidate:
     
     def set_bitpair_entropy(self, bitpair_dict):
         self.bitpair_entropy_dict = bitpair_dict
+        
+    def set_bitpair_probs(self, bitpair_p):
+        self.bitpair_probabilities = bitpair_p
+    
+    def set_junction_pos(self, pos_5, pos_3):
+        self.junction_pos_5 = pos_5
+        self.junction_pos_3 = pos_3
         
     def set_alignment_10(self, max_10, lev_10_out, oh_10_out, lev_10_in, oh_10_in):
         self.bindings_max_10 = max_10

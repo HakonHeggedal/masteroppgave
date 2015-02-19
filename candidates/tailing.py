@@ -12,7 +12,7 @@ def tailing_au(candidates, sequences, align_len=8):
     ''' counts the number of a/u-tailing sequences
         compared to all mapping sequences
     '''
-    print "\ttailing------------------------------"
+    print "\n\tcalculating tailing for the candidates"
     full_hits = [0]*len(candidates)
     tailing = [0]*len(candidates)   
     last_parts = defaultdict(list)
@@ -22,7 +22,6 @@ def tailing_au(candidates, sequences, align_len=8):
         candidate_seq = candidate.hairpin
         candidate_len = candidate.pos_3p_end - candidate.pos_3p_begin
         start = candidate.padding_size + candidate_len - 1
-#         print "starting at", start, candidate.padding_size, candidate_len
         
         for i in xrange(start, start+4, 1):
             seq = candidate_seq[i:i+align_len]
@@ -78,8 +77,8 @@ def tailing_au(candidates, sequences, align_len=8):
                 if tailfree in candidates[c_nr].hairpin:
                     tailing[c_nr] += count
                     
-                    five = candidates[c_nr].hairpin[:candidate_len]
-                    print "yes", count, seq, tailfree, five, candidates[c_nr].hairpin[-10:]
+#                     five = candidates[c_nr].hairpin[:candidate_len]
+#                     print "yes", count, seq, tailfree, five, candidates[c_nr].hairpin[-10:]
                     full_hits[c_nr] += count
 
                     
@@ -88,17 +87,18 @@ def tailing_au(candidates, sequences, align_len=8):
             
 
             
-        
-    for candidate, tails, hits in zip(candidates, tailing, full_hits):
+    tailcount = 0
+    for i, (candidate, tails, hits) in enumerate(zip(candidates, tailing, full_hits)):
         tailing_val = tails * 1.0 / (hits+1)
         if tails > 0:
-            print "yeah", hits, tails
-            print tailing_val
+            tailcount += 1
+#             print i, "yeah\t", hits, tails, tailing_val
+
         candidate.set_tailing(tailing_val)
 
 
-
-    print "\ttailing finished^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+    
+    print "\tnr of canididates with tails:", tailcount, tailcount*1.0/len(candidates)
 
 
 def _remove_trailing(sequence, chars):
@@ -114,70 +114,6 @@ def _remove_trailing(sequence, chars):
 
     return sequence[:cut], iscut
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# def three_prime_au(candidates, sequence_frequency):
-#     
-#     threes_to_aucount = {}
-#     s = 0
-#     
-#     for candidate in candidates:    
-#         three_seq = candidate.seq_prime3
-#         three_seq = _remove_trailing(three_seq, "AUau")
-#         threes_to_aucount[three_seq] = 0
-#         
-#         
-#     for seq, count in sequence_frequency:
-#         seq_no_au = _remove_trailing(seq, "AUau")
-#         if seq_no_au in threes_to_aucount:
-#             threes_to_aucount[seq_no_au] += count
-# 
-#     
-#     for candidate in candidates:
-#         three_seq = candidate.seq_prime3
-#         three_seq = _remove_trailing(three_seq, "AUau")
-#         
-#         # set tailing value for all candidates
-#         candidate.tailing_au = threes_to_aucount[three_seq]
-#         print threes_to_aucount[three_seq]
-#         s += threes_to_aucount[three_seq]
-#         
-#     print s
-#             
-#     
-#     
-# 
 
 
 

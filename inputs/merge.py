@@ -56,7 +56,8 @@ def filter_seqeunces(all_sequences, min_read_len=18):
             reads.append(seq)
             reads_count.append(count)
     
-    print len(reads), len(small_reads), len(reads_count), len(small_reads_count)
+    print "\tfilter by length: min", min_read_len
+    print "\t", len(reads), len(small_reads), len(reads_count), len(small_reads_count)
     
     return reads, reads_count, small_reads, small_reads_count
 

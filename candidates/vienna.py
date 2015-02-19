@@ -25,33 +25,34 @@ def energy_fold2(candidates):
     def get_hp_40(candidate):
         return candidate.hairpin_padded_40
     
-    param_iter = map(get_hp, candidates)
-    fold_energy = pool.map(_viennafold, param_iter)
-    
-    for c, (fold, en) in zip(candidates, fold_energy):
-        c.set_fold_hairpin(fold, en)
-    
-    print "first part ok", time.time() - start_time, "seconds"
-    param_iter = map(get_hp_10, candidates)
-    fold_energy = pool.map(_viennafold, param_iter)
-    
-    for c, (fold, en) in zip(candidates, fold_energy):
-        c.set_fold_10(fold, en)
-#         c.set_bitpair_entropy(bp)
+#     param_iter = map(get_hp, candidates)
+#     fold_energy = pool.map(_viennafold, param_iter)
+#     
+#     for c, (fold, en) in zip(candidates, fold_energy):
+#         c.set_fold_hairpin(fold, en)
+#     
+#     print "first part ok", time.time() - start_time, "seconds"
+#     param_iter = map(get_hp_10, candidates)
+#     fold_energy = pool.map(_viennafold, param_iter)
+#     
+#     for c, (fold, en) in zip(candidates, fold_energy):
+#         c.set_fold_10(fold, en)
+# #         c.set_bitpair_entropy(bp)
         
     print "second part ok", time.time() - start_time, "seconds"
     
-#     param_iter = map(get_hp_10, candidates)
-#     fold_energy_bitpair = pool.map(_wrap_fold_entropy, param_iter)
-#     
-#     for c, (fold, en, bp) in zip(candidates, fold_energy_bitpair):
-#         c.set_fold_40(fold, en)
-#         c.set_bitpair_entropy(bp)
+    param_iter = map(get_hp_40, candidates)
+    fold_energy_bitpair = pool.map(_wrap_fold_entropy, param_iter)
+     
+    for c, (fold, en, bp, bps) in zip(candidates, fold_energy_bitpair):
+        c.set_fold_40(fold, en)
+        c.set_bitpair_entropy(bp)
+        c.set_bitpair_probs(bps)
+
     
     
-    print "used", time.time() - start_time, "seconds"
-#     assert False
-#     return threads
+    print "folding took", time.time() - start_time, "seconds"
+
 
     
 
@@ -95,8 +96,10 @@ def _wrap_fold_entropy(fold_part):
     
     bitpair_probs = _read_bitpair_probs(read_ps)
     bp_dict = _shannon_entropy(bitpair_probs)
+    
 
-    return fold, energy, bp_dict
+
+    return fold, energy, bp_dict, bitpair_probs
     
 
 def _viennafold(sequence, filename="", do_ps=False):
@@ -158,16 +161,6 @@ def _shannon_entropy(bitpair_probs):
     for nt_id, bp_dict in bitpair_probs.iteritems():
         entropy[nt_id] = - sum([x * numpy.log(x) for x in bp_dict.values()])
     return entropy
-
-
-# def _refold_rna(self):
-# 
-# #         self.mirna_graph = fgb.BulgeGraph()
-# #         self.mirna_graph.from_dotbracket(self.dotbracket_seq)
-#         self._mk_bp_propensities(self.name + "_dp.ps")
-#         self._mk_shannon_entropy()
-# #         os.remove(self.name + "_ss.ps")
-# #         os.remove(self.name + "_dp.ps")
 
 
 

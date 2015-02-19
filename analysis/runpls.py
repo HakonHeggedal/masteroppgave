@@ -22,7 +22,7 @@ import math
 
 from genes import gene
 
-from candidates import interval_tree_search
+from candidates import interval_tree_search, stem
 from candidates import heterogenity
 from candidates import vienna
 from candidates import tailing
@@ -46,7 +46,7 @@ from candidates import overhang
 # from misc import plot_reads
 from misc import plot_any
 
-from ml import vectorize
+from ml import vectorize, param_estimate
 from ml.vectorize import feature_names
 
 from multiprocessing import Pool
@@ -70,14 +70,21 @@ def _align_bowtie(bowtie_output_file, collapsed_seq_file):
 
 def main():
     start_time = time.clock()
-    print "starting miRNA"
+    print "starting miRNA analysis"
     
-    print "merging collapsed files"
+
 
     fasta_files = ["SRR797059.collapsed", "SRR797060.collapsed", "SRR797061.collapsed",
                     "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed",
-                    "SRR207110.collapsed", "SRR207111.collapsed", "SRR207112.collapsed"]    
+                    "SRR207110.collapsed", "SRR207111.collapsed", "SRR207112.collapsed",
+                    "SRR207113.collapsed", "SRR207114.collapsed", "SRR207115.collapsed",
+                    "SRR207116.collapsed", "SRR207117.collapsed", "SRR207118.collapsed",
+                    "SRR207119.collapsed",]
     
+    fasta_files = ["SRR797059.collapsed", "SRR797060.collapsed", "SRR797061.collapsed",
+                    "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed",
+                    "SRR207110.collapsed", "SRR207111.collapsed", "SRR207112.collapsed"]    
+#     
     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed",
                     "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed"]
 #     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed", "SRR207111.collapsed"]
@@ -85,29 +92,7 @@ def main():
 #     fasta_files = ["SRR797062.collapsed"]
 #     fasta_files =  ["SRR207110.collapsed", "SRR207111.collapsed", "SRR207112.collapsed"] 
 #     fasta_file = "SRR797062.fa"
-    
-    dict_collapsed = merge.collapse_collapsed(fasta_files, min_len=10, min_count=2)
-    
-#     split small and larger sequences
-#     write reads to file
-    all_reads_file = "all.collapsed"
-    reads, reads_count, small_reads, small_reads_count = merge.filter_seqeunces(dict_collapsed, 18)
-    merge.write_collapsed(all_reads_file, reads, reads_count)
 
-    print "reads:", len(reads), "small:", len(small_reads), len(small_reads_count)
-    
-    
-#     aligning to genome using bowtie
-    bowtie_output = "bowtie_out.map"
-    _align_bowtie(bowtie_output, all_reads_file)
-    print "finished bowtie in ", time.clock() - start_time, " seconds" 
-    
-#     read genome alignment from bowtie
-    fixed_lines = [line.strip().split("\t") for line in open(bowtie_output)] 
-    print "read positions in ", time.clock() - start_time, " seconds"
-    
-    
-    
     hairpin_file = "hairpin.fa"
     mature_seq_file = "mature.fa"
     miRNA_file_name = "mirnas.fa"
@@ -115,11 +100,36 @@ def main():
     miRNA_family_file = "miFam.dat"
     other_types = "mirTrons_other.txt"
     
+    all_reads_file = "all.collapsed"
+    bowtie_output = "bowtie_out.map"
     
-    ml_folds = 5
+    miRNA_bowtie_output = "miRNA.map"
+    
+    ml_folds = 10
+
+    print "merging",len(fasta_files), "collapsed files" if len(fasta_files)>1 else ""
+    dict_collapsed = merge.collapse_collapsed(fasta_files, min_len=10, min_count=2)
+    
+#     split small and larger sequences
+#     write reads to file
+
+    reads, reads_count, small_reads, small_reads_count = merge.filter_seqeunces(dict_collapsed, 18)
+    merge.write_collapsed(all_reads_file, reads, reads_count)
+
+    print "long reads:", len(reads), "small:", len(small_reads), len(small_reads_count)
+    
+    
+#     aligning to genome using bowtie
+
+    _align_bowtie(bowtie_output, all_reads_file)
+    print "finished bowtie in ", time.clock() - start_time, " seconds" 
+    
+#     read genome alignment from bowtie
+    fixed_lines = [line.strip().split("\t") for line in open(bowtie_output)] 
+    print "read positions in ", time.clock() - start_time, " seconds"
+
     
     print "loading miRNA hairpins:"
-    
     hsa_to_hairpin, other_to_hairpin = mirbase.read_miRNA_fasta(hairpin_file)
     hsa_to_mature, other_to_mature = mirbase.read_miRNA_fasta(mature_seq_file)
     
@@ -131,47 +141,21 @@ def main():
     miRNA_high_conf = miRNA.read_high_confidence(high_conf_file)
 #     assert False
     
-    print len(miRNA_high_conf)
+    print "\nhigh confidence set:",len(miRNA_high_conf),
     print miRNA_high_conf.issubset(miRNA_species.keys())
     
-    print "\nmifam\n"
+    print "\nreading miRNA family info (mifam)"
     miRNA_fam = miRNA.read_family(miRNA_family_file)
-    
-#     assert False
-    
-#     print len(miRNA_fam)
-#     for x in miRNA_species.keys():
-#         print x
-#         break
-#     for x in miRNA_fam.keys():
-#         print x
-#         break
-    
-    print len(set(miRNA_species.keys()) & set(miRNA_fam.keys()))
-#     assert False
-    
-    
-#     for k,v in miRNA_species.iteritems():
-#         if v > 0:
-#             print k,v
-    
-    
-#     assert False
-#     get mirbase entries
-#     miRNAid_to_hairpin = mirbase.read_miRNA("mature.fa", "hairpin.fa")
-#     print "got all miRNAs from mirbase files", len(miRNAid_to_hairpin)
 
-
-    
-#     miRNA_species = mirbase.mirna_copies(miRNAid_to_hairpin.values(), "hairpin.fa")
+#     print len(set(miRNA_species.keys()) & set(miRNA_fam.keys()))
     
 #     run write micro rnas to file
 
     mirbase.write_miRNA(hsa_to_hairpin, miRNA_file_name)
-    print "wrote human miRNAs to file", time.clock() - start_time, " seconds"
+    print "\nwrote human miRNAs to file", time.clock() - start_time, " seconds"
     
 #     run bowtie to find miRNA positions
-    miRNA_bowtie_output = "miRNA.map"
+
     _align_bowtie(miRNA_bowtie_output, miRNA_file_name)
     
     print "aligned miRNAs in", time.clock() - start_time, " seconds"
@@ -182,30 +166,27 @@ def main():
     
     print "miRNA bowtie hits:", len(miRNA_bowtie_hits)
     print "unique miRNA hits:", len(unique_mirna_hits)
-
     
+
 
 #     using sequence tree to find possible candidates
 #     candidate_tree, sequence_tree, candidates, seq_to_candidates = interval_tree_search.find_candidates(fixed_lines)
     candidate_tree, sequence_tree, candidates, seq_to_candidates = interval_tree_search.find_candidates_2(fixed_lines)
     
-    print "found candidates in ", time.clock() - start_time, " seconds"
-    print "bowtie hits", len(fixed_lines)
-    print "candidate tree", len(candidate_tree)
-    print "candidates", len(candidates)
-    print "sequence tree", len(sequence_tree)
-    print "mapped seqs", len(candidates[0].all_mapped_sequences)
-    
-#     assert False
-#     candidate_list = gene.find_all(candidates)
+
+    print "\n\tfound candidates in ", time.clock() - start_time, " seconds"
+    print "\tbowtie hits", len(fixed_lines)
+    print "\tcandidate tree", len(candidate_tree)
+    print "\tcandidates", len(candidates)
+    print "\tsequence tree", len(sequence_tree)
+    print "\tmapped seqs", len(candidates[0].all_mapped_sequences)
+
 
 # 0            1   2[0] [1]      [2] [3]
 # ['1-15830', '-', 'gi|224589818|ref|NC_000006.11|',
 #         NC_000006.11
 
-
-    print "candidates", len(candidates)
-    print "align miRNAs to other sequences"
+    print "\naligning miRNAs to sequences"
     candidate_to_miRNA = interval_tree_search.align_miRNAs(miRNA_bowtie_hits,
                                                            hairpinID_to_mature,
                                                            candidate_tree,
@@ -215,8 +196,8 @@ def main():
                                                            miRNA_species,
                                                            miRNA_high_conf)
     
-
-    print "padding..."
+#     assert False
+    print "\npadding all miRNA and Candidates"
     gene.include_padding(candidates)
     print "padded all candidates in ", time.clock() - start_time, " seconds"
     
@@ -227,10 +208,7 @@ def main():
     print len(candidates)
 
 
-    
-    
-#     assert False
-    
+    stem.compute_stem_start(candidates, candidate_to_miRNA, miRNA_high_conf)
     #stats out here:
 #     plot_any.plot(candidates, candidate_to_miRNA, miRNA_high_conf, "hairpin_energy_10")
 #     assert False
@@ -239,19 +217,14 @@ def main():
     # create mirna groups for classification
 #     print "nr of candidates + miRNAS:", len(candidates)
 
-    training_lists, test_lists = split_candidates(candidates, candidate_to_miRNA, miRNA_fam, ml_folds)
+#     training_lists, test_lists = split_candidates(candidates, candidate_to_miRNA, miRNA_fam, ml_folds)
     
-    print "finished making training/testsets ", time.clock()-start_time, "seconds"                             
+#     print "finished making training/testsets ", time.clock()-start_time, "seconds"                             
 #     assert False
-    annotated_data, annotations, unknown_data = create_folds(candidates, candidate_to_miRNA, miRNA_high_conf, miRNA_fam)
+    annotated_data, annotations, _unknown_data = create_folds(candidates, candidate_to_miRNA, miRNA_high_conf, miRNA_fam, ml_folds)
     
-    print "aligning small seqs"
-    align_small_seqs(candidates, small_reads, small_reads_count)
-    print "finished aligning small seqs"
-    
-#     sequence_freq = reads.readcollapsed(fasta_file)
-#     print len(sequence_freq)
 
+    align_small_seqs(candidates, small_reads, small_reads_count)
     
     
     not_mapped_reads = [structure.Sequence(i,n,read) for i,(read,n) in 
@@ -292,47 +265,14 @@ def main():
 #     candidate quality: nr of sequence hits / all candidate hits for given sequences
     quality.candidate_quality(candidates, seq_to_candidates)
 #     plot_read_quality.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
+    
 
     
     print
     print "finished features in ", time.clock() - start_time, " seconds"
 
     
-    def param_estimate_fold(all_data, all_annotations, test_fold_nr):
-        
-        training = numpy.delete(all_data, test_fold_nr, 0)
-        training_annotation = numpy.delete(all_annotations, test_fold_nr, 0)
-        
-        
-        print len(training_annotation), training_annotation
-        training = numpy.vstack(training)
-        training_annotation = list(itertools.chain.from_iterable(training_annotation) )
-        
 
-        testing = all_data[test_fold_nr]
-        testing_annotations = all_annotations[test_fold_nr]
-        
-        print len(testing), testing
-        
-        print
-        print len(training), training
-#         assert False
-        features = len(testing[0])
-        scores = [0]*features
-        
-        learner = svm.SVC(probability=True, cache_size=500)
-        learner.fit(training, training_annotation)
-        base_score = learner.score(testing, testing_annotations)
-        
-
-        for i in xrange(features):
-            train_removed = numpy.delete(training, i, 1)
-            test_removed = numpy.delete(testing, i, 1)
-            learner.fit(train_removed, training_annotation)
-            removed_score = learner.score(test_removed, testing_annotations)
-            scores[i] = base_score - removed_score
-            
-        return scores
 
     
 #     annotations = list(itertools.chain.from_iterable(annotations))
@@ -347,26 +287,27 @@ def main():
     
     scaled_vectors = [scaler.transform(d) for d in vector_data]
 
-    learner = svm.SVC(probability=True, cache_size=500)
+#     learner = svm.SVC(probability=True, cache_size=500)
     
     threads = ml_folds
     pool = Pool(threads)
     
     print "nr of threads:", threads
     
-
-    res_lists = map(param_estimate_fold,
-                    [scaled_vectors]*ml_folds, 
-                    [annotations]*ml_folds,
-                    range(ml_folds) )
+    param = zip([scaled_vectors]*ml_folds, [annotations]*ml_folds, range(ml_folds) )
+    res_lists = pool.map(param_estimate.param_estimate_fold, param)
     
     
     feat_list = zip(*res_lists)
     for name, res in zip(feature_names, feat_list):
-        print sum(res)/len(res), name
+        m = numpy.mean(res)
+        s = numpy.std(res)
+        d = abs(m) - s
+        print m, "\t", s, "\t", d, "\t", name
+#         print sum(res)/len(res),"\t", name, res
     
     
-
+    assert False
         
 
     # feature selection:

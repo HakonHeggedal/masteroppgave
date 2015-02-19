@@ -6,7 +6,7 @@ Created on 11. feb. 2015
 
 
 
-def create_folds(candidates, mirna_dict, high_conf, mirna_groups, folds=5):
+def create_folds(candidates, mirna_dict, high_conf, mirna_groups, folds):
     
     print
     print "splitting data into", folds, "folds"
@@ -96,7 +96,7 @@ def create_folds(candidates, mirna_dict, high_conf, mirna_groups, folds=5):
         annotation = [1]*len(hc_list) + [0]*len(c_list)
         annotations.append(annotation)
         
-        print len(training_list), len(annotation), len(hc_list), sum(annotation)
+#         print len(training_list), len(annotation), len(hc_list), sum(annotation)
     
     
 #     assert False
