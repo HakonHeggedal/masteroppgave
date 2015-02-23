@@ -63,8 +63,8 @@ def candidates_to_array(candidates):
         o = candidate.small_subs
         p = candidate.small_subs_5p
         q = candidate.small_subs_3p
-        r = candidate.junction_pos_5
-        s = candidate.junction_pos_3
+#         r = candidate.junction_pos_5
+#         s = candidate.junction_pos_3
         
         
         features = [a,aa,b,bb,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q]

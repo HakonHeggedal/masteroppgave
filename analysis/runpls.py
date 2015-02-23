@@ -11,7 +11,7 @@ import itertools
 
 from candidates.microseqs import align_small_seqs
 import numpy
-from sklearn import svm, preprocessing
+from sklearn import svm, preprocessing, metrics
 
 import random
 from inputs import merge
@@ -21,6 +21,8 @@ from inputs import miRNA
 import math
 
 from genes import gene
+
+from inputs import dead_mirna
 
 from candidates import interval_tree_search, stem
 from candidates import heterogenity
@@ -51,7 +53,9 @@ from ml.vectorize import feature_names
 
 from multiprocessing import Pool
 
+from sklearn import metrics
 
+from matplotlib import pyplot
 
 def _align_bowtie(bowtie_output_file, collapsed_seq_file):
     from subprocess import check_output
@@ -99,6 +103,9 @@ def main():
     high_conf_file = "high_conf_hairpin.fa"
     miRNA_family_file = "miFam.dat"
     other_types = "mirTrons_other.txt"
+    dead_mirnas = "miRNA.dead"
+    dead_mirnas = "dead_list"
+    dead_mirna_hairpins = "dead_hairpins.txt"
     
     all_reads_file = "all.collapsed"
     bowtie_output = "bowtie_out.map"
@@ -106,6 +113,10 @@ def main():
     miRNA_bowtie_output = "miRNA.map"
     
     ml_folds = 10
+    
+    
+    dead_mirna.get_hairpin(dead_mirnas)
+    assert False
 
     print "merging",len(fasta_files), "collapsed files" if len(fasta_files)>1 else ""
     dict_collapsed = merge.collapse_collapsed(fasta_files, min_len=10, min_count=2)
@@ -208,7 +219,7 @@ def main():
     print len(candidates)
 
 
-    stem.compute_stem_start(candidates, candidate_to_miRNA, miRNA_high_conf)
+#     stem.compute_stem_start(candidates, candidate_to_miRNA, miRNA_high_conf)
     #stats out here:
 #     plot_any.plot(candidates, candidate_to_miRNA, miRNA_high_conf, "hairpin_energy_10")
 #     assert False
@@ -271,44 +282,44 @@ def main():
     print
     print "finished features in ", time.clock() - start_time, " seconds"
 
-    
-
-
-    
-#     annotations = list(itertools.chain.from_iterable(annotations))
-#     all_annotated = list(itertools.chain.from_iterable(annotated_data))
-    
-    vector_data = [vectorize.candidates_to_array(d) for d in annotated_data]
-    single_vector_data = list(itertools.chain.from_iterable(vector_data) )
-    
-#     print len(vector_data)
-    
-    scaler = preprocessing.StandardScaler().fit(single_vector_data)
-    
-    scaled_vectors = [scaler.transform(d) for d in vector_data]
-
-#     learner = svm.SVC(probability=True, cache_size=500)
-    
-    threads = ml_folds
-    pool = Pool(threads)
-    
-    print "nr of threads:", threads
-    
-    param = zip([scaled_vectors]*ml_folds, [annotations]*ml_folds, range(ml_folds) )
-    res_lists = pool.map(param_estimate.param_estimate_fold, param)
-    
-    
-    feat_list = zip(*res_lists)
-    for name, res in zip(feature_names, feat_list):
-        m = numpy.mean(res)
-        s = numpy.std(res)
-        d = abs(m) - s
-        print m, "\t", s, "\t", d, "\t", name
-#         print sum(res)/len(res),"\t", name, res
-    
-    
-    assert False
-        
+#     
+# 
+# 
+#     
+# #     annotations = list(itertools.chain.from_iterable(annotations))
+# #     all_annotated = list(itertools.chain.from_iterable(annotated_data))
+#     
+#     vector_data = [vectorize.candidates_to_array(d) for d in annotated_data]
+#     single_vector_data = list(itertools.chain.from_iterable(vector_data) )
+#     
+# #     print len(vector_data)
+#     
+#     scaler = preprocessing.StandardScaler().fit(single_vector_data)
+#     
+#     scaled_vectors = [scaler.transform(d) for d in vector_data]
+# 
+# #     learner = svm.SVC(probability=True, cache_size=500)
+#     
+#     threads = ml_folds
+#     pool = Pool(threads)
+#     
+#     print "nr of threads:", threads
+#     
+#     param = zip([scaled_vectors]*ml_folds, [annotations]*ml_folds, range(ml_folds) )
+#     res_lists = pool.map(param_estimate.param_estimate_fold, param)
+#     
+#     
+#     feat_list = zip(*res_lists)
+#     for name, res in zip(feature_names, feat_list):
+#         m = numpy.mean(res)
+#         s = numpy.std(res)
+#         d = abs(m) - s
+#         print m, "\t", s, "\t", d, "\t", name
+# #         print sum(res)/len(res),"\t", name, res
+#     
+#     
+#     assert False
+#         
 
     # feature selection:
     # only one fold first:
@@ -336,6 +347,20 @@ def main():
     
     learner = svm.SVC(probability=True, cache_size=500)
     learner.fit(train, train_annotations)
+    
+    
+    # roc plot 123
+    probs = learner.predict_proba(test)
+    fpr, tpr, thresholds = metrics.roc_curve(test_annotations, probs[:,1])
+    
+    roc_auc = metrics.auc(fpr, tpr)
+    print "area under curve:", roc_auc
+    
+    pyplot.plot(fpr, tpr)
+    pyplot.show()
+    
+    assert False
+    # roc plot 234
     
     base_score = learner.score(test, test_annotations)
     

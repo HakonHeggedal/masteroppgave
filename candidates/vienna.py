@@ -25,19 +25,19 @@ def energy_fold2(candidates):
     def get_hp_40(candidate):
         return candidate.hairpin_padded_40
     
-#     param_iter = map(get_hp, candidates)
-#     fold_energy = pool.map(_viennafold, param_iter)
-#     
-#     for c, (fold, en) in zip(candidates, fold_energy):
-#         c.set_fold_hairpin(fold, en)
-#     
-#     print "first part ok", time.time() - start_time, "seconds"
-#     param_iter = map(get_hp_10, candidates)
-#     fold_energy = pool.map(_viennafold, param_iter)
-#     
-#     for c, (fold, en) in zip(candidates, fold_energy):
-#         c.set_fold_10(fold, en)
-# #         c.set_bitpair_entropy(bp)
+    param_iter = map(get_hp, candidates)
+    fold_energy = pool.map(_viennafold, param_iter)
+     
+    for c, (fold, en) in zip(candidates, fold_energy):
+        c.set_fold_hairpin(fold, en)
+     
+    print "first part ok", time.time() - start_time, "seconds"
+    param_iter = map(get_hp_10, candidates)
+    fold_energy = pool.map(_viennafold, param_iter)
+     
+    for c, (fold, en) in zip(candidates, fold_energy):
+        c.set_fold_10(fold, en)
+#         c.set_bitpair_entropy(bp)
         
     print "second part ok", time.time() - start_time, "seconds"
     
