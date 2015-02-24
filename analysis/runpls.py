@@ -24,7 +24,9 @@ from genes import gene
 
 from inputs import dead_mirna
 
-from candidates import interval_tree_search, stem
+from candidates import interval_tree_search, interval_tree_miRNA,\
+    interval_tree_dead
+from candidates import stem
 from candidates import heterogenity
 from candidates import vienna
 from candidates import tailing
@@ -93,7 +95,7 @@ def main():
                     "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed"]
 #     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed", "SRR207111.collapsed"]
 #     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed"]
-#     fasta_files = ["SRR797062.collapsed"]
+    fasta_files = ["SRR797062.collapsed"]
 #     fasta_files =  ["SRR207110.collapsed", "SRR207111.collapsed", "SRR207112.collapsed"] 
 #     fasta_file = "SRR797062.fa"
 
@@ -103,9 +105,13 @@ def main():
     high_conf_file = "high_conf_hairpin.fa"
     miRNA_family_file = "miFam.dat"
     other_types = "mirTrons_other.txt"
-    dead_mirnas = "miRNA.dead"
+#     dead_mirnas = "miRNA.dead"
     dead_mirnas = "dead_list"
     dead_mirna_hairpins = "dead_hairpins.txt"
+    dead_mirna_bowtie_file = "dead_hairpin_bowtie.fa"
+    dead_mirna_bowtie_out = "dead_hairpin_locations.map"
+    
+    
     
     all_reads_file = "all.collapsed"
     bowtie_output = "bowtie_out.map"
@@ -114,16 +120,17 @@ def main():
     
     ml_folds = 10
     
+
     
-    dead_mirna.get_hairpin(dead_mirnas)
-    assert False
+    id_to_dead_hp, id_to_dead_mature = dead_mirna.get_hairpin(dead_mirnas)
+#     assert False
 
     print "merging",len(fasta_files), "collapsed files" if len(fasta_files)>1 else ""
     dict_collapsed = merge.collapse_collapsed(fasta_files, min_len=10, min_count=2)
     
 #     split small and larger sequences
 #     write reads to file
-
+    
     reads, reads_count, small_reads, small_reads_count = merge.filter_seqeunces(dict_collapsed, 18)
     merge.write_collapsed(all_reads_file, reads, reads_count)
 
@@ -159,18 +166,15 @@ def main():
     miRNA_fam = miRNA.read_family(miRNA_family_file)
 
 #     print len(set(miRNA_species.keys()) & set(miRNA_fam.keys()))
-    
 #     run write micro rnas to file
 
     mirbase.write_miRNA(hsa_to_hairpin, miRNA_file_name)
     print "\nwrote human miRNAs to file", time.clock() - start_time, " seconds"
     
 #     run bowtie to find miRNA positions
-
     _align_bowtie(miRNA_bowtie_output, miRNA_file_name)
     
     print "aligned miRNAs in", time.clock() - start_time, " seconds"
-    
     miRNA_bowtie_hits = [line.strip().split("\t") for line in open(miRNA_bowtie_output)] 
     
     unique_mirna_hits = set([x[0] for x in miRNA_bowtie_hits])
@@ -178,6 +182,13 @@ def main():
     print "miRNA bowtie hits:", len(miRNA_bowtie_hits)
     print "unique miRNA hits:", len(unique_mirna_hits)
     
+    
+    print "\nDead mirnas"
+    mirbase.write_dead_mirna(id_to_dead_hp, dead_mirna_bowtie_file)
+    _align_bowtie(dead_mirna_bowtie_out, dead_mirna_bowtie_file)
+    dead_miRNA_hits = [line.strip().split("\t") for line in open(dead_mirna_bowtie_out)]
+    
+    print "TOTAL dead mirnas:", len(dead_miRNA_hits)
 
 
 #     using sequence tree to find possible candidates
@@ -198,7 +209,7 @@ def main():
 #         NC_000006.11
 
     print "\naligning miRNAs to sequences"
-    candidate_to_miRNA = interval_tree_search.align_miRNAs(miRNA_bowtie_hits,
+    candidate_to_miRNA = interval_tree_miRNA.align_miRNAs(miRNA_bowtie_hits,
                                                            hairpinID_to_mature,
                                                            candidate_tree,
                                                            candidates,
@@ -207,7 +218,19 @@ def main():
                                                            miRNA_species,
                                                            miRNA_high_conf)
     
-#     assert False
+    print "\nderpy 123\n"
+    candidate_to_dead = interval_tree_dead.align_dead_miRNAs(dead_miRNA_hits,
+                                                             id_to_dead_hp,
+                                                             id_to_dead_mature,
+                                                             candidate_tree,
+                                                             candidates,
+                                                             sequence_tree,
+                                                             seq_to_candidates)
+    
+    
+    assert False
+    
+    
     print "\npadding all miRNA and Candidates"
     gene.include_padding(candidates)
     print "padded all candidates in ", time.clock() - start_time, " seconds"

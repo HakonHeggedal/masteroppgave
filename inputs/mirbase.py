@@ -200,6 +200,11 @@ def write_miRNA(mi_rnas, filename):
             outfile.write(name + "\n")
             outfile.write(hairpin + "\n")     
             
+def write_dead_mirna(mi_rnas, filename):
+    with open(filename, "w") as outfile:
+        for name, hairpin in mi_rnas.iteritems():
+            outfile.write(">" + name + "\n")
+            outfile.write(hairpin + "\n")  
 
 
 def similar_hairpins(specie_to_hairpin, others_to_hairpin):
