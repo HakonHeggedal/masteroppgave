@@ -12,28 +12,16 @@ def _reverse_compliment(sequence):
 def align_dead_miRNAs(mirna_hits, _,  id_to_mature, candidate_tree, candidate_list, sequence_tree,
                  seq_to_candidates):
     
-    
-#     reverse_hp = {}
-    
-#     def rev((k,v)):
-#         reverse_hp[v] = k
-    
-    def _print(el):
-        print el
-    
-#     map(rev, id_to_hairpin.iteritems())
-#     map(_print, reverse_hp.iteritems())
-#     assert False
-#     unique_mirnas = set()
-    
+
+    unique_mirnas = set()
     
     for dead_loki in mirna_hits:
         
         miRNAid = dead_loki[0]
-#         if miRNAid in unique_mirnas:
-#             continue # use first position only
-#         
-#         unique_mirnas.add(miRNAid)
+        if miRNAid in unique_mirnas:
+            continue # use first entry only
+         
+        unique_mirnas.add(miRNAid)
 
         strand_dir = dead_loki[1]
         chromosome = dead_loki[2].split("|")[3]
@@ -41,11 +29,7 @@ def align_dead_miRNAs(mirna_hits, _,  id_to_mature, candidate_tree, candidate_li
         
         hairpin = dead_loki[4]
         
-        
-        
-        
-#         true_hairpin = id_to_hairpin[miRNAid]
-        
+        is_candidate = False
         
         begin_5p =  genome_offset
         end_5p = genome_offset
@@ -53,31 +37,66 @@ def align_dead_miRNAs(mirna_hits, _,  id_to_mature, candidate_tree, candidate_li
         end_3p = genome_offset
         
         print
-        print miRNAid
+        print miRNAid, begin_5p, begin_5p + len(hairpin)
         
-        # put find hairpin pos
+        # put mature seq into 5p or 3p
         if miRNAid in id_to_mature:
             mature_seq = id_to_mature[miRNAid]
             if strand_dir == "-":
                 mature_seq = _reverse_compliment(mature_seq)
             
-#             print "\t", hairpin in reverse_hp
-            print "\t", strand_dir
-            
-            print "\t", mature_seq in hairpin
-            
-            print "\t", mature_seq
-            print "\t", hairpin
-
-            
-#             print "\t" , hairpin
-#             print "\t" mature_seq, hairpin
-#             assert mature_seq in hairpin
+#             print "\t", strand_dir
+#             print "\t", mature_seq in hairpin
+#             print "\t", mature_seq
+#             print "\t", hairpin
             
             begin_mature = hairpin.find(mature_seq)
             end_mature = begin_mature + len(mature_seq)
             
-            print "\t", begin_mature, end_mature
+            avg_val = (begin_mature + end_mature ) / 2.0
+            
+            if avg_val < len(hairpin) / 2.0:
+                begin_5p += begin_mature
+                end_5p += end_mature
+            else:
+                begin_3p += begin_mature
+                end_3p += end_mature
+            
+            print "\t", begin_mature, end_mature, len(hairpin)
+            print "\t", begin_5p, end_5p, begin_3p, end_3p
+        
+        
+            
+            
+        tree = candidate_tree[chromosome]
+        if tree:
+            
+            candidates = tree[genome_offset:genome_offset+len(hairpin)]
+            
+            print len(candidates), candidates
+            
+            for candidate in candidates:
+                
+                if candidate.data.chromosome_direction != strand_dir:
+                    continue
+                
+                shift_start = abs(genome_offset - candidate.data.pos_5p_begin)
+                shift_end = abs( (genome_offset+len(hairpin)) - candidate.data.pos_3p_end)
+                hashval = candidate.data.chromosome + strand_dir + str(candidate.data.pos_5p_begin)
+                
+                print shift_start, shift_end, len(hairpin)
+                
+                if shift_start + shift_end < len(hairpin) / 2:
+                    candidate_to_miRNAid[hashval] = miRNAid
+                    is_candidate = True
+                    break
+    
+        else:
+            print "no", tree
+            
+        if not is_candidate:
+            pass
+        
 
 
 #  a = "AAGCT"

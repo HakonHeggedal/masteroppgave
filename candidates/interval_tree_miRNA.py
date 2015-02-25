@@ -58,7 +58,7 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, candidate_tree, candidate_list
         tree = candidate_tree[chromosome]
         if not tree:
 #             print "no:", chromosome
-            continue
+            continue # TODO : SKIP everything? ALLWAYS?
         candidates = tree[begin_5p:end_3p]
 
         
@@ -83,7 +83,6 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, candidate_tree, candidate_list
                 
                 if candidate.data.chromosome_direction != strand_dir:
                     continue
-
 
                 candidate_count += 1
                 

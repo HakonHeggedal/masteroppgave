@@ -86,16 +86,16 @@ def main():
                     "SRR207113.collapsed", "SRR207114.collapsed", "SRR207115.collapsed",
                     "SRR207116.collapsed", "SRR207117.collapsed", "SRR207118.collapsed",
                     "SRR207119.collapsed",]
-    
+#     
     fasta_files = ["SRR797059.collapsed", "SRR797060.collapsed", "SRR797061.collapsed",
                     "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed",
                     "SRR207110.collapsed", "SRR207111.collapsed", "SRR207112.collapsed"]    
-#     
+# #     
     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed",
                     "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed"]
 #     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed", "SRR207111.collapsed"]
 #     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed"]
-    fasta_files = ["SRR797062.collapsed"]
+#     fasta_files = ["SRR797062.collapsed"]
 #     fasta_files =  ["SRR207110.collapsed", "SRR207111.collapsed", "SRR207112.collapsed"] 
 #     fasta_file = "SRR797062.fa"
 
