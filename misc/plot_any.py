@@ -12,7 +12,7 @@ from scipy import stats
 
 
 
-def plot(candidates, candidate_to_miRNAid, mirna_high_conf, name, isLog=False):
+def plot(candidates, candidate_to_miRNAid, candidate_to_dead, mirna_high_conf, name, isLog=False):
     """ plot any candidate feature given its name and candidate/miRNA classes """
     print
     print "plot" + name
@@ -23,6 +23,7 @@ def plot(candidates, candidate_to_miRNAid, mirna_high_conf, name, isLog=False):
     candidate_only = []
     mirna_high = []
     mirna_low = []
+    dead = []
     
     minval = 1000000
     maxval = -1000000
@@ -36,8 +37,11 @@ def plot(candidates, candidate_to_miRNAid, mirna_high_conf, name, isLog=False):
             maxval = param
         elif param < minval:
             minval = param
+            
+        if hashval in candidate_to_dead:
+            dead.append(param)
         
-        if hashval in candidate_to_miRNAid:
+        elif hashval in candidate_to_miRNAid:
             mi = candidate_to_miRNAid[hashval]
             
             if mi in mirna_high_conf:
@@ -47,13 +51,16 @@ def plot(candidates, candidate_to_miRNAid, mirna_high_conf, name, isLog=False):
         else:
             candidate_only.append(param)
     
+    
     dens_cand = stats.kde.gaussian_kde(candidate_only)
     dens_high = stats.kde.gaussian_kde(mirna_high)
     dens_low = stats.kde.gaussian_kde(mirna_low)
+    dens_dead = stats.kde.gaussian_kde(dead)
   
     x = numpy.arange( minval, maxval, .1)
     y = numpy.arange( minval, maxval, .1)
     z = numpy.arange( minval, maxval, .1)
+    ae = numpy.arange( minval, maxval, .1)
     
     ks_val, p_2s =  stats.ks_2samp(mirna_high, mirna_low)
     print "Kolmogorov-Smirnov test: miRNA high/low conf:"
@@ -63,6 +70,7 @@ def plot(candidates, candidate_to_miRNAid, mirna_high_conf, name, isLog=False):
     pyplot.plot(x, dens_cand(x), "b")
     pyplot.plot(y, dens_high(y), "r")
     pyplot.plot(z, dens_low(z), "g")
+    pyplot.plot(ae, dens_dead(ae), "m")
     pyplot.savefig(outfile)
     pyplot.xlabel(plot_name)
     pyplot.ylabel("frequency")

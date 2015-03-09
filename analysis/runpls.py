@@ -227,8 +227,8 @@ def main():
                                                              sequence_tree,
                                                              seq_to_candidates)
     
-    
-    assert False
+    print len(candidate_to_dead)
+#     assert False
     
     
     print "\npadding all miRNA and Candidates"
@@ -237,15 +237,15 @@ def main():
     
 
     print "\nrunning viennafold"
-    vienna.energy_fold2(candidates) # slow
+    vienna.energy_fold2(candidates)
     
     print len(candidates)
 
 
 #     stem.compute_stem_start(candidates, candidate_to_miRNA, miRNA_high_conf)
     #stats out here:
-#     plot_any.plot(candidates, candidate_to_miRNA, miRNA_high_conf, "hairpin_energy_10")
-#     assert False
+    plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead, miRNA_high_conf, "hairpin_energy_10")
+    assert False
 #     energy.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
     
     # create mirna groups for classification
