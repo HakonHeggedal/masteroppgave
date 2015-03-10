@@ -24,7 +24,7 @@ def get_alignment(candidates):
 #         print candidate.pos_3p_end - candidate.pos_5p_begin + 20,
 #         print i, candidate.pos_5p_begin, candidate.pos_5p_end,  candidate.pos_3p_begin,  candidate.pos_3p_end
         
-        assert candidate.pos_5p_begin < candidate.pos_5p_end <= candidate.pos_3p_begin < candidate.pos_3p_end
+#         assert candidate.pos_5p_begin < candidate.pos_5p_end <= candidate.pos_3p_begin < candidate.pos_3p_end
         
 #         if len(fold_10) != 20 + candidate.pos_3p_end - candidate.pos_5p_begin:
 #             print candidate.hairpin

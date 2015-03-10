@@ -15,7 +15,9 @@ from scipy import stats
 def plot(candidates, candidate_to_miRNAid, candidate_to_dead, mirna_high_conf, name, isLog=False):
     """ plot any candidate feature given its name and candidate/miRNA classes """
     print
-    print "plot" + name
+    print "plot " + name
+    
+    name = name.replace(" ", "_")
     
     plot_name = name.replace("_", " ")
     outfile = name + ".png"
@@ -33,10 +35,14 @@ def plot(candidates, candidate_to_miRNAid, candidate_to_dead, mirna_high_conf, n
         if isLog and param != 0:
             param = math.log(param)
         
+
+        
         if param > maxval:
             maxval = param
         elif param < minval:
             minval = param
+            
+#         if param > -10: continue
             
         if hashval in candidate_to_dead:
             dead.append(param)
@@ -51,6 +57,7 @@ def plot(candidates, candidate_to_miRNAid, candidate_to_dead, mirna_high_conf, n
         else:
             candidate_only.append(param)
     
+    print len(dead), dead
     
     dens_cand = stats.kde.gaussian_kde(candidate_only)
     dens_high = stats.kde.gaussian_kde(mirna_high)

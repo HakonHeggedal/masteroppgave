@@ -2,7 +2,6 @@
 # from bowtie import bowtie_get
 
 import time
-from ml.miRNA_group import split_candidates
 from inputs import special_types
 
 
@@ -13,12 +12,11 @@ from candidates.microseqs import align_small_seqs
 import numpy
 from sklearn import svm, preprocessing, metrics
 
-import random
+
 from inputs import merge
 from inputs import mirbase
 from inputs import miRNA
 
-import math
 
 from genes import gene
 
@@ -55,7 +53,6 @@ from ml.vectorize import feature_names
 
 from multiprocessing import Pool
 
-from sklearn import metrics
 
 from matplotlib import pyplot
 
@@ -85,14 +82,14 @@ def main():
                     "SRR207110.collapsed", "SRR207111.collapsed", "SRR207112.collapsed",
                     "SRR207113.collapsed", "SRR207114.collapsed", "SRR207115.collapsed",
                     "SRR207116.collapsed", "SRR207117.collapsed", "SRR207118.collapsed",
-                    "SRR207119.collapsed",]
+                    "SRR207119.collapsed"]
 #     
-    fasta_files = ["SRR797059.collapsed", "SRR797060.collapsed", "SRR797061.collapsed",
-                    "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed",
-                    "SRR207110.collapsed", "SRR207111.collapsed", "SRR207112.collapsed"]    
-# #     
-    fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed",
-                    "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed"]
+#     fasta_files = ["SRR797059.collapsed", "SRR797060.collapsed", "SRR797061.collapsed",
+#                     "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed",
+#                     "SRR207110.collapsed", "SRR207111.collapsed", "SRR207112.collapsed"]    
+# 
+#     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed",
+#                     "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed"]
 #     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed", "SRR207111.collapsed"]
 #     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed"]
 #     fasta_files = ["SRR797062.collapsed"]
@@ -126,7 +123,8 @@ def main():
 #     assert False
 
     print "merging",len(fasta_files), "collapsed files" if len(fasta_files)>1 else ""
-    dict_collapsed = merge.collapse_collapsed(fasta_files, min_len=10, min_count=2)
+    
+    dict_collapsed = merge.collapse_collapsed(fasta_files, min_len=10, min_count=10)
     
 #     split small and larger sequences
 #     write reads to file
@@ -240,12 +238,17 @@ def main():
     vienna.energy_fold2(candidates)
     
     print len(candidates)
+    
+    candidates = [c for c in candidates if c.hairpin_energy_10 < -10.0]
+    
+    print len(candidates)
+#     assert False
 
 
 #     stem.compute_stem_start(candidates, candidate_to_miRNA, miRNA_high_conf)
     #stats out here:
-    plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead, miRNA_high_conf, "hairpin_energy_10")
-    assert False
+#     plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead, miRNA_high_conf, "hairpin_energy_10")
+#     assert False
 #     energy.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
     
     # create mirna groups for classification
@@ -255,7 +258,7 @@ def main():
     
 #     print "finished making training/testsets ", time.clock()-start_time, "seconds"                             
 #     assert False
-    annotated_data, annotations, _unknown_data = create_folds(candidates, candidate_to_miRNA, miRNA_high_conf, miRNA_fam, ml_folds)
+    annotated_data, annotations, _unknown_data = create_folds(candidates, candidate_to_miRNA, candidate_to_dead, miRNA_high_conf, miRNA_fam, ml_folds)
     
 
     align_small_seqs(candidates, small_reads, small_reads_count)
@@ -300,7 +303,19 @@ def main():
     quality.candidate_quality(candidates, seq_to_candidates)
 #     plot_read_quality.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
     
-
+    
+#     plotting all features
+       
+    FEATURES = ["hairpin_energy_10", "hairpin_energy_40", "entropy_nucleotides",
+                "small_subs", "quality", "heterogenity_5_begin", "heterogenity_5_end",
+                 "bindings_max_10", "overhang_level_inner_10"]
+       
+    for feat_name in FEATURES:
+        print 123
+    
+        plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead,
+                      miRNA_high_conf, feat_name )
+        
     
     print
     print "finished features in ", time.clock() - start_time, " seconds"
@@ -348,9 +363,8 @@ def main():
     # only one fold first:
     
     
-    derp = annotated_data
-    
-    derp = map(vectorize.candidates_to_array, derp)
+#     derp = annotated_data
+#     derp = map(vectorize.candidates_to_array, derp)
     
     
     
@@ -362,7 +376,12 @@ def main():
 
     train = vectorize.candidates_to_array(train)
     test = vectorize.candidates_to_array(test)
+    
+    for l in test:
+        print l
+        
 
+    
     test = preprocessing.scale(test)
     train = preprocessing.scale(train)
 

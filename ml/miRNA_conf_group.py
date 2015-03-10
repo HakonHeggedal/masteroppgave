@@ -6,7 +6,7 @@ Created on 11. feb. 2015
 
 
 
-def create_folds(candidates, mirna_dict, high_conf, mirna_groups, folds):
+def create_folds(candidates, mirna_dict, dead_dict, high_conf, mirna_groups, folds):
     
     print
     print "splitting data into", folds, "folds"
@@ -14,15 +14,22 @@ def create_folds(candidates, mirna_dict, high_conf, mirna_groups, folds):
     hc_mirna_lists = [[] for _ in xrange(folds)]
     other_mirna_lists = [[] for _ in xrange(folds)]
     candidate_lists = [[] for _ in xrange(folds)]
+    dead_lists = [[] for _ in xrange(folds)]
     
     mi_hq = []
 
     c_count = 0
+    d_count = 0
     
     # split candidate list into only candidate and microRNAs
     for c in candidates:
         hashval = c.chromosome + c.chromosome_direction + str(c.pos_5p_begin)
-        if hashval in mirna_dict:
+        
+        if hashval in dead_dict:
+            dead_lists[d_count].append(c)
+            d_count = (d_count + 1) % folds
+        
+        elif hashval in mirna_dict:
             mi = mirna_dict[hashval]
             if mi in high_conf:
                 mi_hq.append(c)
@@ -77,27 +84,24 @@ def create_folds(candidates, mirna_dict, high_conf, mirna_groups, folds):
         nr = (nr + 1) % folds
 
     
-    
-    
-    
-    
-    
-    hc_mirna_lists
-    candidate_lists
-    
-    
     training_data = []
     annotations = []
     
-    for hc_list, c_list in zip(hc_mirna_lists, candidate_lists):
-        training_list = hc_list + c_list
+    # combine hc-candidates + candidates + dead, and create annotations
+    for hc_list, c_list, d_list in zip(hc_mirna_lists, candidate_lists, dead_lists):
+        
+        training_list = hc_list + c_list + d_list
         training_data.append(training_list)
         
-        annotation = [1]*len(hc_list) + [0]*len(c_list)
+        annotation = [1]*len(hc_list) + [0]*len(c_list) + [0]*len(d_list)
         annotations.append(annotation)
-        
 #         print len(training_list), len(annotation), len(hc_list), sum(annotation)
     
+    
+    print sum( map(len, dead_lists)  ), "dead"
+    print sum( map(len, candidate_lists)  ), "candidates"
+    print sum( map(len, hc_mirna_lists)  ), "high confidence"
+    print sum( map(len, other_mirna_lists)  ), " low confidence"
     
 #     assert False
     return training_data, annotations, other_mirna_lists
@@ -105,11 +109,9 @@ def create_folds(candidates, mirna_dict, high_conf, mirna_groups, folds):
 
 
 
-
-
-
-
-
+# lili = [ [1,2,3], [1,2,4,2], [1,2,5] ]
+# 
+# print sum( map(len, lili))
 
 
 

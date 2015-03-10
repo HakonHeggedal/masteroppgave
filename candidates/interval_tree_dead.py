@@ -190,7 +190,10 @@ def align_dead_miRNAs(mirna_hits, _,  id_to_mature, candidate_tree, candidate_li
                     seq_to_candidates[name].add_candidate(candidate)
 
                     
-            assert candidate.pos_5p_begin < candidate.pos_5p_end <= candidate.pos_3p_begin < candidate.pos_3p_end
+            assert candidate.pos_5p_begin < candidate.pos_5p_end
+            assert candidate.pos_3p_begin < candidate.pos_3p_end
+            
+            assert candidate.pos_5p_end < candidate.pos_3p_begin + 5
                 
     
             if end_3p - begin_5p > 200:

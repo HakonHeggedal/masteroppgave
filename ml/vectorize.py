@@ -6,10 +6,6 @@ Created on 4. nov. 2014
 import numpy
 import math
 
-
-
-
-
 feature_names = []
 feature_names.append("log mapped sequences")
 feature_names.append("mapped sequences rpm count")
@@ -32,8 +28,6 @@ feature_names.append("small sequences aligned 5p")
 feature_names.append("small sequences aligned 3p")
 
 def candidates_to_array(candidates):
-    
-
     
     all_candidates = []
     
