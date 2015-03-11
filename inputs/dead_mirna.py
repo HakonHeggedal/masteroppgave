@@ -41,13 +41,13 @@ def get_hairpin(miRNA_file):
     
 
     
-    def _print(x): print x
-    print "dead mature seqs", len(mature_seqs)
-    map(_print, mature_seqs.iteritems())
-    print "dead hairpin seqs", len(hairpins)
-    map(_print, hairpins.iteritems())
+#     def _print(x): print x
+#     print "dead mature seqs", len(mature_seqs)
+#     map(_print, mature_seqs.iteritems())
+#     print "dead hairpin seqs", len(hairpins)
+#     map(_print, hairpins.iteritems())
     
-    print hairpins.viewkeys() - mature_seqs.viewkeys()
+#     print hairpins.viewkeys() - mature_seqs.viewkeys()
     
     return hairpins, mature_seqs
     
@@ -76,10 +76,10 @@ def _brute_search_hairpin(miRNA_ids):
                             add_mi = True
                 elif add_mi:
                     part = line.strip()
-                    print "\n123"
-                    print part
+#                     print "\n123"
+#                     print part
                     part = _upper_DNA(part)
-                    print part
+#                     print part
                     if mi_id in dead_to_hairpin:
                         dead_to_hairpin[mi_id] += part
                     else:

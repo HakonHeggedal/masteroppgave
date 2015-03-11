@@ -194,21 +194,34 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, candidate_tree, candidate_list
         
         candidate_to_miRNAid[hashval] = miRNAid
     
+     
+    print
     
-    print
-    print "nr of miRNA bowtie hits:\t", len(mirna_hits)
-    print "unique miRNAs (after bowtie):\t", len(unique_mirnas)
-    print "miRNA aligns with candidate:\t", candidate_already
-    print "Unique mirna aligning with candidate:\t", len(miRNA_with_candidates), len(miRNA_with_candidates) * 1.0 / len(unique_mirnas)
-    print
-    print "set of candidates with 1+ seq aligning:", len(set(candidate_to_miRNAid.iterkeys())), len(list(candidate_to_miRNAid.iterkeys()))
+#     print "nr of miRNA bowtie hits:\t", len(mirna_hits)
+#     print "unique miRNAs (after bowtie):\t", len(unique_mirnas)
+#     print "miRNA aligns with candidate:\t", candidate_already
+#     print "Unique mirna aligning with candidate:\t", len(miRNA_with_candidates), len(miRNA_with_candidates) * 1.0 / len(unique_mirnas)
+#     print
+#     print "set of candidates with 1+ seq aligning:", len(set(candidate_to_miRNAid.iterkeys())), len(list(candidate_to_miRNAid.iterkeys()))
 
     has_seqs = set(has_seqs)
-    print "miRNA only aligning sequences:\t\t", len(set(has_seqs)), len(has_seqs) * 1.0 / len(unique_mirnas)
     
-    has_seqs.update(miRNA_with_candidates)
-    print "miRNA with candidate or sequences:\t", len(has_seqs), len(has_seqs) * 1.0 / len(unique_mirnas)
-    print "no sequences aligning at all:\t", noseqs, len(noseq_set)
+    hc_len = len( miRNA_high_conf)
+    sec_cand = has_seqs | miRNA_with_candidates
+    
+#     hc_seq = 
+#     hc_cand = 
+#     has_seqs.update(miRNA_with_candidates)
+    
+    print "miRNA aligning sequences:\t\t", len(has_seqs) * 1.0 / len(unique_mirnas)
+    print "miRNA aligning candidates:\t\t", len(miRNA_with_candidates) * 1.0 / len(unique_mirnas)    
+    print "miRNA aligning seq/candidate:\t\t", len(sec_cand) * 1.0 / len(unique_mirnas)
+    print
+    print "HIGH CONFIDENCE -- sequences \t\t", len(miRNA_high_conf & has_seqs) * 1.0 / hc_len
+    print "HIGH CONFIDENCE -- candidates \t\t", len(miRNA_high_conf & miRNA_with_candidates) * 1.0 / hc_len
+    print "HIGH CONFIDENCE -- seq/candidates \t", len(miRNA_high_conf & sec_cand) * 1.0 / hc_len
+    
+#     print "no sequences aligning at all:\t",  len(noseq_set)
     print "no seqs vs high confidence:\t", len(noseq_set.intersection(miRNA_high_conf) ), len(miRNA_high_conf)
     
 #     assert False

@@ -75,6 +75,28 @@ def main():
     start_time = time.clock()
     print "starting miRNA analysis"
     
+    fasta2 = ["Demux.SRhi10002.Adipocyte", "Demux.SRhi10002.Alveolar", "Demux.SRhi10002.Amniotic",
+             "Demux.SRhi10002.Dendritic1", "Demux.SRhi10002.Dendritic2", "Demux.SRhi10002.Endothelial",
+             "Demux.SRhi10002.Fibroblast1", "Demux.SRhi10002.Fibroblast2", "Demux.SRhi10002.Fibroblast3",
+             "Demux.SRhi10002.Intestinal", "Demux.SRhi10002.Meningeal", "Demux.SRhi10002.Mesenchymal",
+             "Demux.SRhi10002.Osteoblast", "Demux.SRhi10002.Pericytes", "Demux.SRhi10002.Renal",
+             "Demux.SRhi10002.Sebocyte1", "Demux.SRhi10002.Sebocyte2", "Demux.SRhi10002.SmoothBrachiocephalic",
+             "Demux.SRhi10002.SmoothProstate", "Demux.SRhi10002.SmoothSubclavian", "Demux.SRhi10002.SmoothUterine"]
+    
+    fasta3 = ["Demux.SRhi10003.Adipocyte", "Demux.SRhi10003.Amniotic%20Epithelial", "Demux.SRhi10003.amniotic%20membrane",
+              "Demux.SRhi10003.Endothelial0", "Demux.SRhi10003.Endothelial1", "Demux.SRhi10003.Endothelial2",
+              "Demux.SRhi10003.Fibroblast1", "Demux.SRhi10003.Fibroblast2", "Demux.SRhi10003.Fibroblast3",
+              "Demux.SRhi10003.Keratinocyte", "Demux.SRhi10003.Mesenchymaladipose", "Demux.SRhi10003.Mesenchymalbone",
+              "Demux.SRhi10003.Osteoblast", "Demux.SRhi10003.Pancreatic", "Demux.SRhi10003.Peripheral",
+              "Demux.SRhi10003.Prostate", "Demux.SRhi10003.Renal", "Demux.SRhi10003.Sertoli",
+              "Demux.SRhi10003.Skeletal", "Demux.SRhi10003.SmoothBrain", "Demux.SRhi10003.SmoothPulmonary",
+              "Demux.SRhi10003.SmoothUmbilical"]
+    
+    
+
+    fasta2 = ["hg19/"+n for n in fasta2]
+    fasta3 = ["hg19/"+n for n in fasta3]
+
 
 
     fasta_files = ["SRR797059.collapsed", "SRR797060.collapsed", "SRR797061.collapsed",
@@ -83,6 +105,10 @@ def main():
                     "SRR207113.collapsed", "SRR207114.collapsed", "SRR207115.collapsed",
                     "SRR207116.collapsed", "SRR207117.collapsed", "SRR207118.collapsed",
                     "SRR207119.collapsed"]
+    
+#     fasta_files.extend(fasta2)
+    fasta2.extend(fasta3)
+    fasta_files = fasta2
 #     
 #     fasta_files = ["SRR797059.collapsed", "SRR797060.collapsed", "SRR797061.collapsed",
 #                     "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed",
@@ -124,7 +150,7 @@ def main():
 
     print "merging",len(fasta_files), "collapsed files" if len(fasta_files)>1 else ""
     
-    dict_collapsed = merge.collapse_collapsed(fasta_files, min_len=10, min_count=10)
+    dict_collapsed = merge.collapse_collapsed(fasta_files, min_len=10, min_count=2)
     
 #     split small and larger sequences
 #     write reads to file
@@ -216,7 +242,7 @@ def main():
                                                            miRNA_species,
                                                            miRNA_high_conf)
     
-    print "\nderpy 123\n"
+
     candidate_to_dead = interval_tree_dead.align_dead_miRNAs(dead_miRNA_hits,
                                                              id_to_dead_hp,
                                                              id_to_dead_mature,
@@ -306,15 +332,20 @@ def main():
     
 #     plotting all features
        
-    FEATURES = ["hairpin_energy_10", "hairpin_energy_40", "entropy_nucleotides",
-                "small_subs", "quality", "heterogenity_5_begin", "heterogenity_5_end",
-                 "bindings_max_10", "overhang_level_inner_10"]
-       
-    for feat_name in FEATURES:
-        print 123
+    FEATURES = ["hairpin_energy", "hairpin_energy_10", "hairpin_energy_40",
+                "entropy_nucleotides", "entropy_structure", "heterogenity_5_begin",
+                "heterogenity_5_end", "heterogenity_3_begin", "heterogenity_3_end",
+                "quality", "bindings_max_10", "overhang_level_outer_10",
+                "overhang_outer_10", "overhang_level_inner_10", "overhang_inner_10",
+                "small_subs", "small_subs_5p", "small_subs_3p"]
     
+    
+    log_scaled = [False]*15 + [True]*3
+    print log_scaled
+    for feat_name, logs in zip(FEATURES, log_scaled):
+     
         plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead,
-                      miRNA_high_conf, feat_name )
+                      miRNA_high_conf, feat_name, logs )
         
     
     print
@@ -430,15 +461,6 @@ def main():
         print  score,"\t", name
 
 
-#     def score_features(train, train_annotations, test, test_annotations):
-#         pass
-#         
-#         
-# 
-#     
-#     
-#     for i in xrange(len(train[0])):
-        
 
         
 
@@ -518,79 +540,5 @@ def main():
 #     main()
 main()
 # print "finished everything in ", time.clock() - start_time, " seconds"
-
-
-
-
-#     miRNAs = []
-#     miRNA_annotations = []
-#     only_candidates = []
-#     
-# #     mi_keys = set(candidate_to_miRNA.keys())
-# #     candidate_keys = set([c.chromosome + str(c.pos_5p_begin) for c in candidates])
-# #     
-# #     print "miRNAs:", len(mi_keys)
-# #     print "all:", len(candidate_keys)
-# #     print "pls be gone:", len(candidate_keys - mi_keys)
-#     
-#     
-#     for candidate in candidates:
-# #         print candidate, candidate in candidate_to_miRNA
-#         hashval = candidate.chromosome + candidate.chromosome_direction + str(candidate.pos_5p_begin)
-#         if hashval in candidate_to_miRNA:
-#             miRNAs.append(candidate)
-#             mi = candidate_to_miRNA[hashval]
-# #             print mi, miRNA_species[mi]
-#             miRNA_annotations.append(miRNA_species[mi])
-#         else:
-#             only_candidates.append(candidate)
-#             
-#     print len(candidate_to_miRNA)
-#     print len(only_candidates)
-
-
-
-#     learn_one = training_lists[0]
-#     train_one = training_lists[1] + training_lists[2] + training_lists[3] + training_lists[4]
-#     print len(learn_one), len(train_one)
-#     
-#     learn_one_v = vectorize.candidates_to_array(learn_one)
-#     train_one_v = vectorize.candidates_to_array(train_one)
-#     
-#     learn_one_s = preprocessing.scale(learn_one_v)
-#     train_one_s = preprocessing.scale(train_one_v)
-#     
-#     one_learner = svm.OneClassSVM() #nu=0.1, kernel="rbf", gamma=0.1)
-#     one_learner.fit(train_one_s)
-#     res = one_learner.predict(learn_one_s)
-#     
-#     print max(res)
-#     print len(res)
-#     print sum(res)
-#     print res
-#     
-#     # nr of high confidence among -1s
-#     
-#     hc_plus = 0
-#     hc_minus = 0
-#     for val, c in zip(res, learn_one):
-#         hashval = c.chromosome + c.chromosome_direction + str(c.pos_5p_begin)
-#         
-#         if hashval not in candidate_to_miRNA: 
-#             continue
-#         
-#         mi = candidate_to_miRNA[hashval]
-#         if mi in miRNA_high_conf:
-#             print val, mi
-#         
-#         if mi in miRNA_high_conf:
-#             hc_plus += 1
-#         else:
-#             hc_minus += 1
-#             
-#     print "high confidence:"
-#     print "+", hc_plus
-#     print "-", hc_minus
-#     print "total:", hc_plus * 1.0 / (hc_plus + hc_minus)
 
 

@@ -14,10 +14,12 @@ def _reverse_compliment(sequence):
 def align_dead_miRNAs(mirna_hits, _,  id_to_mature, candidate_tree, candidate_list, sequence_tree,
                  seq_to_candidates):
     
-    
+    print "\naligning dead miRNA"
     candidate_to_dead = {}
     
     unique_mirnas = set()
+    candidated = set()
+    seqd = set()
     
     for dead_loki in mirna_hits:
         
@@ -25,7 +27,7 @@ def align_dead_miRNAs(mirna_hits, _,  id_to_mature, candidate_tree, candidate_li
         if miRNAid in unique_mirnas:
             continue # use first entry only
         
-        print "\n\t new dead...",
+#         print "\n\t new dead...",
         unique_mirnas.add(miRNAid)
 
         strand_dir = dead_loki[1]
@@ -70,7 +72,7 @@ def align_dead_miRNAs(mirna_hits, _,  id_to_mature, candidate_tree, candidate_li
 #             print "\t", begin_mature, end_mature, len(hairpin)
 #             print "\t", begin_5p, end_5p, begin_3p, end_3p
         
-        print begin_5p, end_5p, begin_3p, end_3p, "\t", len(hairpin)
+#         print begin_5p, end_5p, begin_3p, end_3p, "\t", len(hairpin)
         
         
             
@@ -95,7 +97,8 @@ def align_dead_miRNAs(mirna_hits, _,  id_to_mature, candidate_tree, candidate_li
                 if shift_start + shift_end < len(hairpin) / 2:
                     candidate_to_dead[hashval] = miRNAid
                     is_candidate = True
-                    print "-- candidate"
+                    candidated.add(miRNAid)
+#                     print "-- candidate"
                     break
     
         else:
@@ -120,26 +123,26 @@ def align_dead_miRNAs(mirna_hits, _,  id_to_mature, candidate_tree, candidate_li
                 
                 offset = begin_5p
                 
-                print "--"
-                print avgpos, halfsize, halfsize_derp
-                print begin_5p, end_5p, begin_3p, end_3p
+#                 print "--"
+#                 print avgpos, halfsize, halfsize_derp
+#                 print begin_5p, end_5p, begin_3p, end_3p
                 
                 if avgpos <= halfsize:
                     # peak is 5p
-                    print "<-"
+#                     print "<-"
                     begin_5p = best_start_pos + offset
                     end_5p = best_end_pos + offset
 #                     if end_5p > begin_3p:
 #                         begin_3p = end_5p
                 else:
                     # peak is 3p
-                    print "->"
+#                     print "->"
                     begin_3p = best_start_pos + offset
                     end_3p = best_end_pos + offset
 #                     if begin_3p < end_5p:
 #                         end_5p = begin_3p
             
-            print begin_5p, end_5p, begin_3p, end_3p
+#             print begin_5p, end_5p, begin_3p, end_3p
             
             if begin_5p == end_5p == begin_3p == end_3p:
                 # using random values as mature length
@@ -165,7 +168,7 @@ def align_dead_miRNAs(mirna_hits, _,  id_to_mature, candidate_tree, candidate_li
                 end_3p += len(hairpin)
                 
             
-            print begin_5p, end_5p, begin_3p, end_3p
+#             print begin_5p, end_5p, begin_3p, end_3p
             
         
             candidate = structure.Candidate(chromosome,
@@ -175,6 +178,9 @@ def align_dead_miRNAs(mirna_hits, _,  id_to_mature, candidate_tree, candidate_li
                      begin_3p,
                      end_3p,
                      sequences)
+            
+            if sequences:
+                seqd.add(miRNAid)
             
             
             for candidate_interval in sequences:
@@ -193,7 +199,10 @@ def align_dead_miRNAs(mirna_hits, _,  id_to_mature, candidate_tree, candidate_li
             assert candidate.pos_5p_begin < candidate.pos_5p_end
             assert candidate.pos_3p_begin < candidate.pos_3p_end
             
-            assert candidate.pos_5p_end < candidate.pos_3p_begin + 5
+            
+#             if candidate.pos_5p_end >= candidate.pos_3p_begin + 10:
+#                 print candidate.pos_5p_end, candidate.pos_3p_begin
+#                 assert candidate.pos_5p_end < candidate.pos_3p_begin + 10
                 
     
             if end_3p - begin_5p > 200:
@@ -206,10 +215,15 @@ def align_dead_miRNAs(mirna_hits, _,  id_to_mature, candidate_tree, candidate_li
             hashval = chromosome + strand_dir + str(begin_5p)
             
             candidate_to_dead[hashval] = miRNAid
-            print "123"
+#             print "123"
         
     
     print len(unique_mirnas)
+    
+    print "\ndead stats:"
+    print "aligning with candidates:\t", len(candidated), len(candidated)*1.0/ len(unique_mirnas) 
+    print "aligning with seqs:\t", len(seqd), len(seqd)*1.0/ len(unique_mirnas) 
+    print "aligning with either:\t", len(candidated | seqd), len(candidated | seqd)*1.0/ len(unique_mirnas) 
     
     return candidate_to_dead
 

@@ -71,19 +71,5 @@ def candidates_to_array(candidates):
 
 
 
-#     feature_names[1] = "hairpin energy"
-#     feature_names[2] = "hairpin energy"
-#     feature_names[3] = "hairpin energy"
-#     feature_names[4] = "hairpin energy"
-#     feature_names[5] = "hairpin energy"
-#     feature_names[6] = "hairpin energy"
-#     feature_names[7] = "hairpin energy"
-#     feature_names[8] = "hairpin energy"
-#     feature_names[9] = "hairpin energy"
-#     feature_names[10] = "hairpin energy"
-#     feature_names[11] = "hairpin energy"
-#     feature_names[12] = "hairpin energy"
-#     feature_names[13] = "hairpin energy"
-#     feature_names[14] = "hairpin energy"
-#     feature_names[15] = "hairpin energy"
-#     feature_names[16] = "hairpin energy"
+
+

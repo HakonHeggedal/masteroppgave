@@ -70,9 +70,16 @@ def plot(candidates, candidate_to_miRNAid, candidate_to_dead, mirna_high_conf, n
     ae = numpy.arange( minval, maxval, .1)
     
     ks_val, p_2s =  stats.ks_2samp(mirna_high, mirna_low)
-    print "Kolmogorov-Smirnov test: miRNA high/low conf:"
-    print "\tKS:\t\t\t", ks_val
-    print "\ttwo sided p val:\t", p_2s
+    print "\nKolmogorov-Smirnov test: miRNA high/low conf:"
+    print "\tKS: ", ks_val, "two sided p val: ", p_2s
+    
+    tval, prob = stats.ttest_ind(mirna_high, mirna_low, equal_var=True)
+    print "\nStudents T-test (same variance): miRNA high/low conf:"
+    print "tval: ",tval, "probability: ", prob 
+    
+    tval, prob = stats.ttest_ind(mirna_high, mirna_low, equal_var=False)
+    print "\nWelchs T-test: miRNA high/low conf:"
+    print "tval: ",tval, "probability: ", prob 
 
     pyplot.plot(x, dens_cand(x), "b")
     pyplot.plot(y, dens_high(y), "r")
@@ -89,4 +96,15 @@ def plot(candidates, candidate_to_miRNAid, candidate_to_dead, mirna_high_conf, n
 #     print mirna_high
 #     print mirna_low
 #     assert False
-    
+# FEATURES = ["hairpin_energy", "hairpin_energy_10", "hairpin_energy_40",
+#                 "entropy_nucleotides", "entropy_structure", "heterogenity_5_begin",
+#                 "heterogenity_5_end", "heterogenity_3_begin", "heterogenity_3_end",
+#                 "quality", "bindings_max_10", "overhang_level_outer_10",
+#                 "overhang_outer_10", "overhang_level_inner_10", "overhang_inner_10",
+#                 "small_subs", "small_subs_5p", "small_subs_3p"]
+# log_scaled = [False]*15 + [True]*3
+# print len(log_scaled), log_scaled
+# print len(FEATURES)
+# 
+# for feat_name, logs in zip(FEATURES, log_scaled):
+#     print 123
