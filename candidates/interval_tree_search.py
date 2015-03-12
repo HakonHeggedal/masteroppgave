@@ -22,7 +22,7 @@ SEARCH_LEN = 100
 
 def _filter_intervals(intervals, offset, startpos, endpos):
     if endpos <= 0: return []
-    intervals = [i for i in intervals  if i.begin-offset >= startpos and i.end-offset <= endpos]
+    intervals = [i for i in intervals if i.begin-offset >= startpos and i.end-offset <= endpos]
     return intervals
 
 def _best_interval(intervals, offset):

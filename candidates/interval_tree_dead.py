@@ -57,6 +57,7 @@ def align_dead_miRNAs(mirna_hits, _,  id_to_mature, candidate_tree, candidate_li
 #             print "\t", mature_seq
 #             print "\t", hairpin
             
+
             begin_mature = hairpin.find(mature_seq)
             end_mature = begin_mature + len(mature_seq)
             
@@ -111,8 +112,17 @@ def align_dead_miRNAs(mirna_hits, _,  id_to_mature, candidate_tree, candidate_li
             if not tree:
                 continue
             
-            sequences = tree[genome_offset:genome_offset+len(hairpin)]            
+            sequences = tree[genome_offset:genome_offset+len(hairpin)]
+            sequences = [s for s in sequences if s.data[0] == strand_dir]
+#             sequences = [s for s in sequences if s.begin >= genome_offset and s.end <= genome_offset+len(hairpin)]
+            sequences = set(sequences)
             if sequences:
+                
+#                 print
+#                 print sequences
+#                 print "seqs in hp: ", strand_dir, genome_offset, genome_offset+len(hairpin), hairpin
+#                 for s in sorted(sequences):
+#                     print s.begin, s.end, s.data[2], s.data[2] in hairpin, s.data[0]
 
                 best_start_pos, _, best_end_pos, _ = interval_tree_search._best_interval(sequences, begin_5p)
                 
@@ -217,7 +227,7 @@ def align_dead_miRNAs(mirna_hits, _,  id_to_mature, candidate_tree, candidate_li
             candidate_to_dead[hashval] = miRNAid
 #             print "123"
         
-    
+
     print len(unique_mirnas)
     
     print "\ndead stats:"
@@ -225,6 +235,7 @@ def align_dead_miRNAs(mirna_hits, _,  id_to_mature, candidate_tree, candidate_li
     print "aligning with seqs:\t", len(seqd), len(seqd)*1.0/ len(unique_mirnas) 
     print "aligning with either:\t", len(candidated | seqd), len(candidated | seqd)*1.0/ len(unique_mirnas) 
     
+#     assert False
     return candidate_to_dead
 
 #  a = "AAGCT"

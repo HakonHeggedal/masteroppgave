@@ -92,11 +92,11 @@ def main():
               "Demux.SRhi10003.Skeletal", "Demux.SRhi10003.SmoothBrain", "Demux.SRhi10003.SmoothPulmonary",
               "Demux.SRhi10003.SmoothUmbilical"]
     
-    
-
     fasta2 = ["hg19/"+n for n in fasta2]
     fasta3 = ["hg19/"+n for n in fasta3]
 
+    fasta4 = ["hg19/Demux.SRhi10004."+str(i) for i in range(1,23)]
+    fasta5 = ["hg19/Demux.SRhi10005."+str(i) for i in range(1,24)]
 
 
     fasta_files = ["SRR797059.collapsed", "SRR797060.collapsed", "SRR797061.collapsed",
@@ -107,7 +107,9 @@ def main():
                     "SRR207119.collapsed"]
     
 #     fasta_files.extend(fasta2)
-    fasta2.extend(fasta3)
+#     fasta2.extend(fasta3)
+#     fasta2.extend(fasta4)
+#     fasta2.extend(fasta5)
     fasta_files = fasta2
 #     
 #     fasta_files = ["SRR797059.collapsed", "SRR797060.collapsed", "SRR797061.collapsed",
@@ -169,7 +171,7 @@ def main():
 #     read genome alignment from bowtie
     fixed_lines = [line.strip().split("\t") for line in open(bowtie_output)] 
     print "read positions in ", time.clock() - start_time, " seconds"
-
+    
     
     print "loading miRNA hairpins:"
     hsa_to_hairpin, other_to_hairpin = mirbase.read_miRNA_fasta(hairpin_file)
@@ -179,7 +181,7 @@ def main():
     special_types.remove_mirTrons(hsa_to_mature, other_types)
     miRNA_species = mirbase.similar_hairpins(hsa_to_hairpin, other_to_hairpin)
     
-    hairpinID_to_mature = mirbase.combine_hairpin_mature(hsa_to_hairpin, hsa_to_mature)
+    hairpinID_to_mature, harpinID_to_matseqs = mirbase.combine_hairpin_mature(hsa_to_hairpin, hsa_to_mature)
     miRNA_high_conf = miRNA.read_high_confidence(high_conf_file)
 #     assert False
     
@@ -235,6 +237,7 @@ def main():
     print "\naligning miRNAs to sequences"
     candidate_to_miRNA = interval_tree_miRNA.align_miRNAs(miRNA_bowtie_hits,
                                                            hairpinID_to_mature,
+                                                           harpinID_to_matseqs,
                                                            candidate_tree,
                                                            candidates,
                                                            sequence_tree,
@@ -408,8 +411,8 @@ def main():
     train = vectorize.candidates_to_array(train)
     test = vectorize.candidates_to_array(test)
     
-    for l in test:
-        print l
+#     for l in test:
+#         print l
         
 
     

@@ -57,7 +57,7 @@ def plot(candidates, candidate_to_miRNAid, candidate_to_dead, mirna_high_conf, n
         else:
             candidate_only.append(param)
     
-    print len(dead), dead
+#     print len(dead), dead
     
     dens_cand = stats.kde.gaussian_kde(candidate_only)
     dens_high = stats.kde.gaussian_kde(mirna_high)
@@ -70,16 +70,16 @@ def plot(candidates, candidate_to_miRNAid, candidate_to_dead, mirna_high_conf, n
     ae = numpy.arange( minval, maxval, .1)
     
     ks_val, p_2s =  stats.ks_2samp(mirna_high, mirna_low)
-    print "\nKolmogorov-Smirnov test: miRNA high/low conf:"
-    print "\tKS: ", ks_val, "two sided p val: ", p_2s
+    print "\tKolmogorov-Smirnov test: miRNA high/low conf:"
+    print "\t\tKS: ", ks_val, "two sided p val: ", p_2s
     
     tval, prob = stats.ttest_ind(mirna_high, mirna_low, equal_var=True)
-    print "\nStudents T-test (same variance): miRNA high/low conf:"
-    print "tval: ",tval, "probability: ", prob 
+    print "\tStudents T-test (same variance): miRNA high/low conf:"
+    print "\t\ttval: ",tval, "probability: ", prob 
     
     tval, prob = stats.ttest_ind(mirna_high, mirna_low, equal_var=False)
-    print "\nWelchs T-test: miRNA high/low conf:"
-    print "tval: ",tval, "probability: ", prob 
+    print "\tWelchs T-test: miRNA high/low conf:"
+    print "\t\ttval: ",tval, "probability: ", prob 
 
     pyplot.plot(x, dens_cand(x), "b")
     pyplot.plot(y, dens_high(y), "r")
@@ -88,7 +88,8 @@ def plot(candidates, candidate_to_miRNAid, candidate_to_dead, mirna_high_conf, n
     pyplot.savefig(outfile)
     pyplot.xlabel(plot_name)
     pyplot.ylabel("frequency")
-    pyplot.show()
+#     pyplot.show()
+    pyplot.close()
     
 
 

@@ -123,6 +123,7 @@ def combine_hairpin_mature(id_to_hairpin, id_to_mature):
     '''
     
     harpinID_to_mature = {}
+    harpinID_to_matseqs = {}
     
     print "\n\t combining hairpin and mature seq miRNA..."
     
@@ -149,6 +150,12 @@ def combine_hairpin_mature(id_to_hairpin, id_to_mature):
             if startpos >= 0:
                 found_hairpin = True
                 endpos = startpos + len(mature_seq)
+                
+                if mature_id in harpinID_to_matseqs:
+                    harpinID_to_matseqs[mature_id].add( mature_seq )
+                else:
+                    harpinID_to_matseqs[mature_id] = set([mature_seq])
+                    
                 _add_mature_pos(mature_id, harpinID_to_mature, id_to_hairpin,
                                 startpos, endpos, is_5p, is_3p)
                 
@@ -162,6 +169,14 @@ def combine_hairpin_mature(id_to_hairpin, id_to_mature):
             if startpos >= 0:
                 found_hairpin = True
                 endpos = startpos + len(mature_seq)
+                
+                mid = mature_id+"-"+str(x)
+                
+                if mid in harpinID_to_matseqs:
+                    harpinID_to_matseqs[mid].add( mature_seq )
+                else:
+                    harpinID_to_matseqs[mid] = set([mature_seq])
+                    
                 _add_mature_pos(mature_id+"-"+str(x), harpinID_to_mature, id_to_hairpin,
                               startpos, endpos, is_5p, is_3p)
             x += 1
@@ -172,6 +187,13 @@ def combine_hairpin_mature(id_to_hairpin, id_to_mature):
             if startpos >= 0:
                 found_hairpin = True
                 endpos = startpos + len(mature_seq)
+                
+                mid = mature_id+c
+                if mid in harpinID_to_matseqs:
+                    harpinID_to_matseqs[mid].add( mature_seq )
+                else:
+                    harpinID_to_matseqs[mid] = set([mature_seq])
+                    
                 _add_mature_pos(mature_id+c, harpinID_to_mature, id_to_hairpin,
                                 startpos, endpos, is_5p, is_3p)
             c += chr(ord(c) + 1)
@@ -184,7 +206,7 @@ def combine_hairpin_mature(id_to_hairpin, id_to_mature):
 #     print harpinID_to_mature[">hsa-mir-4456"]
 #     assert False
     print "FINISHED assembling miRNAs"
-    return harpinID_to_mature
+    return harpinID_to_mature, harpinID_to_matseqs
 
 
 

@@ -5,7 +5,7 @@ Created on 29. okt. 2014
 '''
 
 
-def collapse_collapsed(collapsed_files, min_len=7, min_count=3):
+def collapse_collapsed(collapsed_files, min_len, min_count):
     ''' merge files in files list, return as lists'''
     
     all_sequences = {}
@@ -13,7 +13,19 @@ def collapse_collapsed(collapsed_files, min_len=7, min_count=3):
     for filename in collapsed_files:
         
         current_seqs = {}
-        total_seqs = 0
+        
+        total_count = 0
+        used_count = 0
+        
+        total_norm_seqs = 0
+        used_seq = 0
+        
+        
+        all_seqs = 0
+#         legals = 0
+#         large = 0
+#         counted = 0
+
         
         with open(filename) as fasta_file:
             
@@ -21,22 +33,44 @@ def collapse_collapsed(collapsed_files, min_len=7, min_count=3):
             for line in fasta_file:
                 line = line.strip()
                 if not line:
+                    count = 0
                     continue
                 if line[0] == ">":
                     count = int(line.split("-")[1])
-                    total_seqs += count
-                elif len(line) >= min_len and count >= min_count and _legal_DNA(line):
-                    current_seqs[line] = count
-                    count = 0
+                    total_count += count
+                else:
+                    
+                    all_seqs += 1
+#                     if _legal_DNA(line):
+#                         legals += 1
+#                         
+#                     if len(line) >= min_len:
+#                         large += 1
+#                     
+#                     if count >= min_count:
+#                         counted += 1
+                        
+                    
+                    if len(line) >= min_len and count >= min_count and _legal_DNA(line):
+                        current_seqs[line] = count
+                        count = 0
         
         for s, c  in current_seqs.iteritems():
-            c_norm = c * 1000000.0 / total_seqs
+            c_norm = c * 1000000.0 / total_count
+            
+            total_norm_seqs += c_norm
+            used_seq += 1
+            used_count += c
             
             if s in all_sequences:
                 all_sequences[s] += c_norm
             else:
                 all_sequences[s] = c_norm
-    
+                
+                
+#         print all_seqs, used_seq*1.0/ all_seqs, "\t", total_count, used_count*1.0/total_count, "\t", filename
+#         print total_count, all_seqs, "\t", legals, large, counted, "\t", used_seq, filename
+#         total_count, total_norm_seqs,
     return all_sequences
 
 
