@@ -30,12 +30,11 @@ def plot(candidates, candidate_to_miRNAid, candidate_to_dead, mirna_high_conf, n
     minval = 1000000
     maxval = -1000000
     for c in candidates:
-        hashval = c.chromosome + c.chromosome_direction + str(c.pos_5p_begin)
+        hashval = c.chromosome + c.chromosome_direction + str(c.hairpin_start)
         param = getattr(c, name) #.overhang_level_outer_10
         if isLog and param != 0:
             param = math.log(param)
         
-
         
         if param > maxval:
             maxval = param

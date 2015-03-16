@@ -58,11 +58,12 @@ from matplotlib import pyplot
 
 def _align_bowtie(bowtie_output_file, collapsed_seq_file):
     from subprocess import check_output
-    import os # hack: setting path to bowtie index
+    import os 
+    # hack: setting path to bowtie index:
     os.environ['BOWTIE_INDEXES'] = "/home/hakon/Skrivebord/h_sapiens_37_asm.ebwt"
 
     human_index = "h_sapiens_37_asm"
-    bowtie_cmds = ["bowtie", "-f", "-v 0", "-a", "-m 4",
+    bowtie_cmds = ["bowtie", "-f", "-v 0", "-a", "-m 3",
                    human_index, collapsed_seq_file, bowtie_output_file]
 
     print check_output(bowtie_cmds)
@@ -106,7 +107,8 @@ def main():
                     "SRR207116.collapsed", "SRR207117.collapsed", "SRR207118.collapsed",
                     "SRR207119.collapsed"]
     
-#     fasta_files.extend(fasta2)
+    fasta_files.extend(fasta2)
+    
 #     fasta2.extend(fasta3)
 #     fasta2.extend(fasta4)
 #     fasta2.extend(fasta5)
@@ -268,7 +270,7 @@ def main():
     
     print len(candidates)
     
-    candidates = [c for c in candidates if c.hairpin_energy_10 < -10.0]
+    candidates = [c for c in candidates if c.hairpin_energy_10 < -10.0] #TODO: and not miRNA !!!
     
     print len(candidates)
 #     assert False
@@ -306,9 +308,10 @@ def main():
 #     A/U ends for all remaining candidates
     tailing.tailing_au(candidates, not_mapped_reads)
 #     plot_tailing.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
-
-    overhang.get_alignment(candidates)
     
+#     candidates = [c for c in candidates if ]
+    overhang.get_alignment(candidates)
+    assert False
 #     plot_max_bindings.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
 #     plot_overhang_inner.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
 #     plot_overhang_outer.plot(candidates, candidate_to_miRNA, miRNA_high_conf)

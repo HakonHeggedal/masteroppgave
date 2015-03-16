@@ -34,23 +34,10 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, hpID_to_mseqs, candidate_tree,
         genome_offset = int(loki[3])
         hairpin = loki[4]
 
-        _OLDmature_pos = hairpinID_to_mature[miRNAid]
+#         _OLDmature_pos = hairpinID_to_mature[miRNAid]
         mature_seqs = hpID_to_mseqs[miRNAid] if miRNAid in hpID_to_mseqs else []
         
 
-#         print
-#         print strand_dir, miRNAid
-#         for s in mature_seqs:
-#             if strand_dir == "-":
-#                 print _reverse_compliment(s) in hairpin,
-#                 assert _reverse_compliment(s) in hairpin
-#             else:
-#                 print s in hairpin,
-#                 assert s in hairpin 
-#         
-#         print mature_seqs
-        
-        
         mature_pos = []
         for seq in mature_seqs:
             if strand_dir == "-":
@@ -66,6 +53,7 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, hpID_to_mseqs, candidate_tree,
         if mature_pos:
             mature_pos = sorted(mature_pos)
             
+        # sometimes the mature seqs overlap --> remove the last of them
         if len(mature_pos) > 1:
             if mature_pos[-2][1] > mature_pos[-1][0]:
 #                 print
@@ -93,14 +81,19 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, hpID_to_mseqs, candidate_tree,
         assert len(mature_pos) <= 2
         
 
-        mature_len = max( map(len, mature_seqs)) if mature_seqs else 10
-        if mature_len < 12:
-            mature_len = 20
+#         mature_len = max( map(len, mature_seqs)) if mature_seqs else 10
+#         if mature_len < 12:
+#             mature_len = 20
+            
+        begin_5p = -1
+        end_5p = -1
+        begin_3p = -1
+        end_3p = -1
         
-        begin_5p = genome_offset + 0
-        end_5p =  genome_offset + mature_len
-        begin_3p =  genome_offset + len(hairpin) - mature_len
-        end_3p = genome_offset + len(hairpin)
+#         begin_5p = genome_offset + 0
+#         end_5p =  genome_offset + mature_len
+#         begin_3p =  genome_offset + len(hairpin) - mature_len
+#         end_3p = genome_offset + len(hairpin)
         
         if len(mature_pos) == 2:
             begin_5p = genome_offset + mature_pos[0][0]
@@ -109,7 +102,9 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, hpID_to_mseqs, candidate_tree,
             end_3p = genome_offset + mature_pos[1][1]
             
         elif len(mature_pos) == 1:
+            
             avg_val = (mature_pos[0][0] + mature_pos[0][1] ) / 2.0
+            
             if avg_val < len(hairpin) / 2.0:
                 begin_5p = genome_offset + mature_pos[0][0]
                 end_5p = genome_offset + mature_pos[0][1]
@@ -119,16 +114,10 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, hpID_to_mseqs, candidate_tree,
             
         
 #         print begin_5p, end_5p, begin_3p, end_3p
-        assert begin_5p >= genome_offset
-        assert begin_5p < end_5p <= begin_3p < end_3p
-
-        
-#         begin_5p = end_5p = begin_3p = end_3p = genome_offset
-#         
-#         begin_5p += mature_pos[0] if mature_pos[0] != -1 else 0
-#         end_5p +=  mature_pos[1] if mature_pos[1] != -1 else  mature_len
-#         begin_3p +=  mature_pos[2] if mature_pos[2] != -1 else  len(hairpin) - mature_len
-#         end_3p +=  mature_pos[3] if mature_pos[3] != -1 else  len(hairpin)
+        assert begin_5p >= genome_offset or begin_5p == -1
+        assert begin_5p < end_5p or begin_5p == -1
+        assert end_5p  <= begin_3p or end_5p == -1 or begin_3p == -1
+        assert begin_3p < end_3p or begin_3p == -1
 
         
         is_candidate = False
@@ -138,7 +127,7 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, hpID_to_mseqs, candidate_tree,
 #             print "no:", chromosome
             continue # TODO : SKIP everything? ALLWAYS?
         
-        candidates = tree[begin_5p:end_3p]
+        candidates = tree[genome_offset:genome_offset+len(hairpin)]
 
         if candidates:
             miRNA_with_candidates.add(miRNAid)
@@ -149,28 +138,14 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, hpID_to_mseqs, candidate_tree,
                 if candidate.data.chromosome_direction != strand_dir:
                     continue
 
-                candidate_count += 1
-                
-                len_5 = candidate.data.pos_5p_end - candidate.data.pos_5p_begin
-                shift_5 = abs(candidate.data.pos_5p_begin - begin_5p)
-                shift_5 += abs(candidate.data.pos_5p_end - end_5p)
-                
-                len_3 = candidate.data.pos_3p_end - candidate.data.pos_3p_begin
-                shift_3 = abs(candidate.data.pos_3p_begin - begin_3p)
-                shift_3 += abs(candidate.data.pos_3p_end - end_3p)
-                
                 hashval = candidate.data.chromosome + strand_dir + str(candidate.data.pos_5p_begin)
                 
-                wrong_shift_end = abs(candidate.data.pos_5p_begin - begin_3p)
-                wrong_shift_end += abs(candidate.data.pos_5p_end - end_3p)
-                
-                wrong_shift_middle = abs(candidate.data.pos_3p_begin - begin_5p)
-                wrong_shift_middle += abs(candidate.data.pos_3p_end - end_5p)
-                
-                
+                candidate_count += 1
 
-                # miRNA should overlap with candidate
-                if shift_5 < len_5*2 or shift_3 < len_3*2 or shift_5+shift_3 < (len_3+len_5)*2:
+                shift_start = abs(genome_offset - candidate.data.pos_5p_begin)
+                shift_end = abs( (genome_offset+len(hairpin)) - candidate.data.pos_3p_end)
+
+                if shift_start + shift_end < len(hairpin) / 2:
                     candidate_to_miRNAid[hashval] = miRNAid
                     is_candidate = True
                     break
@@ -179,45 +154,49 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, hpID_to_mseqs, candidate_tree,
         if is_candidate:
             continue
 
-#         assert candidate.pos_5p_begin < candidate.pos_5p_end < candidate.pos_3p_begin < candidate.pos_3p_end
         
 #         no candidates aligns the "miRNA"
         tree = sequence_tree[chromosome]
-        sequences = tree[begin_5p:end_3p]
+        sequences = tree[genome_offset:genome_offset+len(hairpin)]
         sequences = [s for s in sequences if s.data[0] == strand_dir]
 #         sequences = [s for s in sequences if s.begin >= genome_offset and s.end <= genome_offset+len(hairpin)]
         sequences = set(sequences)
         
-        if sequences:
-            best_start_pos, _, best_end_pos, _ = interval_tree_search._best_interval(sequences, begin_5p)
-            
+        is_both_matures = begin_5p != -1 and end_5p != -1 and begin_3p != -1 and end_3p != -1
+        
+        if sequences and not is_both_matures:
+            best_start_pos, _, best_end_pos, _ = interval_tree_search._best_interval(sequences, genome_offset)
+            # TODO skip if have both mature seqs
 #             print
 #             print sequences
 #             print "seqs in hp: ", strand_dir, genome_offset, genome_offset+len(hairpin), hairpin
 #             for s in sorted(sequences):
 #                 print s.begin, s.end, s.data[2], s.data[2] in hairpin, s.data[0]
             
-#             print 123
-#             print best_start_pos, best_end_pos, begin_5p, end_5p, begin_3p, end_3p
             
             avgpos = (best_start_pos + best_end_pos) / 2.0
             
-            offset = begin_5p
-            
-            if avgpos < (end_3p - begin_5p) / 2.0 :
+            if avgpos < 0:
+                pass
+            elif avgpos < len(hairpin) / 2.0 :
                 # peak is 5p
-                begin_5p = best_start_pos + offset
-                end_5p = best_end_pos + offset
-                if end_5p > begin_3p:
+                old1 = begin_5p
+                old2 = end_5p
+                begin_5p = genome_offset + best_start_pos
+                end_5p = genome_offset + best_end_pos
+                if end_5p > begin_3p and begin_3p != -1:
+                    print "manually changing overlapping (3p)", begin_5p, end_5p, begin_3p, end_3p
+                    print "old seq:", old1, old2, genome_offset
+                    print 
                     begin_3p = end_5p
             else:
                 # peak is 3p
-                begin_3p = best_start_pos + offset
-                end_3p = best_end_pos + offset
-                if begin_3p < end_5p:
+                begin_3p = genome_offset + best_start_pos
+                end_3p = genome_offset + best_end_pos
+                if begin_3p < end_5p and end_5p != -1:
+                    print "manually changing overlapping (5p)", begin_5p, end_5p, begin_3p, end_3p
                     end_5p = begin_3p
-                
-#             print best_start_pos, best_end_pos, begin_5p, end_5p, begin_3p, end_3p
+
             
             has_seqs.append(miRNAid)
 
@@ -227,16 +206,27 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, hpID_to_mseqs, candidate_tree,
             noseqs += 1
             noseq_set.add(miRNAid)
             pass
+        if not ( begin_5p + 10 >= genome_offset or begin_5p == -1):
+            print begin_5p, genome_offset
+            assert begin_5p + 10 >= genome_offset or begin_5p == -1 
+        assert begin_5p < end_5p or begin_5p == -1
         
-        assert begin_5p < end_5p <= begin_3p < end_3p
+        if not (end_5p  <= begin_3p or end_5p == -1 or begin_3p == -1):
+            print end_5p, begin_3p
+            assert end_5p  <= begin_3p or end_5p == -1 or begin_3p == -1
+        assert begin_3p < end_3p or begin_3p == -1
         
         candidate = structure.Candidate(chromosome,
                          strand_dir,
+                         genome_offset,
+                         genome_offset+len(hairpin),                         
                          begin_5p,
                          end_5p,
                          begin_3p,
                          end_3p,
                          sequences)
+        
+        candidate.hairpin = hairpin
         
 
         for candidate_interval in sequences:
@@ -251,14 +241,13 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, hpID_to_mseqs, candidate_tree,
             else:
                 seq_to_candidates[name].add_candidate(candidate)
         
-        if end_3p - begin_5p > 200:
-            print "\t200+ length", begin_5p, end_5p, begin_3p, end_3p
-            assert False
-        
-        assert candidate.pos_5p_begin < candidate.pos_5p_end <= candidate.pos_3p_begin < candidate.pos_3p_end
+#         if end_3p - begin_5p > 200:
+#             print "\t200+ length", begin_5p, end_5p, begin_3p, end_3p
+#             assert False
+#         assert candidate.pos_5p_begin < candidate.pos_5p_end <= candidate.pos_3p_begin < candidate.pos_3p_end
         
         candidate_list.append(candidate)
-        hashval = chromosome + strand_dir + str(begin_5p)
+        hashval = chromosome + strand_dir + str(genome_offset)
         
         candidate_to_miRNAid[hashval] = miRNAid
     
@@ -290,9 +279,3 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, hpID_to_mseqs, candidate_tree,
     
 #     assert False
     return candidate_to_miRNAid
-
-
-
-
-
-

@@ -23,7 +23,7 @@ def create_folds(candidates, mirna_dict, dead_dict, high_conf, mirna_groups, fol
     
     # split candidate list into only candidate and microRNAs
     for c in candidates:
-        hashval = c.chromosome + c.chromosome_direction + str(c.pos_5p_begin)
+        hashval = c.chromosome + c.chromosome_direction + str(c.hairpin_start)
         
         if hashval in dead_dict:
             dead_lists[d_count].append(c)
@@ -45,7 +45,7 @@ def create_folds(candidates, mirna_dict, dead_dict, high_conf, mirna_groups, fol
     
     # make miRNA groups: group -> [mirnas]
     for m in mi_hq:
-        hashval = m.chromosome + m.chromosome_direction + str(m.pos_5p_begin)
+        hashval = m.chromosome + m.chromosome_direction + str(m.hairpin_start)
         mi_name = mirna_dict[hashval]
         
         if mi_name in mirna_groups:

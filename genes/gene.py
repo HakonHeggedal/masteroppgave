@@ -39,11 +39,11 @@ def include_padding(candidate_list_unsort, padding=40 ):
             
             while True:
                 
-                read_start = candidate.pos_5p_begin - padding
+                read_start = candidate.hairpin_start - padding
                 start_line = read_start // line_len
                 start_pos = read_start % line_len
 
-                read_end = candidate.pos_3p_end + padding
+                read_end = candidate.hairpin_end + padding
                 end_line = read_end // line_len
                 end_pos = read_end % line_len
                 
@@ -64,6 +64,12 @@ def include_padding(candidate_list_unsort, padding=40 ):
                     assert hairpin
                 assert padded
                 assert padding
+                
+                if candidate.hairpin:
+                    if hairpin != candidate.hairpin:
+                        print len(hairpin), hairpin
+                        print len(candidate.hairpin), candidate.hairpin
+                    assert hairpin == candidate.hairpin
                 
 #                 if len(padded) != read_end - read_start:
 #                     print candidate.chromosome, file_name

@@ -288,10 +288,13 @@ def find_candidates_2(sequence_hits):
                     
 #                 print "adding new canididate from", begin_5p ," sequence hits:", len(close_intervals)
                 
-                
+                hairpin_start = begin_5p
+                hairpin_end = end_3p
 
                 candidate = structure.Candidate(chromosome,
                                                  strand_dir,
+                                                 hairpin_start, # used as gene offset. sometimes 5p mature missing...
+                                                 hairpin_end,
                                                  begin_5p,
                                                  end_5p,
                                                  begin_3p,

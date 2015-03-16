@@ -3,11 +3,13 @@ class Candidate:
     
     all_mapped_sequences = set()
     
-    def __init__(self, chromosome, strand_dir, begin_5p, end_5p,
-                 begin_3p, end_3p, mapped_sequences):
+    def __init__(self, chromosome, strand_dir, hairpin_start, hairpin_end,
+                 begin_5p, end_5p, begin_3p, end_3p, mapped_sequences):
 
         self.chromosome = chromosome
         self.chromosome_direction = strand_dir
+        self.hairpin_start = hairpin_start
+        self.hairpin_end = hairpin_end
         self.pos_5p_begin = begin_5p # in the genome... large value
         self.pos_5p_end = end_5p
         self.pos_3p_begin = begin_3p
