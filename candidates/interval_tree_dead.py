@@ -106,6 +106,11 @@ def align_dead_miRNAs(mirna_hits, _,  id_to_mature, candidate_tree, candidate_li
                 if shift_start + shift_end < len(hairpin) / 2:
                     candidate_to_dead[hashval] = miRNAid
                     is_candidate = True
+                    
+#                     assert candidate.candidate_type != structure.TYPE_HIGH_CONF
+#                     assert candidate.candidate_type != structure.TYPE_LOW_CONF
+#                     candidate.candidate_type = structure.TYPE_DEAD
+                    
                     candidated.add(miRNAid)
 #                     print "-- candidate"
                     break
@@ -166,6 +171,12 @@ def align_dead_miRNAs(mirna_hits, _,  id_to_mature, candidate_tree, candidate_li
                      begin_3p,
                      end_3p,
                      sequences)
+            
+            candidate.hairpin = hairpin
+            
+            assert candidate.candidate_type != structure.TYPE_HIGH_CONF
+            assert candidate.candidate_type != structure.TYPE_LOW_CONF
+            candidate.candidate_type = structure.TYPE_DEAD
             
             if sequences:
                 seqd.add(miRNAid)

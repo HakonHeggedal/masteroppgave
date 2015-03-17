@@ -1,3 +1,11 @@
+
+TYPE_UNDECIDED = -1
+TYPE_CANDIDATE = 0
+TYPE_DEAD = 1
+TYPE_HIGH_CONF = 2
+TYPE_LOW_CONF = 3
+
+
 class Candidate:
     ''' structure to store a miRNA candidate '''
     
@@ -20,6 +28,13 @@ class Candidate:
         self.small_subs_5p = 0
         self.small_subs_3p = 0
         self.padding_size = 40
+        self.candidate_type = TYPE_UNDECIDED
+        self.miRNAid = None
+        self.bulge_factor = -1
+        self.peak_5b = -1
+        self.peak_5e = -1
+        self.peak_3b = -1
+        self.peak_3e = -1
         
         if mapped_sequences is not None:
             self.mapped_sequences = set(mapped_sequences)
@@ -28,10 +43,10 @@ class Candidate:
     def set_hairpin_padding(self, hairpin, padded_40):
         self.hairpin = hairpin
         self.hairpin_padded_40 = padded_40
-
+    
     
     def set_fold_hairpin(self, fold, en):
-        self.hairpin_fold = fold 
+        self.hairpin_fold = fold
         self.hairpin_energy = en
 
     

@@ -23,6 +23,7 @@ feature_names.append("overhang level outer")
 feature_names.append("overhang outer")
 feature_names.append("overhang level inner")
 feature_names.append("overhang inner")
+feature_names.append("bulge factor")
 feature_names.append("small sequences aligned")
 feature_names.append("small sequences aligned 5p")
 feature_names.append("small sequences aligned 3p")
@@ -54,14 +55,15 @@ def candidates_to_array(candidates):
         l = candidate.overhang_outer_10 
         m = candidate.overhang_level_inner_10 
         n = candidate.overhang_inner_10
-        o = candidate.small_subs
-        p = candidate.small_subs_5p
-        q = candidate.small_subs_3p
+        o = candidate.bulge_factor
+        p = candidate.small_subs
+        q = candidate.small_subs_5p
+        r = candidate.small_subs_3p
 #         r = candidate.junction_pos_5
 #         s = candidate.junction_pos_3
         
         
-        features = [a,aa,b,bb,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q]
+        features = [a,aa,b,bb,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r]
         
         all_candidates.append(features)
         

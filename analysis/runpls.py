@@ -235,6 +235,8 @@ def main():
 # 0            1   2[0] [1]      [2] [3]
 # ['1-15830', '-', 'gi|224589818|ref|NC_000006.11|',
 #         NC_000006.11
+    heterogenity.heterogenity(candidates)
+    assert False
 
     print "\naligning miRNAs to sequences"
     candidate_to_miRNA = interval_tree_miRNA.align_miRNAs(miRNA_bowtie_hits,
@@ -247,7 +249,6 @@ def main():
                                                            miRNA_species,
                                                            miRNA_high_conf)
     
-
     candidate_to_dead = interval_tree_dead.align_dead_miRNAs(dead_miRNA_hits,
                                                              id_to_dead_hp,
                                                              id_to_dead_mature,
@@ -256,9 +257,9 @@ def main():
                                                              sequence_tree,
                                                              seq_to_candidates)
     
-    print len(candidate_to_dead)
+#     print len(candidate_to_dead)
 #     assert False
-    
+
     
     print "\npadding all miRNA and Candidates"
     gene.include_padding(candidates)
@@ -311,7 +312,7 @@ def main():
     
 #     candidates = [c for c in candidates if ]
     overhang.get_alignment(candidates)
-    assert False
+#     assert False
 #     plot_max_bindings.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
 #     plot_overhang_inner.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
 #     plot_overhang_outer.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
@@ -337,16 +338,20 @@ def main():
     
     
 #     plotting all features
+
+    plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead,
+                      miRNA_high_conf, "bulge_factor" )
+    
        
     FEATURES = ["hairpin_energy", "hairpin_energy_10", "hairpin_energy_40",
                 "entropy_nucleotides", "entropy_structure", "heterogenity_5_begin",
                 "heterogenity_5_end", "heterogenity_3_begin", "heterogenity_3_end",
                 "quality", "bindings_max_10", "overhang_level_outer_10",
                 "overhang_outer_10", "overhang_level_inner_10", "overhang_inner_10",
-                "small_subs", "small_subs_5p", "small_subs_3p"]
+                "bulge_factor", "small_subs", "small_subs_5p", "small_subs_3p"]
     
     
-    log_scaled = [False]*15 + [True]*3
+    log_scaled = [False]*16 + [True]*3
     print log_scaled
     for feat_name, logs in zip(FEATURES, log_scaled):
      

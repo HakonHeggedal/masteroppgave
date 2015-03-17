@@ -18,6 +18,7 @@ def plot(candidates, candidate_to_miRNAid, candidate_to_dead, mirna_high_conf, n
     print "plot " + name
     
     name = name.replace(" ", "_")
+    log_text = " log scaled" if isLog else ""
     
     plot_name = name.replace("_", " ")
     outfile = name + ".png"
@@ -32,9 +33,9 @@ def plot(candidates, candidate_to_miRNAid, candidate_to_dead, mirna_high_conf, n
     for c in candidates:
         hashval = c.chromosome + c.chromosome_direction + str(c.hairpin_start)
         param = getattr(c, name) #.overhang_level_outer_10
+        assert param is not None
         if isLog and param != 0:
             param = math.log(param)
-        
         
         if param > maxval:
             maxval = param
@@ -57,7 +58,7 @@ def plot(candidates, candidate_to_miRNAid, candidate_to_dead, mirna_high_conf, n
             candidate_only.append(param)
     
 #     print len(dead), dead
-    
+#     print filter(lambda x: x!= 1.0, candidate_only)
     dens_cand = stats.kde.gaussian_kde(candidate_only)
     dens_high = stats.kde.gaussian_kde(mirna_high)
     dens_low = stats.kde.gaussian_kde(mirna_low)
@@ -85,9 +86,9 @@ def plot(candidates, candidate_to_miRNAid, candidate_to_dead, mirna_high_conf, n
     pyplot.plot(z, dens_low(z), "g")
     pyplot.plot(ae, dens_dead(ae), "m")
     pyplot.savefig(outfile)
-    pyplot.xlabel(plot_name)
+    pyplot.xlabel(plot_name + log_text)
     pyplot.ylabel("frequency")
-#     pyplot.show()
+    pyplot.show()
     pyplot.close()
     
 

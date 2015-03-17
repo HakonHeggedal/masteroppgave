@@ -27,6 +27,9 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, hpID_to_mseqs, candidate_tree,
     for loki in mirna_hits:
         
         miRNAid = ">" + loki[0]
+        
+        if miRNAid in unique_mirnas:
+            continue # use first entry only
         unique_mirnas.add(miRNAid)
 
         strand_dir = loki[1]
@@ -146,7 +149,20 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, hpID_to_mseqs, candidate_tree,
                 shift_end = abs( (genome_offset+len(hairpin)) - candidate.data.pos_3p_end)
 
                 if shift_start + shift_end < len(hairpin) / 2:
+                    
                     candidate_to_miRNAid[hashval] = miRNAid
+                    
+                    if candidate.data.miRNAid: # don't want 2 equal 
+                        continue
+                    
+                    if candidate.data.candidate_type >= 1:
+                        print candidate.data.candidate_type, "candidate type"
+                        print candidate.data.miRNAid, "miRNAid ???", miRNAid
+                    assert candidate.data.candidate_type < 1 # undecided or candidate
+                    
+                    c_type = structure.TYPE_HIGH_CONF if miRNAid in miRNA_high_conf else structure.TYPE_LOW_CONF
+                    candidate.data.candidate_type = c_type
+                    candidate.data.miRNAid = miRNAid
                     is_candidate = True
                     break
 
@@ -227,6 +243,8 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, hpID_to_mseqs, candidate_tree,
                          sequences)
         
         candidate.hairpin = hairpin
+        c_type = structure.TYPE_HIGH_CONF if miRNAid in miRNA_high_conf else structure.TYPE_LOW_CONF
+        candidate.set_candidate_type = c_type
         
 
         for candidate_interval in sequences:

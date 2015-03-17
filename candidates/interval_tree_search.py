@@ -207,6 +207,7 @@ def find_candidates_2(sequence_hits):
                 not_after = not_after or start_before_val == -1 or stop_before_val == -1
                 
                  
+                p1 = p2 = p3 = p4 = -1
                 a += 1
                 
                 if not_before and not_after:
@@ -214,12 +215,18 @@ def find_candidates_2(sequence_hits):
                     f += 1
                     break
                 
+
+                
                 elif not_after or start_after_val + stop_after_val > start_before_val + stop_before_val:
     #                 print "only 3p"
                     begin_5p = start_peak + start_interval
                     end_5p = end_peak + start_interval
                     begin_3p = start_after + start_interval
                     end_3p = stop_after + start_interval
+                    p1 = start_peak_val
+                    p2 = end_peak_val
+                    p3 = start_after_val
+                    p4 = stop_after_val
                     assert begin_5p < end_5p < begin_3p < end_3p
                 else:
     #                 print "only 5p"
@@ -227,6 +234,10 @@ def find_candidates_2(sequence_hits):
                     end_5p = stop_before + start_interval
                     begin_3p = start_peak + start_interval
                     end_3p = end_peak + start_interval
+                    p1 = start_before_val
+                    p2 = stop_before_val
+                    p3 = start_peak_val
+                    p4 = end_peak_val
                     assert begin_5p < end_5p < begin_3p < end_3p
     #             else:
     #                 print "???"
@@ -301,6 +312,13 @@ def find_candidates_2(sequence_hits):
                                                  end_3p,
                                                  close_intervals)
                 
+                candidate.candidate_type = structure.TYPE_CANDIDATE
+                
+                candidate.peak_5b = p1
+                candidate.peak_5e = p2
+                candidate.peak_3b = p3
+                candidate.peak_3e = p4
+                
                 assert candidate.pos_5p_begin < candidate.pos_5p_end < candidate.pos_3p_begin < candidate.pos_3p_end
                       
                 for candidate_interval in close_intervals:
@@ -328,6 +346,8 @@ def find_candidates_2(sequence_hits):
     print "sum interval in candidates:", interval_sum
     
     return candidate_tree, sequence_tree, candidate_list, seq_to_candidates
+
+
 
 #===============================================================================
 # 
@@ -542,3 +562,5 @@ def find_candidates_2(sequence_hits):
 # #     assert False
 #     return candidate_to_miRNAid
 #===============================================================================
+
+
