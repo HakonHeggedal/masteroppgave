@@ -5,10 +5,8 @@ Created on 24. feb. 2015
 '''
 import interval_tree_search
 import structure
-
-complimented = {"A":"T", "T":"A", "G":"C", "C":"G"}
-def _reverse_compliment(sequence):
-    return "".join(complimented[x] for x in sequence[::-1])
+from candidates.interval_tree_misc import reverse_compliment
+from candidates import interval_tree_misc
 
 
 def align_dead_miRNAs(mirna_hits, _,  id_to_mature, candidate_tree, candidate_list, sequence_tree,
@@ -57,7 +55,7 @@ def align_dead_miRNAs(mirna_hits, _,  id_to_mature, candidate_tree, candidate_li
         if miRNAid in id_to_mature:
             mature_seq = id_to_mature[miRNAid]
             if strand_dir == "-":
-                mature_seq = _reverse_compliment(mature_seq)
+                mature_seq = reverse_compliment(mature_seq)
             
 #             print "\t", strand_dir
 #             print "\t", mature_seq in hairpin
@@ -134,7 +132,7 @@ def align_dead_miRNAs(mirna_hits, _,  id_to_mature, candidate_tree, candidate_li
             if sequences:
 
 
-                best_start_pos, _, best_end_pos, _ = interval_tree_search._best_interval(sequences, genome_offset)
+                best_start_pos, _, best_end_pos, _ = interval_tree_misc.best_interval(sequences, genome_offset)
                 
                 avgpos = (best_start_pos + best_end_pos) / 2.0
                 halfsize = len(hairpin) / 2.0 

@@ -223,7 +223,8 @@ def main():
 #     candidate_tree, sequence_tree, candidates, seq_to_candidates = interval_tree_search.find_candidates(fixed_lines)
     candidate_tree, sequence_tree, candidates, seq_to_candidates = interval_tree_search.find_candidates_2(fixed_lines)
     
-
+    
+#     assert False
     print "\n\tfound candidates in ", time.clock() - start_time, " seconds"
     print "\tbowtie hits", len(fixed_lines)
     print "\tcandidate tree", len(candidate_tree)
@@ -236,7 +237,7 @@ def main():
 # ['1-15830', '-', 'gi|224589818|ref|NC_000006.11|',
 #         NC_000006.11
     heterogenity.heterogenity(candidates)
-    assert False
+#     assert False
 
     print "\naligning miRNAs to sequences"
     candidate_to_miRNA = interval_tree_miRNA.align_miRNAs(miRNA_bowtie_hits,
@@ -248,6 +249,7 @@ def main():
                                                            seq_to_candidates,
                                                            miRNA_species,
                                                            miRNA_high_conf)
+
     
     candidate_to_dead = interval_tree_dead.align_dead_miRNAs(dead_miRNA_hits,
                                                              id_to_dead_hp,

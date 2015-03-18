@@ -4,11 +4,10 @@ Created on 24. feb. 2015
 @author: hakon
 '''
 
-from candidates import structure, interval_tree_search
+from candidates import structure, interval_tree_misc
+from candidates.interval_tree_misc import reverse_compliment
 
-complimented = {"A":"T", "T":"A", "G":"C", "C":"G"}
-def _reverse_compliment(sequence):
-    return "".join(complimented[x] for x in sequence[::-1])
+
 
 def align_miRNAs(mirna_hits, hairpinID_to_mature, hpID_to_mseqs, candidate_tree, candidate_list, sequence_tree,
                  seq_to_candidates, miRNA_species, miRNA_high_conf):
@@ -44,7 +43,7 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, hpID_to_mseqs, candidate_tree,
         mature_pos = []
         for seq in mature_seqs:
             if strand_dir == "-":
-                seq = _reverse_compliment(seq)
+                seq = reverse_compliment(seq)
             pos = hairpin.find(seq)
             if pos > -1:
                 mature_pos.append((pos,pos+len(seq)))
@@ -181,7 +180,7 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, hpID_to_mseqs, candidate_tree,
         is_both_matures = begin_5p != -1 and end_5p != -1 and begin_3p != -1 and end_3p != -1
         
         if sequences and not is_both_matures:
-            best_start_pos, _, best_end_pos, _ = interval_tree_search._best_interval(sequences, genome_offset)
+            best_start_pos, _, best_end_pos, _ = interval_tree_misc.best_interval(sequences, genome_offset)
             # TODO skip if have both mature seqs
 #             print
 #             print sequences
