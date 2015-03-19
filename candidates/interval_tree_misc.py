@@ -25,7 +25,7 @@ def _sumgroups(group):
     return (group[0], sum([x[1] for x in group[1]]) )
     
 
-def best_interval(intervals, offset, max_end=100): #TODO: max limit på ends, 0-40 (bare 0-20 lov)
+def best_interval(intervals, offset, max_end=100): #TODO: max limit to ends, i.e has 0-40 (but only 0-20 allowed)
     
     if not intervals:
         return -1, -1, -1, -1

@@ -185,7 +185,10 @@ def main():
     
     hairpinID_to_mature, harpinID_to_matseqs = mirbase.combine_hairpin_mature(hsa_to_hairpin, hsa_to_mature)
     miRNA_high_conf = miRNA.read_high_confidence(high_conf_file)
-#     assert False
+    
+
+    
+    assert False
     
     print "\nhigh confidence set:",len(miRNA_high_conf),
     print miRNA_high_conf.issubset(miRNA_species.keys())
@@ -236,7 +239,7 @@ def main():
 # 0            1   2[0] [1]      [2] [3]
 # ['1-15830', '-', 'gi|224589818|ref|NC_000006.11|',
 #         NC_000006.11
-    heterogenity.heterogenity(candidates)
+#    heterogenity.heterogenity(candidates)
 #     assert False
 
     print "\naligning miRNAs to sequences"
@@ -437,6 +440,7 @@ def main():
     
     # roc plot 123
     probs = learner.predict_proba(test)
+    print 123, probs
     fpr, tpr, thresholds = metrics.roc_curve(test_annotations, probs[:,1])
     
     roc_auc = metrics.auc(fpr, tpr)
@@ -445,33 +449,33 @@ def main():
     pyplot.plot(fpr, tpr)
     pyplot.show()
     
+    base_score = learner.score(test, test_annotations)
+    print "base score: ", base_score
+    
     assert False
     # roc plot 234
     
-    base_score = learner.score(test, test_annotations)
-    
-    print base_score
 
     
-    features = len(train[0])
-    
-    scores = [0]*features
-    
-    for i in xrange(features):
-        
-        train_removed = numpy.delete(train,i, 1)
-        test_removed = numpy.delete(test,i, 1)
-        
-        learner = svm.SVC(probability=True, cache_size=500) 
-        learner.fit(train_removed, train_annotations)
-        removed_score = learner.score(test_removed, test_annotations)
-        scores[i] = base_score - removed_score
-        
-    print "each feature removed:"
-    print scores
-    
-    for score, name in sorted(zip(scores, feature_names)):
-        print  score,"\t", name
+#     features = len(train[0])
+#      
+#     scores = [0]*features
+#      
+#     for i in xrange(features):
+#          
+#         train_removed = numpy.delete(train,i, 1)
+#         test_removed = numpy.delete(test,i, 1)
+#          
+#         learner = svm.SVC(probability=True, cache_size=500) 
+#         learner.fit(train_removed, train_annotations)
+#         removed_score = learner.score(test_removed, test_annotations)
+#         scores[i] = base_score - removed_score
+#          
+#     print "each feature removed:"
+#     print scores
+#      
+#     for score, name in sorted(zip(scores, feature_names)):
+#         print  score,"\t", name
 
 
 

@@ -30,10 +30,11 @@ def get_alignment(candidates):
             
             has_double += 1
             
+            
             start_5 = 10 # start point for hairpin with 10 nt padding
-            end_5 = candidate.pos_5p_end - candidate.pos_5p_begin + 10
-            start_3 = candidate.pos_3p_begin - candidate.pos_5p_begin + 10
-            end_3 = candidate.pos_3p_end - candidate.pos_5p_begin + 10
+            end_5 = candidate.pos_5p_end - candidate.hairpin_start + 10
+            start_3 = candidate.pos_3p_begin - candidate.hairpin_start + 10
+            end_3 = candidate.pos_3p_end - candidate.hairpin_start + 10
             
             folds_out, off_out = _find_overhang(fold_10, start_5, end_3)
             folds_in, off_in = _find_overhang(fold_10, end_5, start_3)

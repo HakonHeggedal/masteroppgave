@@ -7,61 +7,127 @@ import itertools
 
 
 
-def heterogenity(candidates, offset=5):
+def heterogenity(candidates, offset=20):
     
     print "\n\tcalculating variation in 5p and 3p start positions"
     
     for candidate in candidates:
         sequences = candidate.mapped_sequences
 
-        
-        five_begin = candidate.pos_5p_begin
-        five_end = candidate.pos_5p_end
-        three_begin = candidate.pos_3p_begin
-        three_end = candidate.pos_3p_end
         start = candidate.hairpin_start
-        end = candidate.hairpin_end
         
+        # relative positions
         five_b = candidate.pos_5p_begin - start
-        five_e = candidate.pos_5p_begin - start
-        three_b = candidate.pos_5p_begin - start
-        three_e = candidate.pos_5p_begin - start
+        five_e = candidate.pos_5p_end - start
+        three_b = candidate.pos_3p_begin - start
+        three_e = candidate.pos_3p_end - start
         
+        # all start and end positions tuples
         start_positions = sorted([(s.begin-start, float(s.data[1].split("-")[1]) ) for s in sequences])
         end_positions = sorted([(s.end-start, float(s.data[1].split("-")[1]))  for s in sequences])
         
         def sumgroups(group):
             return (group[0], sum([x[1] for x in group[1]]) )
         
+        # merge tuples on the same position
         grouped_starts = list(map(sumgroups, itertools.groupby(start_positions, lambda x: x[0])))
         grouped_ends = list(map(sumgroups, itertools.groupby(end_positions, lambda x: x[0])))
         
         
-        close_to_5begin = filter(lambda g: abs(g[0]-five_b ) < 6 -  grouped_starts)
-        close_to_3begin = filter(lambda g: abs(g[0]-three_b ) < 6 -  grouped_starts)
-        close_to_5end = filter(lambda g: abs(g[0]-five_e ) < 6 -  grouped_ends)
-        close_to_3end = filter(lambda g: abs(g[0]-three_e ) < 6 -  grouped_ends)
+        # find all positions and values in same area (max 20 away) to 5p and 3p start/end
+        close_to_5begin = [g for g in grouped_starts if abs(g[0]-five_b) <= offset ]
+        close_to_5end = [g for g in grouped_ends if abs(g[0]-five_e) <= offset ]
+        close_to_3begin = [g for g in grouped_starts if abs(g[0]-three_b) <= offset ]
+        close_to_3end = [g for g in grouped_ends if abs(g[0]-three_e) <= offset ]
         
         
-        def sum_het(tup):
-            pass
-        #TODO: fix
+        sum_peaks_5b = sum(g[1] for g in close_to_5begin)
+        sum_peaks_5e = sum(g[1] for g in close_to_5end)
+        sum_peaks_3b = sum(g[1] for g in close_to_3begin)
+        sum_peaks_3e = sum(g[1] for g in close_to_3end)
         
-        het_5b =  sum(map(sum_het, close_to_5begin) )
-        het_3b =  sum(map(sum_het, close_to_3begin) )
-        het_5e =  sum(map(sum_het, close_to_5end) )
-        het_3e =  sum(map(sum_het, close_to_3end) )
+        five_b_peak = -1
+        five_e_peak = -1
+        three_b_peak = -1
+        three_e_peak = -1
         
-        print
-        print "starts:", candidate.chromosome
-        print sorted([(s.begin-start, float(s.data[1].split("-")[1]), s.end-start ) for s in sequences])
-        print grouped_starts
-        print (five_begin-start, candidate.peak_5b), (three_begin-start, candidate.peak_3b)
-        print "ends:"
-        print grouped_ends
-        print (five_end-start, candidate.peak_5e), (three_end-start, candidate.peak_3e)
+        for pos, val in close_to_5begin:
+            if pos == five_b:
+                five_b_peak = val
+                break
+        
+        for pos, val in close_to_5end:
+            if pos == five_e:
+                five_e_peak = val
+                break
+            
+        for pos, val in close_to_3begin:
+            if pos == three_b:
+                three_b_peak = val
+                break
+            
+        for pos, val in close_to_3end:
+            if pos == three_e:
+                three_e_peak = val
+                break
 
         
+        #compute heterogenity
+        het_5b_values = [abs(pos-five_b)*val for (pos,val) in close_to_5begin]
+        het_5b_sum = sum(het_5b_values) + 1
+        het_5b = het_5b_sum / (sum_peaks_5b+1) if sum_peaks_5b else -1
+        
+        het_5e_values =  [abs(pos-five_e)*val for (pos,val) in close_to_5end]
+        het_5e_sum = sum(het_5e_values) + 1
+        het_5e = het_5e_sum / (sum_peaks_5e+1) if sum_peaks_5e else -1
+
+        het_3b_values = [abs(pos-three_b)*val for (pos,val) in close_to_3begin]
+        het_3b_sum = sum(het_3b_values) + 1
+        het_3b = het_3b_sum / (sum_peaks_3b+1) if sum_peaks_3b else -1
+             
+        het_3e_values = [abs(pos-three_e)*val for (pos,val) in close_to_3end]
+        het_3e_sum = sum(het_3e_values) + 1
+        het_3e =  het_3e_sum / (sum_peaks_3e+1) if sum_peaks_3e else -1
+        
+
+        if five_b_peak != candidate.peak_5b or five_e_peak != candidate.peak_5e or three_b_peak != candidate.peak_3b or three_e_peak != candidate.peak_3e:
+            print
+            print five_b, five_e, three_b, three_e
+            print candidate.peak_5b, candidate.peak_5e, candidate.peak_3b, candidate.peak_3e
+            print five_b_peak, five_e_peak, three_b_peak, three_e_peak
+            print "candidate pos / peaks:", candidate.chromosome
+            print "all intervals pos + value"
+            print sorted([(s.begin-start, float(s.data[1].split("-")[1]), s.end-start ) for s in sequences])
+            print "starts - grouped"
+            print grouped_starts
+            print "ends: - grouped"
+            print grouped_ends
+            print "close to pos, heterogenity"
+            print five_b, close_to_5begin
+            print five_e, close_to_5end
+            print three_b, close_to_3begin
+            print three_e, close_to_3end
+            print "heterogenity position values"
+            print het_5b_values
+            print het_5e_values
+            print het_3b_values
+            print het_3e_values
+            print "results??"
+            print (het_5b_sum, het_5e_sum), (het_3b_sum, het_3e_sum)
+            print (sum_peaks_5b, sum_peaks_5e, sum_peaks_3b, sum_peaks_3e)
+            print (five_b_peak, five_e_peak), (three_b_peak, three_e_peak)
+            print (het_5b, het_5e), (het_3b, het_3e)
+        
+        
+        
+        candidate.set_heterogenity(het_5b, het_5e, het_3b, het_3e)
+        #candidate.set_reads(reads_5b, reads_5e, reads_3b, reads_3e)
+
+
+    #assert False
+        
+
+'''     
         peak_size = end - start + offset + offset + 1
         begins = [0] * peak_size
         ends = [0] * peak_size
@@ -108,13 +174,13 @@ def heterogenity(candidates, offset=5):
      
             h_5p_begin = begins[offset] / (reads_5b + 1.0)
             
-            if begins[offset] != max(s):
-                print 
-                print candidate.candidate_type, "five start"
-                print (five_begin, start), "- -"
-                print begins[offset], max(s), candidate.peak_5b, s
-                print begins
-                print
+#             if begins[offset] != max(s):
+            print 
+            print candidate.candidate_type, "five start"
+            print (five_begin - start), "- -"
+            print begins[offset], max(s), candidate.peak_5b
+            print s
+            print "het:", h_5p_begin
 #             assert begins[offset] == max(s)
     
     
@@ -133,13 +199,13 @@ def heterogenity(candidates, offset=5):
             h_5p_end = ends[startpos+offset] / (reads_5e + 1.0)
             
 
-            if ends[startpos+offset] != max(s):
-                print
-                print candidate.candidate_type, "five end"
-                print (five_begin, start), five_end, "- -"
-                print ends[startpos+offset], max(s), candidate.peak_5e, s
-                print ends
-                print
+#             if ends[startpos+offset] != max(s):
+            print
+            print candidate.candidate_type, "five end"
+            print (five_begin - start), five_end, "- -"
+            print ends[startpos+offset], max(s), candidate.peak_5e
+            print s
+            print "het:", h_5p_end
 #             assert ends[startpos+offset] == max(s)
 
 
@@ -156,47 +222,43 @@ def heterogenity(candidates, offset=5):
                 reads_3b += count
     
             h_3p_begin = begins[startpos+offset] / (reads_3b + 1.0)
-            
-            if begins[startpos+offset] != max(s):
-                print
-                print candidate.candidate_type, "three start"
-                print "- -", (three_begin, start), (three_end, end)
-                print begins[startpos+offset], max(s), candidate.peak_3b, s
-                print begins
-                print    
-#             assert begins[startpos+offset] == max(s)
-            
-            # three end
+
+            #if begins[startpos+offset] != max(s):
+            print
+            print candidate.candidate_type, "three start"
+            print "- -", (three_begin - start), (three_end, end)
+            print begins[startpos+offset], max(s), candidate.peak_3b
+            print s
+            print "het:", h_3p_begin
+            assert begins[startpos+offset] == max(s)
+
+            #three end
             het = 0
             reads_3e = 0
             s = ends[-(2*offset + 1):] # feil...
-            
+
             for i, count in enumerate(s):
                 off = abs(offset - i)
                 het += off * count
                 reads_3e += count
-            
-            h_3p_end = ends[-offset-1] / (reads_3e + 1)
-            
-            if ends[-offset-1] != max(s):
-                print
-                print candidate.candidate_type, "three end"
-                print "- -", (three_end, end) 
-                print ends[-offset-1], max(s), candidate.peak_3e, s
-                print ends
-                print    
-#             assert ends[-offset-1] == max(s)
 
+            h_3p_end = ends[-offset-1] / (reads_3e + 1)
+
+            #if ends[-offset-1] != max(s):
+            print
+            print candidate.candidate_type, "three end"
+            print "- -", (three_end - end)
+            print ends[-offset-1], max(s), candidate.peak_3e
+            print s
+            print "het:", h_3p_end
+            assert ends[-offset-1] == max(s)
+'''
         
 #         print h_5p_begin, h_5p_end, h_3p_begin, h_3p_end
 #         print reads_5b, reads_5e, reads_3b, reads_3e
 #         print
         
-        candidate.set_heterogenity(h_5p_begin, h_5p_end, h_3p_begin, h_3p_end)
-        candidate.set_reads(reads_5b, reads_5e, reads_3b, reads_3e)
 
-
-    assert False
 
 def _old_heterogenity(candidates, offset=5):
     
@@ -403,7 +465,7 @@ test = [(-1, 5.56952055662), (0, 0.45652146621), (0, 0.45652146621), (0, 0.68478
         (57, 1.38083847274), (57, 28.1446549798), (58, 5.75901049227)]
 
 
-
+print 1 / 0 if 0 else 123
 
 # print list(itertools.groupby(test, lambda x: x[0]))
 

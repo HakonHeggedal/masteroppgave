@@ -119,7 +119,7 @@ def _add_mature_pos(miRNAid, miRNA_dict, hairpin_dict, startpos, endpos, is_5p, 
 def combine_hairpin_mature(id_to_hairpin, id_to_mature):
     ''' combines hairpins with corresponding mature seqs into miRNA structs 
         hairpin identifiers and mature seq identifiers do not map directly
-        returns {hairpinID: [5p,3p]}
+        returns {hairpinID: [5p,3p]}, harpinID_to_mature, harpinID_to_matseqs
     '''
     
     harpinID_to_mature = {}
