@@ -28,15 +28,11 @@ before2 = len(hsa_to_mature)
 special_types.remove_mirTrons(hsa_to_hairpin, other_types)
 special_types.remove_mirTrons(hsa_to_mature, other_types)
 
-# print 12334567
-# print len(hsa_to_hairpin), before
-# print len(hsa_to_mature), before2
+
 
 assert before != len(hsa_to_hairpin)
 assert before2 != len(hsa_to_mature)
 
-# print miRNA_high_conf
-# print miRNA_high_conf.issubset(hsa_to_hairpin.keys())
 
 
  
@@ -47,20 +43,7 @@ harpinID_to_mature, harpinID_to_matseqs = mirbase.combine_hairpin_mature(hsa_to_
 print len(set(harpinID_to_matseqs) )
 print len(set(harpinID_to_matseqs) - miRNA_high_conf)
 print len(miRNA_high_conf)
-# print harpinID_to_matseqs
-print
-# print hairpinID_to_mature
-# assert False
 
-# calculate length distribution.
-
-
-# for k,v in hsa_to_hairpin.iteritems():
-#     print k,len(v)
-# 
-# for k,v in hsa_to_mature.iteritems():
-#     print k,len(v)
-#     
 
 matures = [0] * 30
 hairpins = [0] * 200
@@ -79,20 +62,67 @@ hairpins = numpy.array(hairpins)
 mature_hc = [0] * 30
 mature_lc = [0] * 30
 
-hcs = 0
 
+#   mature seqs
 for mirnaID, seq_set in harpinID_to_matseqs.iteritems():
 
     if mirnaID in miRNA_high_conf:
         for seq in seq_set:
             mature_hc[len(seq)] += 1
-            hcs += 1
+
     else:
         for seq in seq_set:
             mature_lc[len(seq)] += 1
-print "woot?"
-print hcs 
-print len(miRNA_high_conf)
+            
+            
+
+hp_hc = [0] * 161
+hp_lc = [0] * 161
+print
+
+#     if mirnaID in miRNA_high_conf:            
+for mirnaID, seq_set in harpinID_to_matseqs.iteritems():
+    hairpin =  harpinID_to_mature[mirnaID]
+    hairpin =  hsa_to_hairpin[mirnaID]
+        
+#     best_start = 1000
+#     best_end = 0
+    if len(seq_set) >= 2:
+        
+        best_start = min(map(lambda x: hairpin.find(x), seq_set))
+        best_end = max(map(lambda x: hairpin.find(x)+len(x), seq_set))
+    
+    else:
+        continue
+        
+        
+#         for seq in seq_set:
+#             assert seq in hairpin
+#             
+#             start = hairpin.find(seq)
+#             end = start + len(seq)
+#             
+#             best_start = start if start < best_start else best_start
+#             best_end = end if end > best_end else best_end
+
+    hp_len = best_end - best_start 
+    print "got full hp", hp_len, best_start, best_end, len(hairpin), mirnaID
+    print "\t", seq_set, hairpin
+    if hp_len > 33:
+        if mirnaID in miRNA_high_conf:
+            hp_hc[hp_len] += 1
+        else:
+            hp_lc[hp_len] += 1
+            
+#         assert 0
+#         for seq in seq_set:
+#             mature_hc[len(seq)] += 1
+
+#     else:
+#         for seq in seq_set:
+#             mature_lc[len(seq)] += 1
+    
+
 
 
 # print [x for x in enumerate(matures)]
@@ -147,32 +177,57 @@ print len(miRNA_high_conf)
 
 
 
+# 
+# positions_all_mat = [float(x)-0.3 for x in range(len(matures))]
+# positions_hc = [float(x)-0.0 for x in range(len(mature_hc))]
+# positions_lc = [float(x)-0.3 for x in range(len(mature_lc))]
+# 
+# 
+# 
+# # pyplot.bar(derp,  matures, width=0.6, color="red")
+# pyplot.bar(positions_lc,  mature_lc, width=0.3, color="green")
+# pyplot.bar(positions_hc,  mature_hc, width=0.3, color="red")
+# pyplot.title("Length distribution for miRNA mature sequences")
+# pyplot.xlabel("length")
+# pyplot.ylabel("frequency")
+# pyplot.grid(True)
+# pyplot.minorticks_on()
+# # pyplot.axis([16,28,0,1200])
+# # pyplot.xticks(range(16,28))
+# pyplot.locator_params(axis='x', nbins=20)
+# # pyplot.yscale('symlog', nonposy='clip', basey=2)
+# pyplot.savefig("mirna_mature_distr.pdf")
+# pyplot.savefig("mirna_mature_distr.png")
+# pyplot.show()
+# pyplot.close()
 
 
-derp = range(len(matures))
-derp = [float(x)-0.3 for x in derp]
-
-positions_hc = [float(x)-0.0 for x in range(len(mature_hc))]
-positions_lc = [float(x)-0.3 for x in range(len(mature_lc))]
 
 
-print matures
-print derp
+
+print max(hp_hc)
+print max(hp_lc)
+
+# positions_all_mat = [float(x)-0.3 for x in range(len(matures))]
+pos_hc = [float(x)-0.3 for x in range(len(hp_hc))]
+pos_lc = [float(x)-0.3 for x in range(len(hp_lc))]
+
+
 
 # pyplot.bar(derp,  matures, width=0.6, color="red")
-pyplot.bar(positions_lc,  mature_lc, width=0.3, color="green")
-pyplot.bar(positions_hc,  mature_hc, width=0.3, color="red")
-pyplot.title("Length distribution for miRNA mature sequences")
+# pyplot.bar(pos_lc,  hp_lc, width=0.1, color="green")
+pyplot.bar(pos_hc,  hp_hc, width=0.6, color="red")
+pyplot.title("Length distribution for miRNA hairpins")
 pyplot.xlabel("length")
 pyplot.ylabel("frequency")
 pyplot.grid(True)
 pyplot.minorticks_on()
 # pyplot.axis([16,28,0,1200])
 # pyplot.xticks(range(16,28))
-pyplot.locator_params(axis='x', nbins=20)
-pyplot.yscale('symlog', nonposy='clip', basey=2)
-pyplot.savefig("mirna_mature_distr.pdf")
-pyplot.savefig("mirna_mature_distr.png")
+# pyplot.locator_params(axis='x', nbins=20)
+# pyplot.yscale('symlog', nonposy='clip', basey=2)
+pyplot.savefig("mirna_hairpin_distr.pdf")
+pyplot.savefig("mirna_hairpin_distr.png")
 pyplot.show()
 
 

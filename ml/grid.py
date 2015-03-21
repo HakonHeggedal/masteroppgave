@@ -6,15 +6,18 @@ Created on 19. feb. 2015
 
 
 
-
-
 # used by pool.map
 def one_grid(param):
     
     import itertools
     from sklearn import svm
-    
+#     print param
     (all_data, all_annotations,test_fold_nr) = param
+    
+    print "some fold"
+    print len(all_data)
+    print len(all_annotations)
+    print test_fold_nr
     
     c_values = [10.0 ** i for i in xrange(-3,4)]
     gamma_values = [10.0 ** i for i in xrange(-3,4)]
@@ -23,7 +26,12 @@ def one_grid(param):
     test = all_data[test_fold_nr]
     test_annotations = all_annotations[test_fold_nr]
     
-    train_lists = all_data[:test_fold_nr] + all_data[test_fold_nr+1:]
+    p1 = list(all_data[:test_fold_nr])
+    p2 = list(all_data[test_fold_nr+1:])
+            
+    train_lists = p1 + p2
+    
+    
     train_annotations_lists = all_annotations[:test_fold_nr] + all_annotations[test_fold_nr+1:]
     
     train = list(itertools.chain.from_iterable(train_lists))

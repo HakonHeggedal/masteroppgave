@@ -86,22 +86,22 @@ def best_interval(intervals, offset, max_end=100): #TODO: max limit to ends, i.e
     derp = [(i.begin-offset, i.end-offset) for i in intervals]
     
 #     if abs(start_max_val - 0.45652146621) < 0.01 and abs(end_max_val - 0.45652146621) < 0.01:
-    
-    if abs( end_max_val - ev) > 0.1:
-        print
-        print intervals[0].data
-        print "all"
-        print derp
-        print "starts:"
-    #     print start_positions
-        print grouped_starts
-        print "ends:"
-        print grouped_ends
-#         print "all ends:"
-#         print _a_e
-        print (start_pos, start_max_val), (end_pos, end_max_val)
-        print (s, sv), (e, ev)
-        print end_range, end_range_pos, end_test
+#  testing stuff here
+#     if abs( end_max_val - ev) > 0.1:
+#         print
+#         print intervals[0].data
+#         print "all"
+#         print derp
+#         print "starts:"
+#     #     print start_positions
+#         print grouped_starts
+#         print "ends:"
+#         print grouped_ends
+# #         print "all ends:"
+# #         print _a_e
+#         print (start_pos, start_max_val), (end_pos, end_max_val)
+#         print (s, sv), (e, ev)
+#         print end_range, end_range_pos, end_test
     
     assert start_pos == s
 #     assert start_max_val - 0.001 < sv

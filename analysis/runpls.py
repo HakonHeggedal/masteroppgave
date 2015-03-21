@@ -55,6 +55,9 @@ from multiprocessing import Pool
 
 
 from matplotlib import pyplot
+import copy
+from ml.grid import one_grid
+import pickle
 
 def _align_bowtie(bowtie_output_file, collapsed_seq_file):
     from subprocess import check_output
@@ -188,7 +191,7 @@ def main():
     
 
     
-    assert False
+#     assert False
     
     print "\nhigh confidence set:",len(miRNA_high_conf),
     print miRNA_high_conf.issubset(miRNA_species.keys())
@@ -348,21 +351,21 @@ def main():
                       miRNA_high_conf, "bulge_factor" )
     
        
-    FEATURES = ["hairpin_energy", "hairpin_energy_10", "hairpin_energy_40",
-                "entropy_nucleotides", "entropy_structure", "heterogenity_5_begin",
-                "heterogenity_5_end", "heterogenity_3_begin", "heterogenity_3_end",
-                "quality", "bindings_max_10", "overhang_level_outer_10",
-                "overhang_outer_10", "overhang_level_inner_10", "overhang_inner_10",
-                "bulge_factor", "small_subs", "small_subs_5p", "small_subs_3p"]
-    
-    
-    log_scaled = [False]*16 + [True]*3
-    print log_scaled
-    for feat_name, logs in zip(FEATURES, log_scaled):
-     
-        plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead,
-                      miRNA_high_conf, feat_name, logs )
-        
+#     FEATURES = ["hairpin_energy", "hairpin_energy_10", "hairpin_energy_40",
+#                 "entropy_nucleotides", "entropy_structure", "heterogenity_5_begin",
+#                 "heterogenity_5_end", "heterogenity_3_begin", "heterogenity_3_end",
+#                 "quality", "bindings_max_10", "overhang_level_outer_10",
+#                 "overhang_outer_10", "overhang_level_inner_10", "overhang_inner_10",
+#                 "bulge_factor", "small_subs", "small_subs_5p", "small_subs_3p"]
+#     
+#     
+#     log_scaled = [False]*16 + [True]*3
+#     print log_scaled
+#     for feat_name, logs in zip(FEATURES, log_scaled):
+#      
+#         plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead,
+#                       miRNA_high_conf, feat_name, logs )
+#         
     
     print
     print "finished features in ", time.clock() - start_time, " seconds"
@@ -415,147 +418,94 @@ def main():
     
     
     
-    test = annotated_data[0]
-    test_annotations = annotations[0]
-
-    train = list(itertools.chain.from_iterable(annotated_data[1:]))
-    train_annotations = list(itertools.chain.from_iterable(annotations[1:]))
-
-    train = vectorize.candidates_to_array(train)
-    test = vectorize.candidates_to_array(test)
+#     test = annotated_data[0]
+#     test_annotations = annotations[0]
+# 
+#     train = list(itertools.chain.from_iterable(annotated_data[1:]))
+#     train_annotations = list(itertools.chain.from_iterable(annotations[1:]))
+# 
+#     train = vectorize.candidates_to_array(train)
+#     test = vectorize.candidates_to_array(test)
+#     
+#     test = preprocessing.scale(test)
+#     train = preprocessing.scale(train)
+# 
+#     # parameter selection:
+#     
+#     learner = svm.SVC(probability=True, cache_size=500)
+#     learner.fit(train, train_annotations)
+#     
+#     
+#     # roc plot 123
+#     probs = learner.predict_proba(test)
+#     print "probabilities", probs
+#     fpr, tpr, _thresholds = metrics.roc_curve(test_annotations, probs[:,1])
+#     
+#     roc_auc = metrics.auc(fpr, tpr)
+#     print "area under curve:", roc_auc
+#     
+#     pyplot.plot(fpr, tpr)
+#     pyplot.show()
+#     
+#     base_score = learner.score(test, test_annotations)
+#     print "base score: ", base_score
     
-#     for l in test:
-#         print l
-        
-
-    
-    test = preprocessing.scale(test)
-    train = preprocessing.scale(train)
-
-    # parameter selection:
-    
-    learner = svm.SVC(probability=True, cache_size=500)
-    learner.fit(train, train_annotations)
-    
-    
-    # roc plot 123
-    probs = learner.predict_proba(test)
-    print 123, probs
-    fpr, tpr, thresholds = metrics.roc_curve(test_annotations, probs[:,1])
-    
-    roc_auc = metrics.auc(fpr, tpr)
-    print "area under curve:", roc_auc
-    
-    pyplot.plot(fpr, tpr)
-    pyplot.show()
-    
-    base_score = learner.score(test, test_annotations)
-    print "base score: ", base_score
-    
-    assert False
+#     assert False
     # roc plot 234
     
-
     
-#     features = len(train[0])
-#      
-#     scores = [0]*features
-#      
-#     for i in xrange(features):
-#          
-#         train_removed = numpy.delete(train,i, 1)
-#         test_removed = numpy.delete(test,i, 1)
-#          
-#         learner = svm.SVC(probability=True, cache_size=500) 
-#         learner.fit(train_removed, train_annotations)
-#         removed_score = learner.score(test_removed, test_annotations)
-#         scores[i] = base_score - removed_score
-#          
-#     print "each feature removed:"
-#     print scores
-#      
-#     for score, name in sorted(zip(scores, feature_names)):
-#         print  score,"\t", name
-
-
-
-        
-
-#     print train[0]
-#     print
-#     train = numpy.delete(train,0, 1)
-#     print train[0]
-
-#     scaler = preprocessing.StandardScaler().fit(test)
     
-#     test = preprocessing.normalize(test) #shit
-#     train = preprocessing.normalize(train)
+#   svm parameter estimation
+
+
+
+#     test_annotations = annotations[0] # 0 or 1
+#     
+#     test = annotated_data[0]
+#     test = vectorize.candidates_to_array(test)
+#     test = preprocessing.scale(test)
+
+    pickle.dump(annotations, open("save_an.p", "wb"))
+    pickle.dump(annotated_data, open("save_da.p", "wb"))
     
-#     # flatten lists (for easy testing purposes only)
-#     annotated_data = list(itertools.chain.from_iterable(annotated_data))
-#     annotations = list(itertools.chain.from_iterable(annotations))
-#     test_data_candidates = list(itertools.chain.from_iterable(unknown_data))
+    print "saved 123"
+    annotations = pickle.load( open("save_an.p", "rb"))
+    annotated_data = pickle.load( open("save_da.p", "rb"))
+    
+    print "and loaded back for test"
+    
+    print "maybe saved all now"
+    
+#     train_annotations = annotations[1:]
+#     
+#     train = annotated_data[1:]
+#     train = map(vectorize.candidates_to_array, train)
+#     train = map(preprocessing.scale, train)
+#     
+#     
+#     folds = range(len(train))
+#     
+#     copy_train = [numpy.copy(train) for _ in folds]
+#     copy_train_anno = [copy.deepcopy(train_annotations) for _ in folds]
+#     
+#     
+#     
+#     threads = len(train)
+#     pool = Pool(threads)
 # 
-#     # create vectors
-#     annotated_data = vectorize.candidates_to_array(annotated_data)
-#     annotations = numpy.array(annotations)
-#     unknown_data = vectorize.candidates_to_array(test_data_candidates)
-#     
-#     # scale data -1, 1
-#     annotated_data = preprocessing.scale(annotated_data)
-#     unknown_data = preprocessing.scale(unknown_data)
-#     
-#     
-#     learner = svm.SVR(probability=True, cache_size=1000)
-# #     classer = svm.SVC(probability=True, cache_size=1000)
-#     print "fit"
-#     learner.fit(annotated_data, annotations)
-# #     classer.fit(annotated_data, annotations)
-# 
-#     print "learn"
-#     res = learner.predict(unknown_data)
-# #     cls = learner.predict(unknown_data)
+#     zipzap = zip(copy_train, copy_train_anno, folds)
+#     print len(zipzap)
+#     res = [map(one_grid, zipzap)]
 #     
 #     print res
-#     print max(res)
-#     print sum(res)
-#     print len(res)
-#     
-    
-    
-#     for val, c in sorted(zip(res, test_data_candidates), reverse=True):
-#         hashval = c.chromosome + c.chromosome_direction + str(c.pos_5p_begin)
-#         print val, "  \t", c.hairpin_energy_10, candidate_to_miRNA[hashval]
 
-
-#     assert False
-#     for mi, nr in zip(learn_miRNAs, class_miRNAs):
-#         print mi, nr
-    
-    
-#     print "mirnas",len(learn_miRNAs)
-#     print "mirna species", len(class_miRNAs)
-#     print "candidates", len(candidate_array)
-#     
-    
-#     learner = svm.SVC(probability=True, cache_size=1000)
-#     print "fit"
-#     learner.fit(learn_miRNAs, class_miRNAs)
-#     print "learn"
-#     res = learner.predict(candidate_array)
-#     
-#     print max(res)
-#     print res
-# 
-# 
-#     with open("profit.txt", "w") as outfile:
-#         for r in res:
-#             outfile.write(str(r) + "\n")
         
-
+    
 # if __name__ == "__main__":
 #     main()
 main()
 # print "finished everything in ", time.clock() - start_time, " seconds"
+
+
 
 
