@@ -12,7 +12,7 @@ from candidates.interval_tree_misc import best_interval, filter_intervals
 
 
 
-MAX_CANDIDATE_LEN = 180
+MAX_CANDIDATE_LEN = 100
 # MIN_CANDIDATE_LEN = 41
 MIN_HAIRPIN_LOOP = 10
 MAX_HAIRPIN_LOOP = 20

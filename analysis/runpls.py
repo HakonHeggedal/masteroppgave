@@ -112,9 +112,9 @@ def main():
     
     fasta_files.extend(fasta2)
     
-#     fasta2.extend(fasta3)
-#     fasta2.extend(fasta4)
-#     fasta2.extend(fasta5)
+    fasta2.extend(fasta3)
+    fasta2.extend(fasta4)
+    fasta2.extend(fasta5)
     fasta_files = fasta2
 #     
 #     fasta_files = ["SRR797059.collapsed", "SRR797060.collapsed", "SRR797061.collapsed",
@@ -347,8 +347,8 @@ def main():
     
 #     plotting all features
 
-    plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead,
-                      miRNA_high_conf, "bulge_factor" )
+#     plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead,
+#                       miRNA_high_conf, "bulge_factor" )
     
        
 #     FEATURES = ["hairpin_energy", "hairpin_energy_10", "hairpin_energy_40",
@@ -465,8 +465,16 @@ def main():
 #     test = vectorize.candidates_to_array(test)
 #     test = preprocessing.scale(test)
 
+
+    vector_data = map(vectorize.candidates_to_array, annotated_data)
+    scaled_data = map(preprocessing.scale, vector_data)
+    
+    pickle.dump(scaled_data, open("save_scaled_data.p", "wb"))
+    
     pickle.dump(annotations, open("save_an.p", "wb"))
     pickle.dump(annotated_data, open("save_da.p", "wb"))
+    
+    
     
     print "saved 123"
     annotations = pickle.load( open("save_an.p", "rb"))

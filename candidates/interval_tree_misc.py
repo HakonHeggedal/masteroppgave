@@ -81,9 +81,9 @@ def best_interval(intervals, offset, max_end=100): #TODO: max limit to ends, i.e
     
     
     
-    s, sv, e, ev = _old_best_interval(intervals, offset)
+#     s, sv, e, ev = _old_best_interval(intervals, offset)
     
-    derp = [(i.begin-offset, i.end-offset) for i in intervals]
+#     derp = [(i.begin-offset, i.end-offset) for i in intervals]
     
 #     if abs(start_max_val - 0.45652146621) < 0.01 and abs(end_max_val - 0.45652146621) < 0.01:
 #  testing stuff here
@@ -103,7 +103,7 @@ def best_interval(intervals, offset, max_end=100): #TODO: max limit to ends, i.e
 #         print (s, sv), (e, ev)
 #         print end_range, end_range_pos, end_test
     
-    assert start_pos == s
+#     assert start_pos == s
 #     assert start_max_val - 0.001 < sv
 #     assert sv < start_max_val + 0.001
     
