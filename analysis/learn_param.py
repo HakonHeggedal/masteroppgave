@@ -17,11 +17,38 @@ import math
 from sklearn import svm
 import itertools
 
+
+
+
+
+
+def filter_miRNAs(data, annotations):
+    ''' return only miRNAs and their annotations (1s) '''
+    data = [c for c,a in zip(data, annotations) if a ]
+    annotations = [1] * len(data)
+    return data, annotations
+
+def filter_candidates(data, annotations):
+    ''' returns only canididates, and their annotations (0s) '''
+    not_candidate = annotations.index(1)
+    
+    data = data[:not_candidate]
+    annotations = annotations[:not_candidate]
+    return data, annotations
+
+def filter_dead(data, annotations):
+    ''' returns only dead miRNAs, and their annotations (0s)'''
+    not_candidate = annotations.index(1)
+    not_miRNA = annotations.index(0, not_candidate)
+    
+    data = data[not_miRNA:]
+    annotations = annotations[not_miRNA:]
+    return data, annotations
+
 # from ml import vectorize
 # from sklearn import preprocessing
 # import math
 start_time = time.clock()
-
 
 
 print "starting"
@@ -43,11 +70,15 @@ copy_train = [numpy.copy(train) for _ in folds]
 copy_train_anno = [copy.deepcopy(train_annotations) for _ in folds]
 
 
+filters = [filter_miRNAs for _ in folds]
+# filters = [filter_candidates for _ in folds]
+# filters = [filter_dead for _ in folds]
+# filters = [None for _ in folds]
+
 threads = len(train)
 pool = Pool(threads)
 
-zipzap = zip(copy_train, copy_train_anno, folds)
-
+zipzap = zip(copy_train, copy_train_anno, folds, filters)
 
 "ready to run the folds", time.clock() - start_time
 
@@ -58,8 +89,8 @@ res = pool.map(one_grid, zipzap)
 
 best_scores, best_cs, best_gammas, results = zip(*res)
 
-#  average of log values, then scaled back
 def log_avg(l): 
+    '''   average of log values, then scaled back '''
     log_list = (math.log(x, 2.0) for x in l)
     log_val = sum(log_list) / len(l)
     avg_val = 2.0 ** log_val 
@@ -94,22 +125,21 @@ c_values = [4.0 ** i for i in xrange(-3,4)]
 
 gamma_name = "_gamma_" + str(gamma_values[0]) + "-" + str(gamma_values[-1])
 c_name = "C_" + str(c_values[0]) + "-" + str(c_values[-1])
-plot_name = "plot/Grid_avg_" + c_name + gamma_name +".png"
+f_name = "" if not filters[0] else filters[0].__name__
+plot_name = "plot/Grid_avg_" + f_name + c_name + gamma_name + ".png"
 
 
 row_labels = gamma_values
 column_labels = c_values
 
+
+#  create 
 fig, ax = plot.subplots()
 heatmap = ax.pcolor(array_res)
  
 # put the major ticks at the middle of each cell
 ax.set_xticks(numpy.arange(array_res.shape[0])+0.5, minor=False)
 ax.set_yticks(numpy.arange(array_res.shape[1])+0.5, minor=False)
- 
-# want a more natural, table-like display
-# ax.invert_yaxis()
-# ax.xaxis.tick_top()
  
 ax.set_xticklabels(row_labels, minor=False,  rotation="vertical")
 ax.set_yticklabels(column_labels, minor=False)
@@ -126,14 +156,47 @@ train = list(itertools.chain.from_iterable(train))
 train_annotations = list(itertools.chain.from_iterable(train_annotations))
 
 
-test = data[0]
-test_annotations = annotations[0]
+
+#===============================================================================
+#  first candidates, then HC mirnas, then dead miRNA: 
+#  annotations is like [000000111111111000]
+#===============================================================================
+print "\n final testing"
+test_all = data[0]
+test_all_annotations = annotations[0]
+
+test_miRNA = [c for c,a in zip(test_all, test_all_annotations) if a ]
+test_miRNA_annotations = [1] * len(test_miRNA)
+
+
+first_miRNA = test_all_annotations.index(1)
+test_candidates = test_all[:first_miRNA]
+test_candidates_annotations = test_all_annotations[:first_miRNA]
+
+first_dead = test_all_annotations.index(0,first_miRNA)
+test_dead = test_all[first_dead:]
+test_dead_annotations = test_all_annotations[first_dead:]
+
+
+
+print first_miRNA, first_dead, len(test_all_annotations)
+print len(test_candidates), len(test_miRNA), len(test_dead)
+print len(test_candidates) + len(test_miRNA) + len(test_dead)
 
 learner = svm.SVC(C=best_c,gamma=best_gamma, cache_size=500, probability=True)
 learner.fit(train, train_annotations)
-score = learner.score(test, test_annotations)
 
-print "final score", score
+score_all = learner.score(test_all, test_all_annotations)
+score_miRNA = learner.score(test_miRNA, test_miRNA_annotations)
+score_candidates = learner.score(test_candidates, test_candidates_annotations)
+score_dead = learner.score(test_dead, test_dead_annotations)
+
+print "final scores:"
+print "\t total score:\t\t", score_all
+print "\t HC miRNA score:\t", score_miRNA
+print "\t candidate score:\t", score_candidates
+print "\t dead score:\t\t", score_dead
+
 
 
 

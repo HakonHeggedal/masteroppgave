@@ -6,6 +6,7 @@ Created on 19. feb. 2015
 import numpy
 
 
+
 def compute_stem_start(candidates, mirna, hc_mirna):
     
     for c in candidates:
@@ -13,7 +14,8 @@ def compute_stem_start(candidates, mirna, hc_mirna):
         hashval = c.chromosome + c.chromosome_direction + str(c.pos_5p_begin)
         if hashval in mirna:
             mi = mirna[hashval]
-            if mi not in hc_mirna: continue
+            if mi not in hc_mirna:
+                continue
         else:
             continue
         

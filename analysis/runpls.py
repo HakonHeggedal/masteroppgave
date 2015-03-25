@@ -1,5 +1,3 @@
-# import os
-# from bowtie import bowtie_get
 
 import time
 from inputs import special_types
@@ -33,19 +31,6 @@ from candidates import quality
 from candidates import structure
 from candidates import overhang
 
-# from misc import energy, plot_tailing
-# from misc import plot_read_quality
-# from misc import plot_entropy_dna
-# from misc import plot_entropy_struct
-# from misc import plot_inner_level
-# from misc import plot_overhang_outer
-# from misc import plot_overhang_inner
-# from misc import plot_max_bindings
-# from misc import h_5_b
-# from misc import h_5_e
-# from misc import h_3_b
-# from misc import h_3_e
-# from misc import plot_reads
 from misc import plot_any
 
 from ml import vectorize, param_estimate
@@ -55,8 +40,7 @@ from multiprocessing import Pool
 
 
 from matplotlib import pyplot
-import copy
-from ml.grid import one_grid
+
 import pickle
 
 def _align_bowtie(bowtie_output_file, collapsed_seq_file):
@@ -79,43 +63,35 @@ def main():
     start_time = time.clock()
     print "starting miRNA analysis"
     
-    fasta2 = ["Demux.SRhi10002.Adipocyte", "Demux.SRhi10002.Alveolar", "Demux.SRhi10002.Amniotic",
-             "Demux.SRhi10002.Dendritic1", "Demux.SRhi10002.Dendritic2", "Demux.SRhi10002.Endothelial",
-             "Demux.SRhi10002.Fibroblast1", "Demux.SRhi10002.Fibroblast2", "Demux.SRhi10002.Fibroblast3",
-             "Demux.SRhi10002.Intestinal", "Demux.SRhi10002.Meningeal", "Demux.SRhi10002.Mesenchymal",
-             "Demux.SRhi10002.Osteoblast", "Demux.SRhi10002.Pericytes", "Demux.SRhi10002.Renal",
-             "Demux.SRhi10002.Sebocyte1", "Demux.SRhi10002.Sebocyte2", "Demux.SRhi10002.SmoothBrachiocephalic",
-             "Demux.SRhi10002.SmoothProstate", "Demux.SRhi10002.SmoothSubclavian", "Demux.SRhi10002.SmoothUterine"]
-    
-    fasta3 = ["Demux.SRhi10003.Adipocyte", "Demux.SRhi10003.Amniotic%20Epithelial", "Demux.SRhi10003.amniotic%20membrane",
-              "Demux.SRhi10003.Endothelial0", "Demux.SRhi10003.Endothelial1", "Demux.SRhi10003.Endothelial2",
-              "Demux.SRhi10003.Fibroblast1", "Demux.SRhi10003.Fibroblast2", "Demux.SRhi10003.Fibroblast3",
-              "Demux.SRhi10003.Keratinocyte", "Demux.SRhi10003.Mesenchymaladipose", "Demux.SRhi10003.Mesenchymalbone",
-              "Demux.SRhi10003.Osteoblast", "Demux.SRhi10003.Pancreatic", "Demux.SRhi10003.Peripheral",
-              "Demux.SRhi10003.Prostate", "Demux.SRhi10003.Renal", "Demux.SRhi10003.Sertoli",
-              "Demux.SRhi10003.Skeletal", "Demux.SRhi10003.SmoothBrain", "Demux.SRhi10003.SmoothPulmonary",
-              "Demux.SRhi10003.SmoothUmbilical"]
-    
-    fasta2 = ["hg19/"+n for n in fasta2]
-    fasta3 = ["hg19/"+n for n in fasta3]
+#     fasta2 = ["Demux.SRhi10002.Adipocyte", "Demux.SRhi10002.Alveolar", "Demux.SRhi10002.Amniotic",
+#              "Demux.SRhi10002.Dendritic1", "Demux.SRhi10002.Dendritic2", "Demux.SRhi10002.Endothelial",
+#              "Demux.SRhi10002.Fibroblast1", "Demux.SRhi10002.Fibroblast2", "Demux.SRhi10002.Fibroblast3",
+#              "Demux.SRhi10002.Intestinal", "Demux.SRhi10002.Meningeal", "Demux.SRhi10002.Mesenchymal",
+#              "Demux.SRhi10002.Osteoblast", "Demux.SRhi10002.Pericytes", "Demux.SRhi10002.Renal",
+#              "Demux.SRhi10002.Sebocyte1", "Demux.SRhi10002.Sebocyte2", "Demux.SRhi10002.SmoothBrachiocephalic",
+#              "Demux.SRhi10002.SmoothProstate", "Demux.SRhi10002.SmoothSubclavian", "Demux.SRhi10002.SmoothUterine"]
+#     
+#     fasta3 = ["Demux.SRhi10003.Adipocyte", "Demux.SRhi10003.Amniotic%20Epithelial", "Demux.SRhi10003.amniotic%20membrane",
+#               "Demux.SRhi10003.Endothelial0", "Demux.SRhi10003.Endothelial1", "Demux.SRhi10003.Endothelial2",
+#               "Demux.SRhi10003.Fibroblast1", "Demux.SRhi10003.Fibroblast2", "Demux.SRhi10003.Fibroblast3",
+#               "Demux.SRhi10003.Keratinocyte", "Demux.SRhi10003.Mesenchymaladipose", "Demux.SRhi10003.Mesenchymalbone",
+#               "Demux.SRhi10003.Osteoblast", "Demux.SRhi10003.Pancreatic", "Demux.SRhi10003.Peripheral",
+#               "Demux.SRhi10003.Prostate", "Demux.SRhi10003.Renal", "Demux.SRhi10003.Sertoli",
+#               "Demux.SRhi10003.Skeletal", "Demux.SRhi10003.SmoothBrain", "Demux.SRhi10003.SmoothPulmonary",
+#               "Demux.SRhi10003.SmoothUmbilical"]
+#     
+#     fasta2 = ["hg19/"+n for n in fasta2]
+#     fasta3 = ["hg19/"+n for n in fasta3]
+# 
+#     fasta4 = ["hg19/Demux.SRhi10004."+str(i) for i in range(1,23)]
+#     fasta5 = ["hg19/Demux.SRhi10005."+str(i) for i in range(1,24)]
+#     fasta_files.extend(fasta2)
+#     
+#     fasta2.extend(fasta3)
+#     fasta2.extend(fasta4)
+#     fasta2.extend(fasta5)
 
-    fasta4 = ["hg19/Demux.SRhi10004."+str(i) for i in range(1,23)]
-    fasta5 = ["hg19/Demux.SRhi10005."+str(i) for i in range(1,24)]
 
-
-    fasta_files = ["SRR797059.collapsed", "SRR797060.collapsed", "SRR797061.collapsed",
-                    "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed",
-                    "SRR207110.collapsed", "SRR207111.collapsed", "SRR207112.collapsed",
-                    "SRR207113.collapsed", "SRR207114.collapsed", "SRR207115.collapsed",
-                    "SRR207116.collapsed", "SRR207117.collapsed", "SRR207118.collapsed",
-                    "SRR207119.collapsed"]
-    
-    fasta_files.extend(fasta2)
-    
-    fasta2.extend(fasta3)
-    fasta2.extend(fasta4)
-    fasta2.extend(fasta5)
-    fasta_files = fasta2
 #     
 #     fasta_files = ["SRR797059.collapsed", "SRR797060.collapsed", "SRR797061.collapsed",
 #                     "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed",
@@ -125,9 +101,23 @@ def main():
 #                     "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed"]
 #     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed", "SRR207111.collapsed"]
 #     fasta_files = ["SRR797060.collapsed", "SRR797061.collapsed"]
-#     fasta_files = ["SRR797062.collapsed"]
+
 #     fasta_files =  ["SRR207110.collapsed", "SRR207111.collapsed", "SRR207112.collapsed"] 
 #     fasta_file = "SRR797062.fa"
+
+    fasta_files = ["SRR797062.collapsed"] #  small file for fast testing
+    fasta_files_large_folder = ["fastas/Demux.SRhi." + str(i) + ".collapsed"  for i in range(296)]
+    
+
+    fasta_files_small = ["SRR797059.collapsed", "SRR797060.collapsed", "SRR797061.collapsed",
+                    "SRR797062.collapsed", "SRR797063.collapsed", "SRR797064.collapsed",
+                    "SRR207110.collapsed", "SRR207111.collapsed", "SRR207112.collapsed",
+                    "SRR207113.collapsed", "SRR207114.collapsed", "SRR207115.collapsed",
+                    "SRR207116.collapsed", "SRR207117.collapsed", "SRR207118.collapsed",
+                    "SRR207119.collapsed"]
+    
+
+    fasta_files = fasta_files_large_folder
 
     hairpin_file = "hairpin.fa"
     mature_seq_file = "mature.fa"
@@ -147,7 +137,6 @@ def main():
     bowtie_output = "bowtie_out.map"
     
     miRNA_bowtie_output = "miRNA.map"
-    
     ml_folds = 10
     
 
@@ -279,13 +268,13 @@ def main():
     
     print len(candidates)
     
-    candidates = [c for c in candidates if c.hairpin_energy_10 < -10.0] #TODO: and not miRNA !!!
+#     candidates = [c for c in candidates if c.hairpin_energy_10 < -10.0] #TODO: and not miRNA !!!
     
     print len(candidates)
-#     assert False
+    assert False
 
 
-#     stem.compute_stem_start(candidates, candidate_to_miRNA, miRNA_high_conf)
+    stem.compute_stem_start(candidates, candidate_to_miRNA, miRNA_high_conf)
     #stats out here:
 #     plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead, miRNA_high_conf, "hairpin_energy_10")
 #     assert False
@@ -318,27 +307,19 @@ def main():
     tailing.tailing_au(candidates, not_mapped_reads)
 #     plot_tailing.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
     
-#     candidates = [c for c in candidates if ]
+
     overhang.get_alignment(candidates)
-#     assert False
-#     plot_max_bindings.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
-#     plot_overhang_inner.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
-#     plot_overhang_outer.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
-#     plot_inner_level.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
+
 
 #     degree of entropy in structure and nucleotides
     entropy.entropy(candidates)
     
-#     plot_entropy_dna.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
-#     plot_entropy_struct.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
+
     
 #      
 #     heterogenity (position counting)
     heterogenity.heterogenity(candidates)
-#     h_5_b.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
-#     h_5_e.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
-#     h_3_b.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
-#     h_3_e.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
+
 #      
 #     candidate quality: nr of sequence hits / all candidate hits for given sequences
     quality.candidate_quality(candidates, seq_to_candidates)
@@ -455,22 +436,13 @@ def main():
     
     
     
-#   svm parameter estimation
 
-
-
-#     test_annotations = annotations[0] # 0 or 1
-#     
-#     test = annotated_data[0]
-#     test = vectorize.candidates_to_array(test)
-#     test = preprocessing.scale(test)
-
-
+#     miRNA_indexes = 
+    
     vector_data = map(vectorize.candidates_to_array, annotated_data)
     scaled_data = map(preprocessing.scale, vector_data)
     
     pickle.dump(scaled_data, open("save_scaled_data.p", "wb"))
-    
     pickle.dump(annotations, open("save_an.p", "wb"))
     pickle.dump(annotated_data, open("save_da.p", "wb"))
     
@@ -478,34 +450,10 @@ def main():
     
     print "saved 123"
     annotations = pickle.load( open("save_an.p", "rb"))
+    scaled123 = pickle.load( open("save_scaled_data.p", "rb"))
     annotated_data = pickle.load( open("save_da.p", "rb"))
     
-    print "and loaded back for test"
-    
-    print "maybe saved all now"
-    
-#     train_annotations = annotations[1:]
-#     
-#     train = annotated_data[1:]
-#     train = map(vectorize.candidates_to_array, train)
-#     train = map(preprocessing.scale, train)
-#     
-#     
-#     folds = range(len(train))
-#     
-#     copy_train = [numpy.copy(train) for _ in folds]
-#     copy_train_anno = [copy.deepcopy(train_annotations) for _ in folds]
-#     
-#     
-#     
-#     threads = len(train)
-#     pool = Pool(threads)
-# 
-#     zipzap = zip(copy_train, copy_train_anno, folds)
-#     print len(zipzap)
-#     res = [map(one_grid, zipzap)]
-#     
-#     print res
+    print "and loaded back for testing", len(scaled123)
 
         
     

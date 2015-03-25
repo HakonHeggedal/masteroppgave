@@ -10,7 +10,7 @@ def one_grid(param):
     import itertools
     from sklearn import svm
 #     print param
-    (all_data, all_annotations,test_fold_nr) = param
+    (all_data, all_annotations, test_fold_nr, filter_test) = param
 
     
     gamma_values = [4.0 ** i for i in xrange(-4,3)]
@@ -19,6 +19,9 @@ def one_grid(param):
     
     test = all_data[test_fold_nr]
     test_annotations = all_annotations[test_fold_nr]
+    
+    if filter_test:
+        test, test_annotations = filter_test(test, test_annotations)
     
 #     print "fold", test_fold_nr
 #     print len(c_values), c_values, gamma_values

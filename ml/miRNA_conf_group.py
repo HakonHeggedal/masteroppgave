@@ -90,10 +90,10 @@ def create_folds(candidates, mirna_dict, dead_dict, high_conf, mirna_groups, fol
     # combine hc-candidates + candidates + dead, and create annotations
     for hc_list, c_list, d_list in zip(hc_mirna_lists, candidate_lists, dead_lists):
         
-        training_list = hc_list + c_list + d_list
+        training_list = c_list + hc_list + d_list
         training_data.append(training_list)
         
-        annotation = [1]*len(hc_list) + [0]*len(c_list) + [0]*len(d_list)
+        annotation = [0]*len(c_list) + [1]*len(hc_list) + [0]*len(d_list)
         annotations.append(annotation)
 #         print len(training_list), len(annotation), len(hc_list), sum(annotation)
     
