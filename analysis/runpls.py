@@ -21,7 +21,7 @@ from genes import gene
 from inputs import dead_mirna
 
 from candidates import interval_tree_search, interval_tree_miRNA,\
-    interval_tree_dead
+    interval_tree_dead, hairpin
 from candidates import stem
 from candidates import heterogenity
 from candidates import vienna
@@ -117,7 +117,7 @@ def main():
                     "SRR207119.collapsed"]
     
 
-    fasta_files = fasta_files_large_folder
+#     fasta_files = fasta_files_large_folder
 
     hairpin_file = "hairpin.fa"
     mature_seq_file = "mature.fa"
@@ -265,6 +265,10 @@ def main():
 
     print "\nrunning viennafold"
     vienna.energy_fold2(candidates)
+    
+    
+    
+    hairpin.hairpin_stats(candidates, candidate_to_miRNA, miRNA_high_conf)
     
     print len(candidates)
     

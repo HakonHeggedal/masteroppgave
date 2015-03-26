@@ -140,9 +140,12 @@ def _read_bitpair_probs(filename):
             line.strip()
             line = line.split()
             if(len(line) == 4 and line[3] == "ubox"):
-                bit1 = int(line[0])
-                bit2 = int(line[1])
+                bit1 = int(line[0]) - 1 # 1 indexed for some stupid reason
+                bit2 = int(line[1]) - 1
                 score = float(line[2])
+                
+                assert bit1 >= 0
+                assert bit2 >= 0
                 
                 if bit1 not in bitpair_score: bitpair_score[bit1] = {}
                 if bit2 not in bitpair_score: bitpair_score[bit2] = {}
