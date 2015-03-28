@@ -19,13 +19,18 @@ def hairpin_stats(candidates, mirna, hc_mirna):
         end_3p = candidate.pos_3p_end - candidate.hairpin_start + 40
         
         print fold
-        
+        if not (candidate.has_5p or candidate.has_3p):
+            print begin_5p, end_5p, begin_3p, end_3p
         assert candidate.has_5p or candidate.has_3p
         
         if candidate.has_5p:
             assert candidate.pos_5p_begin != -1
             assert candidate.pos_5p_end != -1
+            print fold[begin_5p:end_5p]
             offset_5pb = _align_distance(begin_5p,entropy_dict)
+            if offset_5pb == -1000:
+                print "no hairpin5p,", candidate.miRNAid, candidate.miRNAid in hc_mirna
+                continue
             est_3pe = begin_5p + offset_5pb
 
             offset_5pe = _align_distance(end_5p,entropy_dict)
@@ -34,7 +39,11 @@ def hairpin_stats(candidates, mirna, hc_mirna):
         if candidate.has_3p:
             assert candidate.pos_3p_begin != -1
             assert candidate.pos_3p_end != -1
+            print fold[begin_3p:end_3p]
             offset_3pb = _align_distance(begin_3p,entropy_dict)
+            if offset_5pb == -1000:
+                print "no hairpin3p,", candidate.miRNAid, candidate.miRNAid in hc_mirna
+                continue
             est_5pe = begin_3p + offset_3pb
      
             offset_3pe = _align_distance(end_3p,entropy_dict)
@@ -71,7 +80,7 @@ def hairpin_stats(candidates, mirna, hc_mirna):
         print folds_before, folds_before_in, folds_before_out
         print folds_after, folds_after_in, folds_after_out
         print loop_size
-        print "----------------"
+        print "----------------",
         
     assert 0
 
@@ -81,7 +90,9 @@ def _match_pos(pos, entropy_dict):
     if pos in entropy_dict:
 
         v = list(entropy_dict[pos].values())
-        if max(v) < 0.1: return -1
+        if max(v) < 0.1:
+            print "\t", pos, max(entropy_dict[pos]), entropy_dict[pos]
+            return -1
         p = list(entropy_dict[pos].keys())
         m = p[v.index(max(v))]
         
@@ -103,7 +114,7 @@ def _align_distance(position, entropy_dict, seachlen=5):
     print
     print position
     print area
-    print entropy_dict
+#     print entropy_dict
 
     
     match_area = [_match_pos(x, entropy_dict) for x in area]
@@ -112,7 +123,8 @@ def _align_distance(position, entropy_dict, seachlen=5):
     match_offset = [ p + m - position*2 for p,m in zip(area, match_area) if m != -1]
     print "\toffset", match_offset
     
-    assert len(match_offset)
+    if not len(match_offset):
+        return -1000
     
     counts = [ (match_offset.count(p), p)  for p in set(match_offset)]
     
