@@ -35,6 +35,16 @@ class Candidate:
         self.peak_5e = -1
         self.peak_3b = -1
         self.peak_3e = -1
+        self.has_5p = not (begin_5p == end_5p == -1)
+        self.has_3p = not (begin_3p == end_3p == -1)
+        
+        self.loop_size = -1
+        self.folds_5p = -1
+        self.folds_3p = -1
+        self.folds_before = -1
+        self.folds_after = -1
+        
+        
         
         if mapped_sequences is not None:
             self.mapped_sequences = set(mapped_sequences)

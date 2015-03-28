@@ -270,8 +270,6 @@ def main():
     
     hairpin.hairpin_stats(candidates, candidate_to_miRNA, miRNA_high_conf)
     
-    print len(candidates)
-    
 #     candidates = [c for c in candidates if c.hairpin_energy_10 < -10.0] #TODO: and not miRNA !!!
     
     print len(candidates)

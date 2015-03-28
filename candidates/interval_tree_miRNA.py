@@ -268,15 +268,6 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, hpID_to_mseqs, candidate_tree,
         
         candidate_to_miRNAid[hashval] = miRNAid
     
-     
-    
-#     print "nr of miRNA bowtie hits:\t", len(mirna_hits)
-#     print "unique miRNAs (after bowtie):\t", len(unique_mirnas)
-#     print "miRNA aligns with candidate:\t", candidate_already
-#     print "Unique mirna aligning with candidate:\t", len(miRNA_with_candidates), len(miRNA_with_candidates) * 1.0 / len(unique_mirnas)
-#     print
-#     print "set of candidates with 1+ seq aligning:", len(set(candidate_to_miRNAid.iterkeys())), len(list(candidate_to_miRNAid.iterkeys()))
-
     has_seqs = set(has_seqs)
     
     hc_len = len( miRNA_high_conf)
@@ -294,5 +285,7 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, hpID_to_mseqs, candidate_tree,
 #     print "no sequences aligning at all:\t",  len(noseq_set)
 #     print "no seqs vs high confidence:\t", len(noseq_set.intersection(miRNA_high_conf) ), len(miRNA_high_conf)
     
-#     assert False
     return candidate_to_miRNAid
+
+
+

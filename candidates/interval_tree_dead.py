@@ -3,7 +3,6 @@ Created on 24. feb. 2015
 
 @author: hakon
 '''
-import interval_tree_search
 import structure
 from candidates.interval_tree_misc import reverse_compliment
 from candidates import interval_tree_misc
@@ -43,11 +42,6 @@ def align_dead_miRNAs(mirna_hits, _,  id_to_mature, candidate_tree, candidate_li
         begin_3p = -1
         end_3p = -1
         
-#         begin_5p =  genome_offset
-#         end_5p = genome_offset
-#         begin_3p = genome_offset
-#         end_3p = genome_offset
-        
 #         print
 #         print miRNAid, begin_5p, begin_5p + len(hairpin)
         
@@ -61,7 +55,6 @@ def align_dead_miRNAs(mirna_hits, _,  id_to_mature, candidate_tree, candidate_li
 #             print "\t", mature_seq in hairpin
 #             print "\t", mature_seq
 #             print "\t", hairpin
-            
 
             begin_mature = hairpin.find(mature_seq)
             end_mature = begin_mature + len(mature_seq)
@@ -110,7 +103,6 @@ def align_dead_miRNAs(mirna_hits, _,  id_to_mature, candidate_tree, candidate_li
 #                     candidate.candidate_type = structure.TYPE_DEAD
                     
                     candidated.add(miRNAid)
-#                     print "-- candidate"
                     break
     
         else:
@@ -118,7 +110,7 @@ def align_dead_miRNAs(mirna_hits, _,  id_to_mature, candidate_tree, candidate_li
         
         is_both_matures = begin_5p != -1 and end_5p != -1 and begin_3p != -1 and end_3p != -1
         
-        if (not is_candidate) and (not is_both_matures):
+        if (not is_candidate) and (not is_both_matures): # has minimum one mature seq
         
             tree = sequence_tree[chromosome]
             
@@ -151,13 +143,10 @@ def align_dead_miRNAs(mirna_hits, _,  id_to_mature, candidate_tree, candidate_li
 #                         begin_3p = end_5p
                 else:
                     # peak is 3p
-#                     print "->"
                     begin_3p = genome_offset + best_start_pos
                     end_3p = genome_offset + best_end_pos
 #                     if begin_3p < end_5p:
 #                         end_5p = begin_3p
-            
-
             
         
             candidate = structure.Candidate(chromosome,
@@ -201,11 +190,7 @@ def align_dead_miRNAs(mirna_hits, _,  id_to_mature, candidate_tree, candidate_li
 #             if candidate.pos_5p_end >= candidate.pos_3p_begin + 10:
 #                 print candidate.pos_5p_end, candidate.pos_3p_begin
 #                 assert candidate.pos_5p_end < candidate.pos_3p_begin + 10
-                
-    
-#             if end_3p - begin_5p > 200:
-#                 print "\t200+ length", begin_5p, end_5p, begin_3p, end_3p
-#                 assert False
+
             
     #         assert candidate.pos_5p_begin < candidate.pos_5p_end <= candidate.pos_3p_begin < candidate.pos_3p_end
             
@@ -227,61 +212,4 @@ def align_dead_miRNAs(mirna_hits, _,  id_to_mature, candidate_tree, candidate_li
 #     assert False
     return candidate_to_dead
 
-#  a = "AAGCT"
-# print _reverse_compliment(a)
-# def yes():
-#     while True:
-#         yield "yes"
-#          
-# def p(x): print x
-# 
-# 
-# map(p, yes())
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#             print begin_5p, end_5p, begin_3p, end_3p
-            
-#             if begin_5p == end_5p == begin_3p == end_3p:
-#                 # using random values as mature length
-#                 random_len = 20 if len(hairpin) > 40 else len(hairpin) / 2
-#                 
-#                 end_5p += random_len
-#                 begin_3p += len(hairpin) - random_len
-#                 end_3p += len(hairpin)
-#             
-#             elif begin_5p == end_5p:
-#                 
-#                 mature_len = end_3p - begin_3p
-#                 mature_len = mature_len if 30 < mature_len > 10 else 20
-#                 
-#                 end_5p += mature_len            
-# 
-#             elif begin_3p == end_3p:
-#                 
-#                 mature_len = end_5p - begin_5p
-#                 mature_len = mature_len if 30 < mature_len > 10 else 20
-#                 
-#                 begin_3p += len(hairpin) - mature_len 
-#                 end_3p += len(hairpin)
-                
-            
-#             print begin_5p, end_5p, begin_3p, end_3p
