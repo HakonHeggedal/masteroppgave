@@ -38,6 +38,11 @@ class Candidate:
         self.has_5p = not (begin_5p == end_5p == -1)
         self.has_3p = not (begin_3p == end_3p == -1)
         
+        self.has_hairpin_struct = False
+        self.has_hairpin_struct_5p = False
+        self.has_hairpin_struct_3p = False
+
+        
         self.loop_size = -1
         self.folds_5p = -1
         self.folds_3p = -1

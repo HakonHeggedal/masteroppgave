@@ -108,10 +108,18 @@ def align_dead_miRNAs(mirna_hits, _,  id_to_mature, candidate_tree, candidate_li
         else:
             print "no", tree
         
-        is_both_matures = begin_5p != -1 and end_5p != -1 and begin_3p != -1 and end_3p != -1
+        has_both_matures = begin_5p != -1 and end_5p != -1 and begin_3p != -1 and end_3p != -1
+        assert not has_both_matures
         
-        if (not is_candidate) and (not is_both_matures): # has minimum one mature seq
+        has_3p = begin_3p != -1 and end_3p != -1
+        has_5p = begin_5p != -1 and end_5p != -1
         
+        if not is_candidate: # and (has_5p or has_3p) ????  
+            
+            
+#             assert begin_5p != -1 or begin_3p != -1
+#             assert end_5p != -1 or end_3p != -1
+            
             tree = sequence_tree[chromosome]
             
             if not tree:

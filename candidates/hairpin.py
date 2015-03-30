@@ -20,14 +20,25 @@ def hairpin_stats(candidates, mirna, hc_mirna):
         
         print fold
         if not (candidate.has_5p or candidate.has_3p):
+            print candidate.pos_5p_begin, candidate.pos_5p_end,
+            print candidate.pos_3p_begin, candidate.pos_3p_end
+            print candidate.hairpin_start, candidate.hairpin_end
+            print candidate.mapped_sequences
+            print candidate.candidate_type, candidate.miRNAid, candidate.miRNAid in hc_mirna
             print begin_5p, end_5p, begin_3p, end_3p
-        assert candidate.has_5p or candidate.has_3p
+            
+        
+        if not candidate.has_5p and not candidate.has_3p:
+            # no mature seqs -> not possible to find hairpin
+            continue
         
         if candidate.has_5p:
             assert candidate.pos_5p_begin != -1
             assert candidate.pos_5p_end != -1
             print fold[begin_5p:end_5p]
+            
             offset_5pb = _align_distance(begin_5p,entropy_dict)
+            
             if offset_5pb == -1000:
                 print "no hairpin5p,", candidate.miRNAid, candidate.miRNAid in hc_mirna
                 continue
@@ -36,18 +47,49 @@ def hairpin_stats(candidates, mirna, hc_mirna):
             offset_5pe = _align_distance(end_5p,entropy_dict)
             est_3pb = end_5p + offset_5pe
             
+            
+            # is the estimated 3p seq of same length as the 5p seq ? 
+            if offset_5pb != -1000 or offset_5pe != -1000:
+                if est_3pe > est_3pb > end_5p:
+                    mature_len = end_5p - begin_5p
+                    est_len = est_3pe - est_3pb
+                    
+                    if abs(mature_len - est_len) < 10:
+                        candidate.has_hairpin_struct_5p = True
+                    
+                    
+            
+            
         if candidate.has_3p:
             assert candidate.pos_3p_begin != -1
             assert candidate.pos_3p_end != -1
             print fold[begin_3p:end_3p]
+            
+            
             offset_3pb = _align_distance(begin_3p,entropy_dict)
+            est_5pe = begin_3p + offset_3pb
+            
             if offset_5pb == -1000:
                 print "no hairpin3p,", candidate.miRNAid, candidate.miRNAid in hc_mirna
                 continue
-            est_5pe = begin_3p + offset_3pb
      
             offset_3pe = _align_distance(end_3p,entropy_dict)
             est_5pb = end_3p + offset_3pe
+            
+            
+            if offset_3pb != -1000 and offset_3pe != -1000:
+                if est_5pb < est_5pe < begin_3p:
+                    mature_len = end_3p - begin_3p
+                    est_len = est_5pe - est_5pb
+                    
+                    if abs(mature_len - est_len) < 10:
+                        candidate.has_hairpin_struct_3p = True
+
+
+        if candidate.has_5p and candidate.has_3p:
+            # TODO: overhang
+            # TODO: 
+            pass
             
         
         b5 = begin_5p if candidate.has_5p else est_5pb
@@ -81,6 +123,7 @@ def hairpin_stats(candidates, mirna, hc_mirna):
         print folds_after, folds_after_in, folds_after_out
         print loop_size
         print "----------------",
+        assert 0
         
     assert 0
 
@@ -91,13 +134,13 @@ def _match_pos(pos, entropy_dict):
 
         v = list(entropy_dict[pos].values())
         if max(v) < 0.1:
-            print "\t", pos, max(entropy_dict[pos]), entropy_dict[pos]
+#             print "\t", pos, max(entropy_dict[pos]), entropy_dict[pos]
             return -1
         p = list(entropy_dict[pos].keys())
         m = p[v.index(max(v))]
         
         
-        print "\t", pos, m, entropy_dict[pos]
+#         print "\t", pos, m, entropy_dict[pos]
         return m
     
     return -1
@@ -140,7 +183,6 @@ def _align_distance(position, entropy_dict, seachlen=5):
 
 
 def _folds(fold, outer, inner):
-    
     
     if inner > outer: # 5p part
         fold_sign = "("
