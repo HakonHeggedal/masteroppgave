@@ -35,14 +35,18 @@ class Candidate:
         self.peak_5e = -1
         self.peak_3b = -1
         self.peak_3e = -1
+        
+        self.has_overhang = False
         self.has_5p = not (begin_5p == end_5p == -1)
         self.has_3p = not (begin_3p == end_3p == -1)
-        
         self.has_hairpin_struct = False
         self.has_hairpin_struct_5p = False
         self.has_hairpin_struct_3p = False
 
-        
+        self.overhang_inner = 0
+        self.overhang_outer = 0
+        self.overhang_inner_conf = 0.0
+        self.overhang_outer_conf = 0.0
         self.loop_size = -1
         self.folds_5p = -1
         self.folds_3p = -1
