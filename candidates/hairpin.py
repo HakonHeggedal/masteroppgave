@@ -4,8 +4,8 @@ Created on 25. mar. 2015
 @author: hakon
 '''
 
-search_outside = 2
-search_inside = 5
+search_outside = 0
+search_inside = 4
 
 def hairpin_stats(candidates, mirna, hc_mirna):
     
@@ -19,11 +19,12 @@ def hairpin_stats(candidates, mirna, hc_mirna):
         begin_3p = candidate.pos_3p_begin - candidate.hairpin_start + 40
         end_3p = candidate.pos_3p_end - candidate.hairpin_start + 40
         
+        print "\n-----------------------"
         print fold
         
         if not candidate.has_5p and not candidate.has_3p:
             # no mature seqs -> not possible to find hairpin
-            print candidate.pos_5p_begin, candidate.pos_5p_end,
+            print candidate.pos_5p_begin, candidate.pos_5p_end
             print candidate.pos_3p_begin, candidate.pos_3p_end
             print candidate.hairpin_start, candidate.hairpin_end
             print candidate.mapped_sequences
@@ -35,7 +36,7 @@ def hairpin_stats(candidates, mirna, hc_mirna):
             assert candidate.pos_5p_begin != -1
             assert candidate.pos_5p_end != -1
             
-            print fold[begin_5p:end_5p]
+            print "5p fold\t",fold[begin_5p:end_5p]
             
             offset_5pb, dist_5pb = _align_distance(begin_5p, entropy_dict, search_outside, search_inside)
             est_3pe = begin_5p + offset_5pb
@@ -44,15 +45,16 @@ def hairpin_stats(candidates, mirna, hc_mirna):
             est_3pb = end_5p + offset_5pe
             
             
-            # is the estimated 3p seq of same length as the 5p seq ? 
+            # is the estimated 3p seq of apx. same length as the 5p seq ? 
             if offset_5pb != -1000 or offset_5pe != -1000:
                 if est_3pe > est_3pb > end_5p:
                     mature_len = end_5p - begin_5p
                     est_len = est_3pe - est_3pb
-                    
+                    print "mature vs est", mature_len, est_len
                     if abs(mature_len - est_len) < 10:
                         candidate.has_hairpin_struct_5p = True
             else:
+                print "\t5pnot aligning mature lengths" #, mature_len, est_len
                 continue # no hairpin structure
             
             
@@ -60,7 +62,7 @@ def hairpin_stats(candidates, mirna, hc_mirna):
             assert candidate.pos_3p_begin != -1
             assert candidate.pos_3p_end != -1
             
-            print fold[begin_3p:end_3p]
+            print "3p fold\t",fold[begin_3p:end_3p]
             
             
             offset_3pb, dist_3pb = _align_distance(begin_3p, entropy_dict, search_outside, search_inside)
@@ -73,141 +75,35 @@ def hairpin_stats(candidates, mirna, hc_mirna):
                 if est_5pb < est_5pe < begin_3p:
                     mature_len = end_3p - begin_3p
                     est_len = est_5pe - est_5pb
-                    
                     if abs(mature_len - est_len) < 10:
                         candidate.has_hairpin_struct_3p = True
-            else:
+                    print "mature vs est", mature_len, est_len
+                        
+                        
+            
+            if not candidate.has_hairpin_struct_3p:
+                print "\t3p not aligning mature lengths" #, mature_len, est_len
                 continue # no hairpin struct: 
 
+        
 
-        if candidate.has_5p and candidate.has_3p:
-            print "\n overhang"
-            print candidate.pos_5p_begin
-            print sorted(candidate.mapped_sequences)
-            
-            assert candidate.has_hairpin_struct_5p == candidate.has_hairpin_struct_3p == True
-            
-            overhang_outer_5p = est_5pb - begin_5p 
-            overhang_outer_3p = est_3pe - end_3p  
-            
-            sum_outer = sum(dist_5pb.values()) + sum(dist_3pe.values())
-            print "sum prob. outer:", sum_outer
-            
-            # set outer overhang 
-            if overhang_outer_5p == overhang_outer_3p:
-                sum_pos = dist_5pb[offset_5pb] + dist_3pe[offset_3pe]
-                confidence_outer = sum_pos / sum_outer
-                
-                candidate.overhang_outer = overhang_outer_5p
-                candidate.overhang_outer_conf = confidence_outer
-                
-            else:
-                offset_diff = overhang_outer_3p - overhang_outer_5p
-                
-                # offset predicted by the 5p side
-                pos1 = dist_5pb[offset_5pb]
-
-                pos1_offset = offset_3pe + offset_diff
-                pos1_extra = dist_3pe[pos1_offset] if pos1_offset in dist_3pe else 0.0
-                
-                pos1_sum = pos1 + pos1_extra
-                
-                # offset predicted by the 3p side
-                pos2_offset = offset_5pb - offset_diff
-                pos2_extra = dist_5pb[pos2_offset] if pos2_offset in dist_5pb else 0.0
-                pos2 = dist_3pe[offset_3pe]
-                pos2_sum = pos2 + pos2_extra
-                
-                print "multiple overhang positions outer"
-                print pos1_sum, pos1, pos1_extra, pos1_offset
-                print pos2_sum, pos2, pos2_extra, pos2_offset
-                
-                # 5p or 3p fold most probable ?
-                if pos1_sum > pos2_sum:
-                    # 5p fold is most probable
-                    confidence_outer = pos1_sum / sum_outer
-                    candidate.overhang_outer = overhang_outer_5p
-                    candidate.overhang_outer_conf = confidence_outer
-                else:
-                    confidence_outer = pos2_sum / sum_outer
-                    candidate.overhang_outer = overhang_outer_3p
-                    candidate.overhang_outer_conf = confidence_outer
-            
-            print candidate.overhang_outer
-            print candidate.overhang_outer_conf
-            print
-            
-            overhang_inner_5p = est_5pe - end_5p 
-            overhang_inner_3p = est_3pb - begin_3p
-            
-            sum_inner = sum(dist_5pe.values()) + sum(dist_3pb.values())
-            print "sum prob. inner:", sum_inner
-            
-            
-            # inner overhang
-            if overhang_inner_5p == overhang_inner_3p:
-                sum_pos = dist_5pe[offset_5pe] + dist_3pb[offset_3pb]
-                confidence_inner = sum_pos / sum_inner
-                
-                candidate.overhang_inner = overhang_inner_5p
-                candidate.overhang_inner_conf = confidence_inner
-            else:
-                offset_diff = overhang_inner_3p - overhang_inner_5p
-                
-                # 5p prediction
-                pos1 = dist_5pe[offset_5pe]
-                pos1_offset = offset_3pb + offset_diff
-                pos1_extra = dist_3pb[pos1_offset] if pos1_offset in dist_3pb else 0.0
-                pos1_sum = pos1 + pos1_extra
-                
-                
-                # 3p prediction
-                pos2_offset = offset_5pb - offset_diff
-                pos2_extra = dist_5pb[pos2_offset] if pos2_offset in dist_5pb else 0.0
-                pos2 = dist_3pe[offset_3pe]
-                pos2_sum = pos2 + pos2_extra
-                
-                
-                print "multiple overhang positions inner"
-                print pos1_sum, pos1, pos1_extra, pos1_offset
-                print pos2_sum, pos2, pos2_extra, pos2_offset
-                
-                if pos1_sum > pos2_sum:
-                    confidence_inner = pos1_sum / sum_inner
-                    candidate.overhang_inner = overhang_inner_5p
-                    candidate.overhang_inner_conf = confidence_inner
-                else:
-                    confidence_inner = pos2_sum / sum_inner
-                    candidate.overhang_inner = overhang_inner_3p
-                    candidate.overhang_inner_conf = confidence_inner
-                    
-            print candidate.overhang_inner
-            print candidate.overhang_inner_conf
-            print
-            
-            print overhang_outer_5p, begin_5p, est_5pb, offset_3pe, dist_3pe[offset_3pe]
-            print overhang_outer_3p, end_3p, est_3pe, offset_5pb, dist_5pb[offset_5pb]
-            print overhang_inner_5p, end_5p, est_5pe
-            print overhang_inner_3p, begin_3p, est_3pb
-                        
-            assert overhang_outer_5p == overhang_outer_3p
-            assert overhang_inner_5p == overhang_inner_3p
-            
-            candidate.overhang_outer = overhang_outer_5p
-            candidate.overhang_inner = overhang_inner_5p
-            
+        if not candidate.has_hairpin_struct_3p and not candidate.has_hairpin_struct_5p:
+            print "no hairpin struct"
+            continue
         
         
         assert candidate.has_hairpin_struct_5p or candidate.has_hairpin_struct_3p
-        assert candidate.has_5p == candidate.has_hairpin_struct_5p
-        assert candidate.has_3p == candidate.has_hairpin_struct_3p
+#         assert candidate.has_5p == candidate.has_hairpin_struct_5p
+#         assert candidate.has_3p == candidate.has_hairpin_struct_3p
         candidate.has_hairpin_struct = True
         
         
-        b5 = begin_5p if candidate.has_5p else est_5pb
-        e5 = end_5p if candidate.has_5p else est_5pe
-        b3 = begin_3p if candidate.has_3p else est_3pb
-        e3 = end_3p if candidate.has_3p else est_3pe
+        b5 = begin_5p if candidate.has_hairpin_struct_5p else est_5pb
+        e5 = end_5p if candidate.has_hairpin_struct_5p else est_5pe
+        b3 = begin_3p if candidate.has_hairpin_struct_3p else est_3pb
+        e3 = end_3p if candidate.has_hairpin_struct_3p else est_3pe
+        
+        assert b5 < e5 <= b3 < e3
         
         folds_5p, folds_in_5p, folds_out_5p = _folds(fold, b5, e5)
         
@@ -224,24 +120,20 @@ def hairpin_stats(candidates, mirna, hc_mirna):
         candidate.folds_before = folds_before
         candidate.folds_after = folds_after
         
-        print
+        
         print "stats:"
-        print fold
-        print candidate.has_5p, candidate.has_3p
         print b5, e5, b3, e3
-        print folds_5p, folds_in_5p, folds_out_5p
-        print folds_3p, folds_in_3p, folds_out_3p
-        print folds_before, folds_before_in, folds_before_out
-        print folds_after, folds_after_in, folds_after_out
-        print loop_size
-        print "----------------"
-        print
+        print folds_before, folds_5p, loop_size, folds_3p, folds_after
+
 
         
-    assert 0
+#     assert 0
 
 
-def _match_pos(pos, entropy_dict):
+def _match_pos(pos, align_pos, entropy_dict):
+    
+    distance = abs(pos - align_pos)
+    relevance = 1.0 - (0.2 * distance)
     
     if pos in entropy_dict:
 
@@ -253,27 +145,28 @@ def _match_pos(pos, entropy_dict):
         best_match_pos = positions[scores.index(max(scores))]
         
         
-        print "\t", pos, best_match_pos, max(scores) #, entropy_dict[pos]
-        return best_match_pos, max(scores)
+        score = max(scores) * relevance
+        
+#         print "\t", pos, best_match_pos, max(scores) #, entropy_dict[pos]
+        return best_match_pos, score
     
     return -1, 0
+
+
     
 
-def _score_offset():
-    pass
-
-def _align_distance(position, entropy_dict, seach_before, search_after):
+def _align_distance(align_pos, entropy_dict, seach_before, search_after):
     
     
     # area to align against other strand
-    area = range(position-seach_before,position+search_after+1)
+    area = range(align_pos-seach_before,align_pos+search_after+1)
     
-    print
-    print position, _match_pos(position, entropy_dict)
+    
+    print align_pos, 
 
 
     # mapped positions
-    match_area = [_match_pos(x, entropy_dict) for x in area]
+    match_area = [_match_pos(pos, align_pos, entropy_dict) for pos in area]
     
     print zip(area, match_area)
     
@@ -286,7 +179,7 @@ def _align_distance(position, entropy_dict, seach_before, search_after):
         
         if mapped_pos != -1:
             
-            offset = pos + mapped_pos - position*2
+            offset = pos + mapped_pos - align_pos*2
             
             if offset in offset_scores:
                 offset_scores[offset] += mapped_val
@@ -295,33 +188,14 @@ def _align_distance(position, entropy_dict, seach_before, search_after):
             value_sum += mapped_val
     
     if not len(offset_scores):
-        return -1000
+        return -1000, None
     
     best_offset = max(offset_scores, key=offset_scores.get)
     
-    print best_offset, offset_scores[best_offset], offset_scores
+    print "\t", best_offset, offset_scores[best_offset], offset_scores
     
     return best_offset, offset_scores
-    
-    
-#     match_offset = [pos + m_pos - position*2 for pos, (m_pos, _val) in zip(area, match_area) if m_pos != -1]
-#     
-#     
-#     print "\toffset", match_offset
-#     
-#     if not len(match_offset):
-#         return -1000
-#     
-#     
-#     counts = [ (match_offset.count(pos), pos)  for pos in set(match_offset)]
-#     
-#     print counts
-# 
-#     
-#     count, best = max(counts)
-#     print count, best
-#     
-#     return best
+
 
 
 
@@ -352,17 +226,192 @@ def _folds(fold, outer, inner):
 
     
 
- 
-a = {"a":1.1, "b":-1.2, "e":-2.3, "d":1.4}
-# a = {1:1.1, 2:-1.2, 5:-2.3, 4:1.4}
- 
- 
-print max(a, key=a.get)
-print max(a)
+
+# 
+# def overhang(pos_5p, pos_3p, entropy_dict, search_before, search_after):
+#      
+#     pos_5p_area = range(pos_5p-search_before, pos_5p+search_after+1)
+#     pos_3p_area = range(pos_3p-search_after, pos_3p+search_before+1)
+#     
+#     match_5p = [_match_pos_limit(pos_5p, align_pos, limit, limit_pos, entropy_dict):]
+#     
+#     
+    
+
+# def _match_pos_limit(pos, align_pos, limit, limit_pos, entropy_dict):
+#     
+#     distance = abs(pos - align_pos)
+#     relevance = 1.0 - (0.2 * distance)
+#     
+#     def _scale(p):
+#         dist = abs(p - limit_pos)
+#         scaled = 1 - (0.2 *  dist)
+#         scaled = 0.0 if scaled < 0.0 else scaled
+#         return scaled
+#     
+#     if pos in entropy_dict:
+#         
+#         scores = [(v * _scale(k), k, v) for k,v in entropy_dict[pos] if k in limit]
+#         
+#         if not len(scores):
+#             return -1, 0
+# 
+#         score, best_match_pos, score_unscaled = max(scores)
+#         
+#         if score_unscaled < 0.1:
+# #             print "\t", pos, max(entropy_dict[pos]), entropy_dict[pos]
+#             return -1, 0
+# 
+#         
+#         
+#         score = max(scores) * relevance
+#         
+# #         print "\t", pos, best_match_pos, max(scores) #, entropy_dict[pos]
+#         return best_match_pos, score
+#     
+#     return -1, 0
 
 
 
-
-
+#         if candidate.has_5p and candidate.has_3p:
+#             #===================================================================
+#             # calculate overhang between 5p and 3p mature seqs. 
+#             # When 5p and 3p does not align with each other,
+#             #    the fold with the highest sum of binding probabilities is chosen.
+#             # 
+#             # makes an estimate for fold probability: sum(binding)/ sum(all bindings)
+#             #===================================================================
+#              
+#             print "\nOverhang"
+#             print candidate.pos_5p_begin
+#             print sorted(candidate.mapped_sequences)
+#             print 
+#              
+#             assert candidate.has_hairpin_struct_5p == candidate.has_hairpin_struct_3p == True
+#              
+#             overhang_outer_5p = est_5pb - begin_5p 
+#             overhang_outer_3p = est_3pe - end_3p  
+#              
+#             sum_outer = sum(dist_5pb.values()) + sum(dist_3pe.values())
+#             print "sum prob. outer:", sum_outer
+#              
+#             # set outer overhang 
+#             if overhang_outer_5p == overhang_outer_3p:
+#                 sum_pos = dist_5pb[offset_5pb] + dist_3pe[offset_3pe]
+#                 confidence_outer = sum_pos / sum_outer
+#                  
+#                 candidate.overhang_outer = overhang_outer_5p
+#                 candidate.overhang_outer_conf = confidence_outer
+#                  
+#             else:
+#                  
+#                 offset_diff = overhang_outer_3p - overhang_outer_5p
+#                  
+#                 # offset predicted by the 5p side
+#                 pos1 = dist_5pb[offset_5pb]
+#  
+#                 pos1_offset = offset_3pe + offset_diff
+#                 pos1_extra = dist_3pe[pos1_offset] if pos1_offset in dist_3pe else 0.0
+#                  
+#                 pos1_sum = pos1 + pos1_extra
+#                  
+#                 # offset predicted by the 3p side
+#                 pos2 = dist_3pe[offset_3pe]
+#                  
+#                 pos2_offset = offset_5pb - offset_diff
+#                 pos2_extra = dist_5pb[pos2_offset] if pos2_offset in dist_5pb else 0.0
+#                 pos2_sum = pos2 + pos2_extra
+#                  
+#                 print "multiple overhang positions outer"
+#                 print pos1_sum, pos1, pos1_extra, pos1_offset, overhang_outer_5p
+#                 print pos2_sum, pos2, pos2_extra, pos2_offset, overhang_outer_3p
+#                  
+#                 # 5p or 3p fold most probable ?
+#                 if pos1_sum > pos2_sum:
+#                     # 5p fold is most probable
+#                     print "\t5p outer"
+#                     confidence_outer = pos1_sum / sum_outer
+#                     candidate.overhang_outer = overhang_outer_5p
+#                     candidate.overhang_outer_conf = confidence_outer
+#                 else:
+#                     print "\t3p outer"
+#                     confidence_outer = pos2_sum / sum_outer
+#                     candidate.overhang_outer = overhang_outer_3p
+#                     candidate.overhang_outer_conf = confidence_outer
+#              
+#                 print "outer overhang", candidate.overhang_outer
+#                 print  "confidence", candidate.overhang_outer_conf
+#                 print
+#                 assert 0
+#              
+#             overhang_inner_5p = est_5pe - end_5p 
+#             overhang_inner_3p = est_3pb - begin_3p
+#              
+#             sum_inner = sum(dist_5pe.values()) + sum(dist_3pb.values())
+#             print "sum prob. inner:", sum_inner
+#              
+#              
+#             # inner overhang
+#             if overhang_inner_5p == overhang_inner_3p:
+#                 sum_pos = dist_5pe[offset_5pe] + dist_3pb[offset_3pb]
+#                 confidence_inner = sum_pos / sum_inner
+#                  
+#                 candidate.overhang_inner = overhang_inner_5p
+#                 candidate.overhang_inner_conf = confidence_inner
+#             else:
+#                  
+#                 offset_diff = overhang_inner_3p - overhang_inner_5p
+#                  
+#                 # 5p prediction
+#                 pos1 = dist_5pe[offset_5pe]
+#                  
+#                 pos1_offset = offset_3pb + offset_diff
+#                 pos1_extra = dist_3pb[pos1_offset] if pos1_offset in dist_3pb else 0.0
+#                 pos1_sum = pos1 + pos1_extra
+#                  
+#                  
+#                 # 3p prediction
+#                 pos2 = dist_3pb[offset_3pb]
+#                  
+#                 pos2_offset = offset_5pe - offset_diff
+#                 pos2_extra = dist_5pe[pos2_offset] if pos2_offset in dist_5pe else 0.0
+#                 pos2_sum = pos2 + pos2_extra
+#                  
+#                  
+#                 print "multiple overhang positions inner"
+#                 print pos1_sum, pos1, pos1_extra, pos1_offset, overhang_inner_5p
+#                 print pos2_sum, pos2, pos2_extra, pos2_offset, overhang_inner_3p
+#                  
+#                 if pos1_sum > pos2_sum:
+#                     print "5p inner"
+#                     confidence_inner = pos1_sum / sum_inner
+#                     candidate.overhang_inner = overhang_inner_5p
+#                     candidate.overhang_inner_conf = confidence_inner
+#                 else:
+#                     print "3p inner"
+#                     confidence_inner = pos2_sum / sum_inner
+#                     candidate.overhang_inner = overhang_inner_3p
+#                     candidate.overhang_inner_conf = confidence_inner
+#              
+#                 print  
+#                 print "inner overhang", candidate.overhang_inner
+#                 print "confidence", candidate.overhang_inner_conf
+#                 print "5p", dist_5pe
+#                 print "3p", dist_3pb
+#                 print overhang_inner_5p, end_5p, est_5pe, offset_3pb, dist_5pe[offset_5pe]
+#                 print overhang_inner_3p, begin_3p, est_3pb, offset_5pe, dist_3pb[offset_3pb]
+#                  
+#                 print 
+#                 assert 0
+#             
+# #             print overhang_outer_5p, begin_5p, est_5pb, offset_3pe, dist_5pb[offset_5pb]
+# #             print overhang_outer_3p, end_3p, est_3pe, offset_5pb, dist_3pe[offset_3pe]
+# #             print overhang_inner_5p, end_5p, est_5pe, offset_3pb, dist_5pe[offset_5pe]
+# #             print overhang_inner_3p, begin_3p, est_3pb, offset_5pe, dist_3pb[offset_3pb]
+# #             print "\t outer",  candidate.overhang_outer
+# #             print "\t inner",  candidate.overhang_inner
+#                         
+# #             assert overhang_outer_5p == overhang_outer_3p
+# #             assert overhang_inner_5p == overhang_inner_3p
 
     
