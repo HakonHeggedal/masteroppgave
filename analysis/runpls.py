@@ -117,7 +117,8 @@ def main():
                     "SRR207119.collapsed"]
     
 
-#     fasta_files = fasta_files_large_folder
+    fasta_files = fasta_files_large_folder
+#     fasta_files = fasta_files_large_folder[:10]
 
     hairpin_file = "hairpin.fa"
     mature_seq_file = "mature.fa"
@@ -270,25 +271,66 @@ def main():
     
     hairpin.hairpin_stats(candidates, candidate_to_miRNA, miRNA_high_conf)
     
-#     candidates = [c for c in candidates if c.hairpin_energy_10 < -10.0] #TODO: and not miRNA !!!
     
-    print len(candidates)
+    def _is_miRNA(c):
+        hashval = c.chromosome+c.chromosome_direction+str(c.hairpin_start)
+        return hashval in candidate_to_miRNA
+        
+    
+    def _is_hc(c):
+        hashval = c.chromosome+c.chromosome_direction+str(c.hairpin_start)
+        if hashval in candidate_to_miRNA:
+            if candidate_to_miRNA[hashval] in miRNA_high_conf:
+                return True
+        return False
+    
+    
+    print "all candidates+miRNA+other:", len(candidates)
+    print "\twith hairpin struct:\t", len([c for c in candidates if c.has_hairpin_struct])
+    
+    _mirnas = [c for c in candidates if _is_miRNA(c)]
+#     _mirnas2 = [c for c in candidates if c.miRNAid != None]
+    _mirna_hc = [c for c in candidates if _is_hc(c)]
+    
+    
+    _not_mirnas = [c for c in candidates if not _is_miRNA(c)]
+#     _not_mirnas2 = [c for c in candidates if c.miRNAid == None]
+    
+    print "mirnas:", len(_mirnas), len(candidate_to_miRNA)
+    print "\twith hairpin struct:\t", len([m for m in _mirnas if m.has_hairpin_struct])
+    
+    print "candidates:", len(_not_mirnas)
+    print "\twith hairpin struct:\t", len([m for m in _not_mirnas if m.has_hairpin_struct])
+    
+    
+    print "HC mirnas:", len(_mirna_hc), len(miRNA_high_conf)
+    print "\twith hairpin struct:\t", len([m for m in _mirna_hc if m.has_hairpin_struct])
+    
+    
+    
+    
+    candidates = [c for c in candidates if _is_miRNA(c) or c.has_hairpin_struct]
+    print "removed candidates without hairpin struct.", len(candidates)
+    
+    
+    fail_hc = [c for c in _mirna_hc if not c.has_hairpin_struct]
+    fail_lc = [c for c in _mirnas if not c.has_hairpin_struct and not _is_hc(c)]
+    
+    hairpin.hairpin_stats(fail_hc, candidate_to_miRNA, miRNA_high_conf)
+#     hairpin.hairpin_stats(fail_lc, candidate_to_miRNA, miRNA_high_conf)
+#     hairpin.hairpin_stats(_mirnas, candidate_to_miRNA, miRNA_high_conf)
+    
     assert False
+    
+    
+    
+    
+    
 
 
     stem.compute_stem_start(candidates, candidate_to_miRNA, miRNA_high_conf)
-    #stats out here:
-#     plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead, miRNA_high_conf, "hairpin_energy_10")
-#     assert False
-#     energy.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
     
-    # create mirna groups for classification
-#     print "nr of candidates + miRNAS:", len(candidates)
 
-#     training_lists, test_lists = split_candidates(candidates, candidate_to_miRNA, miRNA_fam, ml_folds)
-    
-#     print "finished making training/testsets ", time.clock()-start_time, "seconds"                             
-#     assert False
     annotated_data, annotations, _unknown_data = create_folds(candidates, candidate_to_miRNA, candidate_to_dead, miRNA_high_conf, miRNA_fam, ml_folds)
     
 
@@ -307,7 +349,6 @@ def main():
 #     
 #     A/U ends for all remaining candidates
     tailing.tailing_au(candidates, not_mapped_reads)
-#     plot_tailing.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
     
 
     overhang.get_alignment(candidates)
@@ -325,7 +366,6 @@ def main():
 #      
 #     candidate quality: nr of sequence hits / all candidate hits for given sequences
     quality.candidate_quality(candidates, seq_to_candidates)
-#     plot_read_quality.plot(candidates, candidate_to_miRNA, miRNA_high_conf)
     
     
 #     plotting all features
@@ -351,7 +391,7 @@ def main():
 #         
     
     print
-    print "finished features in ", time.clock() - start_time, " seconds"
+    print " features finished:", time.clock() - start_time, " seconds"
 
 #     
 # 

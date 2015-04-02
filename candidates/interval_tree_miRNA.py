@@ -142,6 +142,10 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, hpID_to_mseqs, candidate_tree,
 
                 hashval = candidate.data.chromosome + strand_dir + str(candidate.data.pos_5p_begin)
                 
+                print candidate.data.hairpin_start
+                print candidate.data.pos_5p_begin
+                assert candidate.data.pos_5p_begin == candidate.data.hairpin_start
+                
                 candidate_count += 1
 
                 shift_start = abs(genome_offset - candidate.data.pos_5p_begin)
