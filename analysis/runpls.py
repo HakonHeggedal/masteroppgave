@@ -258,6 +258,7 @@ def main():
                                                              sequence_tree,
                                                              seq_to_candidates)
       
+#
 #     print len(candidate_to_dead)
 #     assert False
     def _has_sequences_outside(candidate):
