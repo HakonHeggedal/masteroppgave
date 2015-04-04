@@ -20,7 +20,10 @@ def hairpin_stats(candidates, mirna, hc_mirna):
         end_3p = candidate.pos_3p_end - candidate.hairpin_start + 40
         
         print "\n-----------------------"
+        
+        hp = begin_3p - end_5p
         print fold
+        print " "*begin_5p+fold[begin_5p:end_5p] + " "*hp+ fold[begin_3p:end_3p]
         
         if not candidate.has_5p and not candidate.has_3p:
             # no mature seqs -> not possible to find hairpin
@@ -44,18 +47,22 @@ def hairpin_stats(candidates, mirna, hc_mirna):
             offset_5pe, dist_5pe = _align_distance(end_5p, entropy_dict, search_inside, search_outside)
             est_3pb = end_5p + offset_5pe
             
+            folds_5p, folds_in_5p, folds_out_5p = _folds(fold, begin_5p, end_5p)
+            folds_before, folds_before_in, folds_before_out = _folds(fold, begin_5p-15, begin_5p)
+            
+            candidate.folds_5p = folds_5p
+            candidate.folds_before = folds_before
+            
+            
             
             # is the estimated 3p seq of apx. same length as the 5p seq ? 
             if offset_5pb != -1000 or offset_5pe != -1000:
                 if est_3pe > est_3pb > end_5p:
                     mature_len = end_5p - begin_5p
                     est_len = est_3pe - est_3pb
-                    print "mature vs est", mature_len, est_len
                     if abs(mature_len - est_len) < 10:
                         candidate.has_hairpin_struct_5p = True
-            else:
-                print "\t5pnot aligning mature lengths" #, mature_len, est_len
-                continue # no hairpin structure
+                    print "mature vs est", mature_len, est_len, abs(mature_len - est_len), candidate.has_hairpin_struct_5p
             
             
         if candidate.has_3p:
@@ -71,23 +78,27 @@ def hairpin_stats(candidates, mirna, hc_mirna):
             offset_3pe, dist_3pe = _align_distance(end_3p, entropy_dict, search_inside, search_outside)
             est_5pb = end_3p + offset_3pe
             
+            folds_3p, folds_in_3p, folds_out_3p = _folds(fold, end_3p, begin_3p)
+            folds_after, folds_after_in, folds_after_out = _folds(fold, end_3p+15, end_3p)
+            
+            candidate.folds_3p = folds_3p
+            candidate.folds_after = folds_after
+            
+            
             if offset_3pb != -1000 and offset_3pe != -1000:
                 if est_5pb < est_5pe < begin_3p:
                     mature_len = end_3p - begin_3p
                     est_len = est_5pe - est_5pb
                     if abs(mature_len - est_len) < 10:
                         candidate.has_hairpin_struct_3p = True
-                    print "mature vs est", mature_len, est_len
-                        
-                        
-            
-            if not candidate.has_hairpin_struct_3p:
-                print "\t3p not aligning mature lengths" #, mature_len, est_len
-                continue # no hairpin struct: 
 
+                    print "mature vs est", mature_len, est_len, abs(mature_len - est_len), candidate.has_hairpin_struct_3p
+                    
         
 
-        if not candidate.has_hairpin_struct_3p and not candidate.has_hairpin_struct_5p:
+        if (not candidate.has_hairpin_struct_3p) and (not candidate.has_hairpin_struct_5p):
+            assert not candidate.has_hairpin_struct_5p
+            assert not candidate.has_hairpin_struct_3p
             print "no hairpin struct"
             continue
         
@@ -97,12 +108,34 @@ def hairpin_stats(candidates, mirna, hc_mirna):
 #         assert candidate.has_3p == candidate.has_hairpin_struct_3p
         candidate.has_hairpin_struct = True
         
+        b5 = begin_5p
+        e5 = end_5p
+        b3 = begin_3p
+        e3 = end_3p
         
-        b5 = begin_5p if candidate.has_hairpin_struct_5p else est_5pb
-        e5 = end_5p if candidate.has_hairpin_struct_5p else est_5pe
-        b3 = begin_3p if candidate.has_hairpin_struct_3p else est_3pb
-        e3 = end_3p if candidate.has_hairpin_struct_3p else est_3pe
+        # choose positions for loop size based on best information
+        if not candidate.has_hairpin_struct_5p:
+            if candidate.has_hairpin_struct_3p:
+                b5 = begin_5p if abs(est_5pb - begin_5p) < 10 else est_5pb
+                e5 = end_5p if abs(est_5pe - end_5p) < 10 else est_5pe
+            else:
+                assert False, "wrong hairpin struct"
+            
+        if not candidate.has_hairpin_struct_3p:
+            if candidate.has_hairpin_struct_5p:
+                b3 = begin_3p if abs(est_3pb - begin_3p) < 10 else est_3pb
+                e3 = end_3p if abs(est_3pe - end_3p) < 10 else est_3pe
+            else:
+                assert False, "wrong hairpin struct"
+                
         
+#         b5 = begin_5p if candidate.has_hairpin_struct_5p else est_5pb
+#         e5 = end_5p if candidate.has_hairpin_struct_5p else est_5pe
+#         b3 = begin_3p if candidate.has_hairpin_struct_3p else est_3pb
+#         e3 = end_3p if candidate.has_hairpin_struct_3p else est_3pe
+        
+        print begin_5p, end_5p, begin_3p, end_3p
+        print b5, e5, b3, e3
         assert b5 < e5 <= b3 < e3
         
         folds_5p, folds_in_5p, folds_out_5p = _folds(fold, b5, e5)
@@ -126,8 +159,7 @@ def hairpin_stats(candidates, mirna, hc_mirna):
         print folds_before, folds_5p, loop_size, folds_3p, folds_after
 
 
-        
-#     assert 0
+
 
 
 def _match_pos(pos, align_pos, entropy_dict):
@@ -141,13 +173,15 @@ def _match_pos(pos, align_pos, entropy_dict):
         if max(scores) < 0.1:
 #             print "\t", pos, max(entropy_dict[pos]), entropy_dict[pos]
             return -1, 0
+        
+        best_score = max(scores)
         positions = list(entropy_dict[pos].keys())
-        best_match_pos = positions[scores.index(max(scores))]
+        best_match_pos = positions[scores.index(best_score)]
         
+
+        score = best_score * relevance
         
-        score = max(scores) * relevance
-        
-#         print "\t", pos, best_match_pos, max(scores) #, entropy_dict[pos]
+        print "\t", pos, best_match_pos, score, best_score #, entropy_dict[pos]
         return best_match_pos, score
     
     return -1, 0
@@ -413,5 +447,3 @@ def _folds(fold, outer, inner):
 #                         
 # #             assert overhang_outer_5p == overhang_outer_3p
 # #             assert overhang_inner_5p == overhang_inner_3p
-
-    

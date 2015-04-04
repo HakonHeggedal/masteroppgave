@@ -184,38 +184,16 @@ def find_candidates_2(sequence_hits):
                     assert begin_5p < end_5p < begin_3p < end_3p
                     
                     
-    #             else:
-    #                 print "???"
-    #                 print no_peak_after, no_peak_before
-    #                 print start_before, start_before_val, stop_before, stop_before_val
-    #                 print start_peak, start_peak_val, end_peak, end_peak_val
-    #                 print start_after, start_after_val, stop_after, stop_after_val
-    #                 assert False
-    #             elif start_3p_val + end_3p_val > start_5p_val + end_5p_val:
-    #                 print "best: 3p"
-    #             else:   # start_5p_val + end_5p_val > start_3p_val + end_3p_val:
-    #                 print "best: 5p"
+
     
                 strand_dir = interval.data[0]
                 chromosome = tree
                 
-    #             if end_3p - begin_5p > MAX_CANDIDATE_LEN:
-    #             print
-    #             print end_3p-begin_5p
-    #             print begin_5p-start_interval, end_5p-start_interval, begin_3p-start_interval, end_3p-start_interval,
-    #             print (start_peak, end_peak),
-    #             print start_after_limit, stop_after_limit
+
                     
                 assert end_3p - begin_5p <= MAX_CANDIDATE_LEN
                 
-#                 qwe = len(candidate_intervals) > 50
 
-#                 if  i > 1:
-#                     print "before....", i
-# #                     for c in sorted(candidate_intervals):
-# #                         print c
-#                     print begin_5p, end_3p
-#                     print len(candidate_intervals)
                 
                 # close intervals are the intervals overlapping the candidate
                 close_intervals = set()
@@ -243,6 +221,15 @@ def find_candidates_2(sequence_hits):
                                                  close_intervals)
                 
                 candidate.candidate_type = structure.TYPE_CANDIDATE
+                
+                intervals_before = sequence_tree[tree][begin_5p-30:begin_5p] if sequence_tree[tree] else []
+                intervals_after = sequence_tree[tree][end_3p:end_3p+30] if sequence_tree[tree] else []
+    
+                intervals_before = [s for s in intervals_before if s.data[0] == strand_dir]
+                intervals_after = [s for s in intervals_after if s.data[0] == strand_dir]
+                
+                candidate.set_seq_outside(intervals_before, intervals_after)
+
                 
                 candidate.peak_5b = p1
                 candidate.peak_5e = p2

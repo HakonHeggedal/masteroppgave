@@ -249,6 +249,14 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, hpID_to_mseqs, candidate_tree,
         c_type = structure.TYPE_HIGH_CONF if miRNAid in miRNA_high_conf else structure.TYPE_LOW_CONF
         candidate.set_candidate_type = c_type
         
+        intervals_before = sequence_tree[tree][begin_5p-30:begin_5p] if sequence_tree[tree] else []
+        intervals_after = sequence_tree[tree][end_3p:end_3p+30] if sequence_tree[tree] else []
+
+        intervals_before = [s for s in intervals_before if s.data[0] == strand_dir]
+        intervals_after = [s for s in intervals_after if s.data[0] == strand_dir]
+        
+        candidate.set_seq_outside(intervals_before, intervals_after)
+        
 
         for candidate_interval in sequences:
             name = candidate_interval.data[1]

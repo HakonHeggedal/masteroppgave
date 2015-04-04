@@ -54,10 +54,13 @@ class Candidate:
         self.folds_after = -1
         
         
-        
         if mapped_sequences is not None:
             self.mapped_sequences = set(mapped_sequences)
             self.all_mapped_sequences.update(mapped_sequences)
+
+    def set_seq_outside(self, sequence_before, sequence_after):
+        self.sequence_before = sequence_before
+        self.sequence_after = sequence_after
     
     def set_hairpin_padding(self, hairpin, padded_40):
         self.hairpin = hairpin

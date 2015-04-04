@@ -172,6 +172,14 @@ def align_dead_miRNAs(mirna_hits, _,  id_to_mature, candidate_tree, candidate_li
             
             candidate.hairpin = hairpin
             
+            intervals_before = sequence_tree[tree][begin_5p-30:begin_5p] if sequence_tree[tree] else []
+            intervals_after = sequence_tree[tree][end_3p:end_3p+30] if sequence_tree[tree] else []
+
+            intervals_before = [s for s in intervals_before if s.data[0] == strand_dir]
+            intervals_after = [s for s in intervals_after if s.data[0] == strand_dir]
+            
+            candidate.set_seq_outside(intervals_before, intervals_after)
+            
             assert candidate.candidate_type != structure.TYPE_HIGH_CONF
             assert candidate.candidate_type != structure.TYPE_LOW_CONF
             candidate.candidate_type = structure.TYPE_DEAD
