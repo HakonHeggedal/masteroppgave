@@ -30,6 +30,7 @@ from candidates import entropy
 from candidates import quality
 from candidates import structure
 from candidates import overhang
+from candidates import pre_hairpin
 
 from misc import plot_any
 
@@ -121,7 +122,7 @@ def main():
       
   
     fasta_files = fasta_files_large_folder
-    fasta_files = fasta_files_large_folder[:10]
+    fasta_files = fasta_files_large_folder[:100]
   
     hairpin_file = "hairpin.fa"
     mature_seq_file = "mature.fa"
@@ -261,11 +262,23 @@ def main():
 #
 #     print len(candidate_to_dead)
 #     assert False
-    def _has_sequences_outside(candidate):
-        candidate.sequence_before
-        candidate.sequence_after
-        
-    map(_has_sequences_outside, candidates)
+
+
+
+# 
+#     pre_hairpin.hairpin_cutoff_seqs(candidates)
+#     
+#     
+#     plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead, miRNA_high_conf, "stops_before_5p", False )
+#     plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead, miRNA_high_conf, "starts_after_3p", False )
+#     
+#     assert False
+#     
+#     def _has_sequences_outside(candidate):
+#         candidate.sequences_before
+#         candidate.sequences_after
+#         
+#     map(_has_sequences_outside, candidates)
       
     print "\npadding all miRNA and Candidates"
     gene.include_padding(candidates)
@@ -274,6 +287,13 @@ def main():
   
     print "\nrunning vienna rnafold"
     vienna.energy_fold2(candidates)
+    
+    
+    align_small_seqs(candidates, small_reads, small_reads_count)
+    small_seq_stats(candidates)
+    
+    plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead, miRNA_high_conf, "ratio_short_long_5p", False )
+    assert 0
       
       
     hairpin.hairpin_stats(candidates, candidate_to_miRNA, miRNA_high_conf)
@@ -315,9 +335,7 @@ def main():
     print "loaded back", time.clock() - start_time
 
 
-    align_small_seqs(candidates, small_reads, small_reads_count)
-    small_seq_stats(candidates)
-    assert 0
+
     
     
     def _is_miRNA(c):

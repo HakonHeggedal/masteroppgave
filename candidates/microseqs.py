@@ -108,17 +108,18 @@ def small_seq_stats(candidates):
             else:
                 "seq not in any mature", (start_5, end_5), (start_3, end_3)
 #                 assert 0, ((start_5, end_5), (start_3, end_3))
-            
-        for sequence, copies in c.mapped_sequences:
-            
-            copies = float(sequence.data[1].split("-")[1])
-            seq_start = sequence.begin-c.hairpin_start
-            
-            if seq_start in area_5p_long:
-                area_5p_long_sum += copies
-            elif seq_start in area_3p_long:
-                area_3p_long_sum += copies
+        
+        if c.mapped_sequences:
+            for sequence, copies in c.mapped_sequences:
                 
+                copies = float(sequence.data[1].split("-")[1])
+                seq_start = sequence.begin-c.hairpin_start
+                
+                if seq_start in area_5p_long:
+                    area_5p_long_sum += copies
+                elif seq_start in area_3p_long:
+                    area_3p_long_sum += copies
+                    
                 
         area_5p_short_sum = sum(area_5p_short.values())
         ratio_short_long_5p = area_5p_short_sum / area_5p_long_sum if area_5p_long_sum else 0.0
@@ -126,8 +127,9 @@ def small_seq_stats(candidates):
         area_3p_short_sum = sum(area_3p_short.values())
         ratio_short_long_3p = area_3p_short_sum / area_3p_long_sum if area_3p_long_sum else 0.0
         
+        c.ratio_short_long_5p = ratio_short_long_5p
+        c.ratio_short_long_3p = ratio_short_long_3p
         
-                 
     
         
     

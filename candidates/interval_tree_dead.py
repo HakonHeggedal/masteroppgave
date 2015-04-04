@@ -88,9 +88,9 @@ def align_dead_miRNAs(mirna_hits, _,  id_to_mature, candidate_tree, candidate_li
                     continue
                 
                 hashval = candidate.data.chromosome + strand_dir + str(candidate.data.pos_5p_begin)
-                print candidate.data.hairpin_start
-                print candidate.data.pos_5p_begin
-                assert candidate.data.pos_5p_begin == candidate.data.hairpin_start
+                
+                _fail_message = (candidate.data.hairpin_start, candidate.data.pos_5p_begin)
+                assert candidate.data.pos_5p_begin == candidate.data.hairpin_start, _fail_message
                 
                 shift_start = abs(genome_offset - candidate.data.pos_5p_begin)
                 shift_end = abs( (genome_offset+len(hairpin)) - candidate.data.pos_3p_end)

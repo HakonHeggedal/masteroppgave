@@ -53,14 +53,17 @@ class Candidate:
         self.folds_before = -1
         self.folds_after = -1
         
+        self.stops_before_5p = 0.0
+        self.starts_after_3p = 0.0
+        self.ratio_short_long_3p = 0.0
         
         if mapped_sequences is not None:
             self.mapped_sequences = set(mapped_sequences)
             self.all_mapped_sequences.update(mapped_sequences)
 
-    def set_seq_outside(self, sequence_before, sequence_after):
-        self.sequence_before = sequence_before
-        self.sequence_after = sequence_after
+    def set_seq_outside(self, sequences_before, sequences_after):
+        self.sequences_before = sequences_before
+        self.sequences_after = sequences_after
     
     def set_hairpin_padding(self, hairpin, padded_40):
         self.hairpin = hairpin
