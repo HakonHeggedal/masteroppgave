@@ -55,6 +55,7 @@ class Candidate:
         
         self.stops_before_5p = 0.0
         self.starts_after_3p = 0.0
+        self.ratio_short_long_5p = 0.0
         self.ratio_short_long_3p = 0.0
         
         if mapped_sequences is not None:
