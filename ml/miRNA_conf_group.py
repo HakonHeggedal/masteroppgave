@@ -17,7 +17,6 @@ def create_folds(candidates, mirna_dict, dead_dict, high_conf, mirna_groups, fol
     dead_lists = [[] for _ in xrange(folds)]
     
     mi_hq = []
-
     c_count = 0
     d_count = 0
     

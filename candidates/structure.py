@@ -55,8 +55,14 @@ class Candidate:
         
         self.stops_before_5p = 0.0
         self.starts_after_3p = 0.0
-        self.ratio_short_long_5p = 0.0
-        self.ratio_short_long_3p = 0.0
+        self.ratio_short_long_5p = 1.0
+        self.ratio_short_long_3p = 1.0
+        self.has_short_seqs_5p = False
+        self.has_short_seqs_3p = False
+        self.short_seq_5p_stdev = -1
+        self.short_seq_3p_stdev = -1
+        self.short_seq_5p_offset = -1
+        self.short_seq_3p_offset = -1
         
         if mapped_sequences is not None:
             self.mapped_sequences = set(mapped_sequences)
@@ -115,12 +121,12 @@ class Candidate:
     def set_tailing(self,tailing):
         self.tailing = tailing
     
-    def set_small_seq(self, index, copies):
-        self.small_subs += copies
-        if index == self.padding_size:
-            self.small_subs_5p += copies
-        elif index == self.padding_size + self.pos_3p_begin - self.pos_5p_begin:
-            self.small_subs_3p += copies
+#     def set_small_seq(self, index, copies):
+#         self.small_subs += copies
+#         if index == self.padding_size:
+#             self.small_subs_5p += copies
+#         elif index == self.padding_size + self.pos_3p_begin - self.pos_5p_begin:
+#             self.small_subs_3p += copies
     
     def set_bitpair_entropy(self, bitpair_dict):
         self.bitpair_entropy_dict = bitpair_dict

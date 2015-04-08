@@ -21,9 +21,9 @@ def hairpin_stats(candidates, mirna, hc_mirna):
         
         print "\n-----------------------"
         
-        hp = begin_3p - end_5p
+#         hp = begin_3p - end_5p
         print fold
-        print " "*begin_5p+fold[begin_5p:end_5p] + " "*hp+ fold[begin_3p:end_3p]
+#         print " "*begin_5p+fold[begin_5p:end_5p] + " "*hp+ fold[begin_3p:end_3p]
         
         if not candidate.has_5p and not candidate.has_3p:
             # no mature seqs -> not possible to find hairpin
@@ -38,6 +38,9 @@ def hairpin_stats(candidates, mirna, hc_mirna):
         if candidate.has_5p:
             assert candidate.pos_5p_begin != -1
             assert candidate.pos_5p_end != -1
+            
+            assert begin_5p > -5
+            assert end_5p > 0
             
             print "5p fold\t",fold[begin_5p:end_5p]
             
@@ -68,6 +71,9 @@ def hairpin_stats(candidates, mirna, hc_mirna):
         if candidate.has_3p:
             assert candidate.pos_3p_begin != -1
             assert candidate.pos_3p_end != -1
+            
+            assert end_3p > begin_3p > 0
+            
             
             print "3p fold\t",fold[begin_3p:end_3p]
             
@@ -136,6 +142,7 @@ def hairpin_stats(candidates, mirna, hc_mirna):
         
         print begin_5p, end_5p, begin_3p, end_3p
         print b5, e5, b3, e3
+        
         assert b5 < e5 <= b3 < e3
         
         folds_5p, folds_in_5p, folds_out_5p = _folds(fold, b5, e5)
@@ -195,8 +202,8 @@ def _align_distance(align_pos, entropy_dict, seach_before, search_after):
     # area to align against other strand
     area = range(align_pos-seach_before,align_pos+search_after+1)
     
-    
-    print align_pos, 
+    assert len(area) < 20, area[:20]
+    print align_pos
 
 
     # mapped positions

@@ -20,8 +20,8 @@ from genes import gene
 
 from inputs import dead_mirna
 
-from candidates import interval_tree_search, interval_tree_miRNA,\
-    interval_tree_dead, hairpin
+from candidates import interval_tree_search, interval_tree_miRNA, interval_tree_dead
+from candidates import hairpin
 from candidates import stem
 from candidates import heterogenity
 from candidates import vienna
@@ -30,12 +30,12 @@ from candidates import entropy
 from candidates import quality
 from candidates import structure
 from candidates import overhang
-from candidates import pre_hairpin
+
 
 from misc import plot_any
 
 from ml import vectorize, param_estimate
-from ml.vectorize import feature_names
+
 
 from multiprocessing import Pool
 
@@ -43,6 +43,7 @@ from multiprocessing import Pool
 from matplotlib import pyplot
 
 import pickle
+from candidates.hairpin import hairpin_stats
 
 def _align_bowtie(bowtie_output_file, collapsed_seq_file):
     from subprocess import check_output
@@ -122,7 +123,7 @@ def main():
       
   
     fasta_files = fasta_files_large_folder
-    fasta_files = fasta_files_large_folder[:40]
+#     fasta_files = fasta_files_large_folder[:40]
   
     hairpin_file = "hairpin.fa"
     mature_seq_file = "mature.fa"
@@ -144,178 +145,181 @@ def main():
     miRNA_bowtie_output = "miRNA.map"
     ml_folds = 10
       
-  
-#       
-#     id_to_dead_hp, id_to_dead_mature = dead_mirna.get_hairpin(dead_mirnas)
-# #     assert False
-#   
-#     print "merging",len(fasta_files), "collapsed files" if len(fasta_files)>1 else ""
-#       
-#     dict_collapsed = merge.collapse_collapsed(fasta_files, min_len=10, min_count=2)
-#       
-# #     split small and larger sequences
-# #     write reads to file
-#       
-#     reads, reads_count, small_reads, small_reads_count = merge.filter_seqeunces(dict_collapsed, 18)
-#     merge.write_collapsed(all_reads_file, reads, reads_count)
-#   
-#     print "long reads:", len(reads), "small:", len(small_reads), len(small_reads_count)
-#       
-#       
-# #     aligning to genome using bowtie
-#   
-#     _align_bowtie(bowtie_output, all_reads_file)
-#     print "finished bowtie in ", time.clock() - start_time, " seconds" 
-#       
-# #     read genome alignment from bowtie
-#     fixed_lines = [line.strip().split("\t") for line in open(bowtie_output)] 
-#     print "read positions in ", time.clock() - start_time, " seconds"
-#       
-#       
-#     print "loading miRNA hairpins:"
-#     hsa_to_hairpin, other_to_hairpin = mirbase.read_miRNA_fasta(hairpin_file)
-#     hsa_to_mature, other_to_mature = mirbase.read_miRNA_fasta(mature_seq_file)
-#       
-#     special_types.remove_mirTrons(hsa_to_hairpin, other_types)
-#     special_types.remove_mirTrons(hsa_to_mature, other_types)
-#     miRNA_species = mirbase.similar_hairpins(hsa_to_hairpin, other_to_hairpin)
-#       
-#     hairpinID_to_mature, harpinID_to_matseqs = mirbase.combine_hairpin_mature(hsa_to_hairpin, hsa_to_mature)
-#     miRNA_high_conf = miRNA.read_high_confidence(high_conf_file)
-#       
-#   
-#       
-# #     assert False
-#       
-#     print "\nhigh confidence set:",len(miRNA_high_conf),
-#     print miRNA_high_conf.issubset(miRNA_species.keys())
-#       
-#     print "\nreading miRNA family info (mifam)"
-#     miRNA_fam = miRNA.read_family(miRNA_family_file)
-#   
-# #     print len(set(miRNA_species.keys()) & set(miRNA_fam.keys()))
-# #     run write micro rnas to file
-#   
-#     mirbase.write_miRNA(hsa_to_hairpin, miRNA_file_name)
-#     print "\nwrote human miRNAs to file", time.clock() - start_time, " seconds"
-#       
-# #     run bowtie to find miRNA positions
-#     _align_bowtie(miRNA_bowtie_output, miRNA_file_name)
-#       
-#     print "aligned miRNAs in", time.clock() - start_time, " seconds"
-#     miRNA_bowtie_hits = [line.strip().split("\t") for line in open(miRNA_bowtie_output)] 
-#       
-#     unique_mirna_hits = set([x[0] for x in miRNA_bowtie_hits])
-#       
-#     print "miRNA bowtie hits:", len(miRNA_bowtie_hits)
-#     print "unique miRNA hits:", len(unique_mirna_hits)
-#       
-#       
-#     print "\nDead mirnas"
-#     mirbase.write_dead_mirna(id_to_dead_hp, dead_mirna_bowtie_file)
-#     _align_bowtie(dead_mirna_bowtie_out, dead_mirna_bowtie_file)
-#     dead_miRNA_hits = [line.strip().split("\t") for line in open(dead_mirna_bowtie_out)]
-#       
-#     print "TOTAL dead mirnas:", len(dead_miRNA_hits)
-#   
-#   
-# #     using sequence tree to find possible candidates
-# #     candidate_tree, sequence_tree, candidates, seq_to_candidates = interval_tree_search.find_candidates(fixed_lines)
-#     candidate_tree, sequence_tree, candidates, seq_to_candidates = interval_tree_search.find_candidates_2(fixed_lines)
-#       
-#       
-# #     assert False
-#     print "\n\tfound candidates in ", time.clock() - start_time, " seconds"
-#     print "\tbowtie hits", len(fixed_lines)
-#     print "\tcandidate tree", len(candidate_tree)
-#     print "\tcandidates", len(candidates)
-#     print "\tsequence tree", len(sequence_tree)
-#     print "\tmapped seqs", len(candidates[0].all_mapped_sequences)
-#   
-#   
-# # 0            1   2[0] [1]      [2] [3]
-# # ['1-15830', '-', 'gi|224589818|ref|NC_000006.11|',
-# #         NC_000006.11
-# #    heterogenity.heterogenity(candidates)
-# #     assert False
-#   
-#     print "\naligning miRNAs to sequences"
-#     candidate_to_miRNA = interval_tree_miRNA.align_miRNAs(miRNA_bowtie_hits,
-#                                                            hairpinID_to_mature,
-#                                                            harpinID_to_matseqs,
-#                                                            candidate_tree,
-#                                                            candidates,
-#                                                            sequence_tree,
-#                                                            seq_to_candidates,
-#                                                            miRNA_species,
-#                                                            miRNA_high_conf)
-#   
-#       
-#     candidate_to_dead = interval_tree_dead.align_dead_miRNAs(dead_miRNA_hits,
-#                                                              id_to_dead_hp,
-#                                                              id_to_dead_mature,
-#                                                              candidate_tree,
-#                                                              candidates,
-#                                                              sequence_tree,
-#                                                              seq_to_candidates)
-#       
-# #
-# #     print len(candidate_to_dead)
-# #     assert False
-# 
-# 
-# 
-# # 
-# #     pre_hairpin.hairpin_cutoff_seqs(candidates)
-# #     
-# #     
-# #     plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead, miRNA_high_conf, "stops_before_5p", False )
-# #     plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead, miRNA_high_conf, "starts_after_3p", False )
-# #     
-# #     assert False
-# #     
-# #     def _has_sequences_outside(candidate):
-# #         candidate.sequences_before
-# #         candidate.sequences_after
-# #         
-# #     map(_has_sequences_outside, candidates)
-#       
-#     print "\npadding all miRNA and Candidates"
-#     gene.include_padding(candidates)
-#     print "padded all candidates in ", time.clock() - start_time, " seconds"
-#       
-#   
-#     print "\nrunning vienna rnafold"
-#     vienna.energy_fold2(candidates)
-#     
-#     print "finished vienna folding"
-#     
-# #     align_small_seqs(candidates, small_reads, small_reads_count)
-# #     small_seq_stats(candidates)
-# #     
-# #     plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead, miRNA_high_conf, "ratio_short_long_5p", False )
-# #     assert 0
-#     
-#     print "saving 123"
-#       
-#     pickle.dump(candidates, open("candidates_pre.p", "wb"))
-#     pickle.dump(candidate_to_miRNA, open("candidate_to_miRNA.p", "wb"))
-#     pickle.dump(miRNA_high_conf, open("miRNA_high_conf.p", "wb"))
-#      
-#     print "saving 234"
-#      
-#     pickle.dump(candidate_to_dead, open("candidate_to_dead.p", "wb"))
-#     pickle.dump(miRNA_fam, open("miRNA_fam.p", "wb"))
-#     pickle.dump(small_reads, open("small_reads.p", "wb"))
-#     pickle.dump(small_reads_count, open("small_reads_count.p", "wb"))
-#     pickle.dump(seq_to_candidates, open("seq_to_candidates.p", "wb"))
-#      
-#     pickle.dump(reads, open("reads.p", "wb"))
-#     pickle.dump(reads_count, open("reads_count.p", "wb"))
-#   
-#     
-#     print "saved 123"
-#     assert 0
+    is_new_run = False
+    
+    
+    if is_new_run:
+        
+        id_to_dead_hp, id_to_dead_mature = dead_mirna.get_hairpin(dead_mirnas)
+    #     assert False
+        
+        print "merging",len(fasta_files), "collapsed files" if len(fasta_files)>1 else ""
+            
+        dict_collapsed = merge.collapse_collapsed(fasta_files, min_len=10, min_count=2)
+            
+    #     split small and larger sequences
+    #     write reads to file
+            
+        reads, reads_count, small_reads, small_reads_count = merge.filter_seqeunces(dict_collapsed, 18)
+        merge.write_collapsed(all_reads_file, reads, reads_count)
+        
+        print "long reads:", len(reads), "small:", len(small_reads), len(small_reads_count)
+            
+            
+    #     aligning to genome using bowtie
+        
+        _align_bowtie(bowtie_output, all_reads_file)
+        print "finished bowtie in ", time.clock() - start_time, " seconds" 
+            
+    #     read genome alignment from bowtie
+        fixed_lines = [line.strip().split("\t") for line in open(bowtie_output)] 
+        print "read positions in ", time.clock() - start_time, " seconds"
+            
+            
+        print "loading miRNA hairpins:"
+        hsa_to_hairpin, other_to_hairpin = mirbase.read_miRNA_fasta(hairpin_file)
+        hsa_to_mature, other_to_mature = mirbase.read_miRNA_fasta(mature_seq_file)
+            
+        special_types.remove_mirTrons(hsa_to_hairpin, other_types)
+        special_types.remove_mirTrons(hsa_to_mature, other_types)
+        miRNA_species = mirbase.similar_hairpins(hsa_to_hairpin, other_to_hairpin)
+            
+        hairpinID_to_mature, harpinID_to_matseqs = mirbase.combine_hairpin_mature(hsa_to_hairpin, hsa_to_mature)
+        miRNA_high_conf = miRNA.read_high_confidence(high_conf_file)
+            
+        
+            
+    #     assert False
+            
+        print "\nhigh confidence set:",len(miRNA_high_conf),
+        print miRNA_high_conf.issubset(miRNA_species.keys())
+            
+        print "\nreading miRNA family info (mifam)"
+        miRNA_fam = miRNA.read_family(miRNA_family_file)
+        
+    #     print len(set(miRNA_species.keys()) & set(miRNA_fam.keys()))
+    #     run write micro rnas to file
+        
+        mirbase.write_miRNA(hsa_to_hairpin, miRNA_file_name)
+        print "\nwrote human miRNAs to file", time.clock() - start_time, " seconds"
+            
+    #     run bowtie to find miRNA positions
+        _align_bowtie(miRNA_bowtie_output, miRNA_file_name)
+            
+        print "aligned miRNAs in", time.clock() - start_time, " seconds"
+        miRNA_bowtie_hits = [line.strip().split("\t") for line in open(miRNA_bowtie_output)] 
+            
+        unique_mirna_hits = set([x[0] for x in miRNA_bowtie_hits])
+            
+        print "miRNA bowtie hits:", len(miRNA_bowtie_hits)
+        print "unique miRNA hits:", len(unique_mirna_hits)
+            
+            
+        print "\nDead mirnas"
+        mirbase.write_dead_mirna(id_to_dead_hp, dead_mirna_bowtie_file)
+        _align_bowtie(dead_mirna_bowtie_out, dead_mirna_bowtie_file)
+        dead_miRNA_hits = [line.strip().split("\t") for line in open(dead_mirna_bowtie_out)]
+            
+        print "TOTAL dead mirnas:", len(dead_miRNA_hits)
+        
+        
+    #     using sequence tree to find possible candidates
+    #     candidate_tree, sequence_tree, candidates, seq_to_candidates = interval_tree_search.find_candidates(fixed_lines)
+        candidate_tree, sequence_tree, candidates, seq_to_candidates = interval_tree_search.find_candidates_2(fixed_lines)
+            
+            
+    #     assert False
+        print "\n\tfound candidates in ", time.clock() - start_time, " seconds"
+        print "\tbowtie hits", len(fixed_lines)
+        print "\tcandidate tree", len(candidate_tree)
+        print "\tcandidates", len(candidates)
+        print "\tsequence tree", len(sequence_tree)
+        print "\tmapped seqs", len(candidates[0].all_mapped_sequences)
+        
+        
+    # 0            1   2[0] [1]      [2] [3]
+    # ['1-15830', '-', 'gi|224589818|ref|NC_000006.11|',
+    #         NC_000006.11
+    #    heterogenity.heterogenity(candidates)
+    #     assert False
+        
+        print "\naligning miRNAs to sequences"
+        candidate_to_miRNA = interval_tree_miRNA.align_miRNAs(miRNA_bowtie_hits,
+                                                               hairpinID_to_mature,
+                                                               harpinID_to_matseqs,
+                                                               candidate_tree,
+                                                               candidates,
+                                                               sequence_tree,
+                                                               seq_to_candidates,
+                                                               miRNA_species,
+                                                               miRNA_high_conf)
+        
+            
+        candidate_to_dead = interval_tree_dead.align_dead_miRNAs(dead_miRNA_hits,
+                                                                 id_to_dead_hp,
+                                                                 id_to_dead_mature,
+                                                                 candidate_tree,
+                                                                 candidates,
+                                                                 sequence_tree,
+                                                                 seq_to_candidates)
+            
+    #
+    #     print len(candidate_to_dead)
+    #     assert False
+      
+      
+      
+    # 
+    #     pre_hairpin.hairpin_cutoff_seqs(candidates)
+    #     
+    #     
+    #     plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead, miRNA_high_conf, "stops_before_5p", False )
+    #     plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead, miRNA_high_conf, "starts_after_3p", False )
+    #     
+    #     assert False
+    #     
+    #     def _has_sequences_outside(candidate):
+    #         candidate.sequences_before
+    #         candidate.sequences_after
+    #         
+    #     map(_has_sequences_outside, candidates)
+            
+        print "\npadding all miRNA and Candidates"
+        gene.include_padding(candidates)
+        print "padded all candidates in ", time.clock() - start_time, " seconds"
+            
+        
+        print "\nrunning vienna rnafold"
+        vienna.energy_fold2(candidates)
+          
+        print "finished vienna folding"
+          
+    #     align_small_seqs(candidates, small_reads, small_reads_count)
+    #     small_seq_stats(candidates)
+    #     
+    #     plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead, miRNA_high_conf, "ratio_short_long_5p", False )
+    #     assert 0
+          
+        print "saving 123"
+            
+        pickle.dump(candidates, open("candidates_pre.p", "wb"))
+        pickle.dump(candidate_to_miRNA, open("candidate_to_miRNA.p", "wb"))
+        pickle.dump(miRNA_high_conf, open("miRNA_high_conf.p", "wb"))
+           
+        print "saving 234"
+           
+        pickle.dump(candidate_to_dead, open("candidate_to_dead.p", "wb"))
+        pickle.dump(miRNA_fam, open("miRNA_fam.p", "wb"))
+        pickle.dump(small_reads, open("small_reads.p", "wb"))
+        pickle.dump(small_reads_count, open("small_reads_count.p", "wb"))
+        pickle.dump(seq_to_candidates, open("seq_to_candidates.p", "wb"))
+           
+        pickle.dump(reads, open("reads.p", "wb"))
+        pickle.dump(reads_count, open("reads_count.p", "wb"))
+        
+          
+        print "saved 123"
+
     
     
     print "loading picled stuff", time.clock() - start_time
@@ -335,11 +339,12 @@ def main():
     print "loaded back", time.clock() - start_time
     
     
+
+    # calculating hairpin stats
+    hairpin_stats(candidates, candidate_to_miRNA, miRNA_high_conf)
     
-    align_small_seqs(candidates, small_reads, small_reads_count)
-    small_seq_stats(candidates)
+
     
-    assert 0
     def _is_miRNA(c):
         hashval = c.chromosome+c.chromosome_direction+str(c.hairpin_start)
         return hashval in candidate_to_miRNA
@@ -352,6 +357,11 @@ def main():
                 return True
         return False
     
+    def _is_dead(c):
+        hashval = c.chromosome+c.chromosome_direction+str(c.hairpin_start)
+        return hashval in candidate_to_dead
+        
+    
     
     print "all candidates+miRNA+other:", len(candidates)
     print "\twith hairpin struct:\t", len([c for c in candidates if c.has_hairpin_struct])
@@ -360,8 +370,11 @@ def main():
 #     _mirnas2 = [c for c in candidates if c.miRNAid != None]
     _mirna_hc = [c for c in candidates if _is_hc(c)]
     
+    _mirna_lc = [c for c in _mirnas if not _is_hc(c)]
     
-    _not_mirnas = [c for c in candidates if not _is_miRNA(c)]
+    _mirna_dead = [c for c in candidates if _is_dead(c)]
+    
+    _not_mirnas = [c for c in candidates if not _is_miRNA(c) and not _is_dead(c)]
 #     _not_mirnas2 = [c for c in candidates if c.miRNAid == None]
     
     print "mirnas:", len(_mirnas), len(candidate_to_miRNA)
@@ -370,40 +383,30 @@ def main():
     print "candidates:", len(_not_mirnas)
     print "\twith hairpin struct:\t", len([m for m in _not_mirnas if m.has_hairpin_struct])
     
-    
     print "HC mirnas:", len(_mirna_hc), len(miRNA_high_conf)
     print "\twith hairpin struct:\t", len([m for m in _mirna_hc if m.has_hairpin_struct])
     
+    print "LC mirnas:", len(_mirna_lc)
+    print "\twith hairpin struct:\t", len([m for m in _mirna_lc if m.has_hairpin_struct])
     
-    
-    
-    candidates = [c for c in candidates if _is_miRNA(c) or c.has_hairpin_struct]
+    candidates = [c for c in candidates if _is_miRNA(c) or c.has_hairpin_struct or _is_dead(c)]
     print "removed candidates without hairpin struct.", len(candidates)
     
     
-    fail_hc = [c for c in _mirna_hc if not c.has_hairpin_struct]
-    fail_lc = [c for c in _mirnas if not c.has_hairpin_struct and not _is_hc(c)]
+#     fail_hc = [c for c in _mirna_hc if not c.has_hairpin_struct]
+#     fail_lc = [c for c in _mirnas if not c.has_hairpin_struct and not _is_hc(c)]
     
-    hairpin.hairpin_stats(fail_hc, candidate_to_miRNA, miRNA_high_conf)
+#     hairpin.hairpin_stats(fail_hc, candidate_to_miRNA, miRNA_high_conf)
 #     hairpin.hairpin_stats(fail_lc, candidate_to_miRNA, miRNA_high_conf)
 #     hairpin.hairpin_stats(_mirnas, candidate_to_miRNA, miRNA_high_conf)
-    
-    assert False
-    
-    
-    
-    
+
     
 
-
-    stem.compute_stem_start(candidates, candidate_to_miRNA, miRNA_high_conf)
-    
+# should I use this one?
+#     stem.compute_stem_start(candidates, candidate_to_miRNA, miRNA_high_conf)
 
     annotated_data, annotations, _unknown_data = create_folds(candidates, candidate_to_miRNA, candidate_to_dead, miRNA_high_conf, miRNA_fam, ml_folds)
-    
-
-
-    
+#     assert 0
     
     not_mapped_reads = [structure.Sequence(i,n,read) for i,(read,n) in 
                         enumerate(zip(reads, reads_count))
@@ -414,7 +417,16 @@ def main():
 #     print len(seq_to_candidates)
 #     print len(not_mapped_reas) + len(seq_to_candidates)
 #     print len(reads)
-#     
+
+
+#     aligning small sequences against hairpins
+    align_small_seqs(candidates, small_reads, small_reads_count)
+    small_seq_stats(candidates)
+    small_seq_stats(_mirna_hc) # for testing only
+    
+    assert 0
+
+
 #     A/U ends for all remaining candidates
     tailing.tailing_au(candidates, not_mapped_reads)
     
@@ -457,6 +469,31 @@ def main():
 #         plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead,
 #                       miRNA_high_conf, feat_name, logs )
 #         
+
+
+    FEATURES = [
+                "ratio_short_long_5p",
+                "ratio_short_long_3p",
+                "loop_size",              
+                "folds_5p",
+                "folds_3p",
+                "folds_before",
+                "folds_after", 
+                "short_seq_5p_stdev",
+                "short_seq_3p_stdev",
+                "short_seq_5p_offset",
+                "short_seq_3p_offset"
+                ]
+     
+#     log_scaled = [True]*2 + [False]*5
+    log_scaled = [False]*11
+     
+    print log_scaled
+    for feat_name, logs in zip(FEATURES, log_scaled):
+      
+        plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead,
+                      miRNA_high_conf, feat_name, logs )
+          
     
     print
     print " features finished:", time.clock() - start_time, " seconds"
@@ -540,30 +577,29 @@ def main():
 #     
 #     base_score = learner.score(test, test_annotations)
 #     print "base score: ", base_score
-    
 #     assert False
-    # roc plot 234
+#     # roc plot 234
+#      
+    # uncomment this part to save stuff
      
-    
-    
     vector_data = map(vectorize.candidates_to_array, annotated_data)
     scaled_data = map(preprocessing.scale, vector_data)
-    
+     
     pickle.dump(scaled_data, open("save_scaled_data.p", "wb"))
     pickle.dump(annotations, open("save_an.p", "wb"))
     pickle.dump(annotated_data, open("save_da.p", "wb"))
-    
-    
-    
+     
+     
+     
     print "saved 123"
     annotations = pickle.load( open("save_an.p", "rb"))
     scaled123 = pickle.load( open("save_scaled_data.p", "rb"))
     annotated_data = pickle.load( open("save_da.p", "rb"))
-    
+     
     print "and loaded back for testing", len(scaled123)
-    
-        
-    
+     
+#         
+#     
 # if __name__ == "__main__":
 #     main()
 main()

@@ -7,6 +7,7 @@ Created on 19. nov. 2014
 
 from SuffixTree import SubstringDict
 import math
+import numpy
 
 
 def align_small_seqs(candidates, small_seqs, small_seqs_copies):
@@ -55,6 +56,21 @@ def align_small_seqs(candidates, small_seqs, small_seqs_copies):
 
 
 def small_seq_stats(candidates):
+    '''
+    compares the amount of small sequences vs long sequences in 3p and 5p positions
+    uses log values of values larger than 1 RPM in each sum
+    adds 1.0 to each sum to avoid division against 0-scores
+    stores the log score, as some sums are still very large
+    '''
+    
+    
+    def log_over_one(val):
+        return math.log(val) if val > 1.0 else val
+    
+    def log_sum(list_to_sum):
+        log_list = [log_over_one(x) for x in list_to_sum]
+        list_sum = sum(log_list)
+        return list_sum
     
     
     has_small_seqs = [c for c in candidates if c.small_subs]
@@ -65,16 +81,15 @@ def small_seq_stats(candidates):
         hairpin = c.hairpin_padded_40
         total_subseqs = sum(c.small_subs.values())
         
-        start_5 = c.pos_5p_begin - c.hairpin_start + 40 if c.pos_5p_begin != -1 else 40
-        end_3 = c.pos_3p_end - c.hairpin_start + 40 if c.pos_3p_end != -1 else len(hairpin) - 40
+        start_5 = c.pos_5p_begin - c.hairpin_start + 40 if c.has_5p else 40
+        end_5 = c.pos_5p_end - c.hairpin_start + 40 if c.has_5p else start_5 + 24
         
-        end_5 = c.pos_5p_end - c.hairpin_start + 40 if c.pos_5p_end != -1 else start_5 + 24
-        start_3 = c.pos_3p_begin - c.hairpin_start + 40 if c.pos_3p_begin != -1 else end_3 - 24
+        end_3 = c.pos_3p_end - c.hairpin_start + 40 if c.has_3p else len(hairpin) - 40
+        start_3 = c.pos_3p_begin - c.hairpin_start + 40 if c.has_3p else end_3 - 24
         
         if end_5 >= start_3:
             end_5 = (start_5 + end_3) / 2
             start_3 = end_5 + 1
-        
         
         
         area_5p_short = {pos: 0.0 for pos in range(start_5, end_5)}
@@ -123,45 +138,108 @@ def small_seq_stats(candidates):
                 seq_start = i.begin-c.hairpin_start + 40
                  
                 if seq_start in area_5p_long:
-                    area_5p_long_sum += copies
+                    area_5p_long_sum += log_over_one(copies)
                 elif seq_start in area_3p_long:
-                    area_3p_long_sum += copies
+                    area_3p_long_sum += log_over_one(copies)
                 else:
                     print seq_start,
                      
-                
-        area_5p_short_sum = sum(area_5p_short.values())
-        ratio_short_long_5p = area_5p_short_sum * 1.0 / area_5p_long_sum if area_5p_long_sum else 0.0
+        area_5p_short_sum = log_sum(area_5p_short.values()) + 1.0
+        area_3p_short_sum = log_sum(area_3p_short.values()) + 1.0
+        area_5p_long_sum += 1.0
+        area_3p_long_sum += 1.0
+
+        has_small_seqs_5p = area_5p_short_sum != 1.0
+        has_small_seqs_3p = area_3p_short_sum != 1.0
         
-        area_3p_short_sum = sum(area_3p_short.values())
-        ratio_short_long_3p = area_3p_short_sum * 1.0 / area_3p_long_sum if area_3p_long_sum else 0.0
+        ratio_short_long_5p = area_5p_short_sum / area_5p_long_sum if area_5p_long_sum else 0.0
+        ratio_short_long_3p = area_3p_short_sum / area_3p_long_sum if area_3p_long_sum else 0.0
+        
+        ratio_short_long_5p = math.log(ratio_short_long_5p)
+        ratio_short_long_3p = math.log(ratio_short_long_3p)
         
         
+        # weighted average and weighted variance
         
-        print "\n"
-        print (start_5, end_5), (start_3, end_3)
-        print min(area_5p_long), max(area_5p_long),
-        print min(area_3p_long), max(area_3p_long)
-        print (c.pos_5p_begin - c.hairpin_start + 40, c.pos_5p_end - c.hairpin_start + 40), (c.pos_3p_begin - c.hairpin_start + 40, c.pos_3p_end - c.hairpin_start + 40)
-        print total_subseqs
-        print area_5p_short_sum, "\t", area_3p_short_sum
-        print area_5p_long_sum, "\t", area_3p_long_sum, c.mapped_sequences
-        print ratio_short_long_5p, "\t", ratio_short_long_3p
+        if has_small_seqs_5p:
+            short_5p_positions = area_5p_short.keys()
+            short_5p_weigths = map(log_over_one, area_5p_short.values())
+            
+            avg_5p = numpy.average(short_5p_positions, weights=short_5p_weigths)
+            
+            offset_5p_squared = [ (p - avg_5p)**2 for p in short_5p_positions]
+            biased_variance_5p = numpy.average(offset_5p_squared, weights=short_5p_weigths)
+            st_dev_5p = math.sqrt(biased_variance_5p)
+            
+            
+            c.short_seq_5p_stdev = st_dev_5p
+            
+            if c.has_5p:
+                offset = abs(avg_5p - start_5)
+                c.short_seq_5p_offset = offset
+        
+        if has_small_seqs_3p:
+            short_3p_positions = area_3p_short.keys()
+            short_3p_weigths = map(log_over_one, area_3p_short.values())
+            
+            avg_3p = numpy.average(short_3p_positions, weights=short_3p_weigths)
+            
+            offset_3p_squared = [ (p - avg_3p)**2 for p in short_3p_positions]
+            biased_variance_3p = numpy.average(offset_3p_squared, weights=short_3p_weigths)
+            st_dev_3p = math.sqrt(biased_variance_3p)
+            
+            c.short_seq_3p_stdev = st_dev_3p
+            
+            if c.has_3p:
+                offset = abs(avg_3p -  start_3)
+                c.short_seq_3p_offset = offset
+        
         
         c.ratio_short_long_5p = ratio_short_long_5p
         c.ratio_short_long_3p = ratio_short_long_3p
         
-        print c.ratio_short_long_5p
-        print c.ratio_short_long_3p
+        
+
+#         print min(area_5p_long), max(area_5p_long),
+#         print min(area_3p_long), max(area_3p_long)
+#         print (c.pos_5p_begin - c.hairpin_start + 40, c.pos_5p_end - c.hairpin_start + 40), (c.pos_3p_begin - c.hairpin_start + 40, c.pos_3p_end - c.hairpin_start + 40)
+#         print total_subseqs
+#         print area_5p_short_sum, "\t", area_3p_short_sum
+#         print area_5p_long_sum, "\t", area_3p_long_sum, c.mapped_sequences
+#         print ratio_short_long_5p, "\t", ratio_short_long_3p
+#         print c.ratio_short_long_5p
+#         print c.ratio_short_long_3p
+        
+        if has_small_seqs_5p:
+            print "\n"
+            print (start_5, end_5)
+            print c.short_seq_5p_stdev
+            print "has 5p?"
+            print c.short_seq_5p_offset, avg_5p, start_5, c.has_5p
+            print c.short_seq_5p_offset
+            print [(k,v) for k,v in area_5p_short.items() if v > 0.0]
+            
+        if has_small_seqs_3p:
+            print "\n"
+            print (start_3, end_3)
+            print c.short_seq_5p_stdev
+            print "has 3p?"
+            print c.short_seq_3p_offset, avg_3p, start_3, c.has_3p
+            print c.short_seq_3p_offset
+            print [(k,v) for k,v in area_3p_short.items() if v > 0.0]
+            
 
 #     print len([c for c in candidates if c.ratio_short_long_5p])
-    has_ratio = [math.log(c.ratio_short_long_3p) for c in candidates if c.ratio_short_long_3p]
-    print len(has_ratio)
-    print sum(has_ratio) / len(has_ratio)
+#     has_ratio = [math.log(c.ratio_short_long_3p) for c in candidates if c.ratio_short_long_3p]
+#     print len(has_ratio)
+#     print sum(has_ratio) / len(has_ratio)
 
 
-    
-    
-    
+# import random
+# teste = {random.random():random.randint(1,100) for _ in range(1000)}
+# 
+# print [(k,v) for k,v in teste.items()]
+# print zip(teste.keys(), teste.values())
+
     
     
