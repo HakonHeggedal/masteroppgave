@@ -44,8 +44,11 @@ def candidates_to_array(candidates):
         
         a = len(candidate.mapped_sequences)
         a = math.log(a) if a > 0 else a
+        
+        
         b = candidate.hairpin_energy
         bb = candidate.hairpin_energy_10
+        
         c = candidate.entropy_nucleotides
         d = candidate.entropy_structure
         

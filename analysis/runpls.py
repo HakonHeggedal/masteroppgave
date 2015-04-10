@@ -299,7 +299,7 @@ def main():
     #     
     #     plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead, miRNA_high_conf, "ratio_short_long_5p", False )
     #     assert 0
-          
+        
         print "saving 123"
             
         pickle.dump(candidates, open("candidates_pre.p", "wb"))
@@ -339,11 +339,28 @@ def main():
     print "loaded back", time.clock() - start_time
     
     
-
-    # calculating hairpin stats
-    hairpin_stats(candidates, candidate_to_miRNA, miRNA_high_conf)
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    # overhang calculated using fold seq.
+    overhang.get_alignment(candidates)
     
 
+    # calculating hairpin stats (length + overhang using pairing prob.)
+    hairpin_stats(candidates, candidate_to_miRNA, miRNA_high_conf)
+    
+#     assert 0
     
     def _is_miRNA(c):
         hashval = c.chromosome+c.chromosome_direction+str(c.hairpin_start)
@@ -422,16 +439,15 @@ def main():
 #     aligning small sequences against hairpins
     align_small_seqs(candidates, small_reads, small_reads_count)
     small_seq_stats(candidates)
-    small_seq_stats(_mirna_hc) # for testing only
+#     small_seq_stats(_mirna_hc) # for testing only
     
-    assert 0
+
 
 
 #     A/U ends for all remaining candidates
     tailing.tailing_au(candidates, not_mapped_reads)
     
 
-    overhang.get_alignment(candidates)
 
 
 #     degree of entropy in structure and nucleotides
@@ -459,19 +475,21 @@ def main():
 #                 "heterogenity_5_end", "heterogenity_3_begin", "heterogenity_3_end",
 #                 "quality", "bindings_max_10", "overhang_level_outer_10",
 #                 "overhang_outer_10", "overhang_level_inner_10", "overhang_inner_10",
-#                 "bulge_factor", "small_subs", "small_subs_5p", "small_subs_3p"]
-#     
-#     
+#                 "bulge_factor"]
+#      
+#      
 #     log_scaled = [False]*16 + [True]*3
 #     print log_scaled
 #     for feat_name, logs in zip(FEATURES, log_scaled):
-#      
+#       
 #         plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead,
 #                       miRNA_high_conf, feat_name, logs )
-#         
+         
 
 
     FEATURES = [
+                "overhang_inner",
+                "overhang_outer",
                 "ratio_short_long_5p",
                 "ratio_short_long_3p",
                 "loop_size",              
@@ -486,7 +504,7 @@ def main():
                 ]
      
 #     log_scaled = [True]*2 + [False]*5
-    log_scaled = [False]*11
+    log_scaled = [False]*13
      
     print log_scaled
     for feat_name, logs in zip(FEATURES, log_scaled):
@@ -597,7 +615,7 @@ def main():
     annotated_data = pickle.load( open("save_da.p", "rb"))
      
     print "and loaded back for testing", len(scaled123)
-     
+    print "finished:", time.clock() - start_time, "seconds"
 #         
 #     
 # if __name__ == "__main__":

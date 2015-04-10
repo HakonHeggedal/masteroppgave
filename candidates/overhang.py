@@ -52,7 +52,7 @@ def get_alignment(candidates):
 #             "|"*(end_3 - start_3) + 
 #             "+"*(len(fold_10) - end_3) )
 #             assert False
-         
+#          
 #         start_5 = 40 # 40 nt padding
 #         end_5 = candidate.pos_5p_end - candidate.pos_5p_begin + 40
 #         start_3 = candidate.pos_3p_begin - candidate.pos_5p_begin + 40
@@ -60,7 +60,7 @@ def get_alignment(candidates):
 #         
 #         p_folds_out, p_off_out = _find_overhang(fold_40, start_5, end_3)
 #         p_folds_in, p_off_in = _find_overhang(fold_40, end_5, start_3)
-         
+#          
 #         print "\tmaks fold:", folds_10, folds_40
 #         print "\t10:", folds_out, off_out, folds_in, off_in
 #         print "\t10:", p_folds_out, p_off_out, p_folds_in, p_off_in
