@@ -43,15 +43,15 @@ class Candidate:
         self.has_hairpin_struct_5p = False
         self.has_hairpin_struct_3p = False
 
-        self.overhang_inner = 0
-        self.overhang_outer = 0
+        self.overhang_inner = 15
+        self.overhang_outer = 15
         self.overhang_inner_conf = 0.0
         self.overhang_outer_conf = 0.0
-        self.loop_size = -1
-        self.folds_5p = -1
-        self.folds_3p = -1
-        self.folds_before = -1
-        self.folds_after = -1
+        self.loop_size = 0
+        self.folds_5p = 0
+        self.folds_3p = 0
+        self.folds_before = 0
+        self.folds_after = 0
         
         self.stops_before_5p = 0.0
         self.starts_after_3p = 0.0
@@ -63,6 +63,10 @@ class Candidate:
         self.short_seq_3p_stdev = -1
         self.short_seq_5p_offset = -1
         self.short_seq_3p_offset = -1
+        
+        
+        self.leading_au = 1
+        self.tailing_au = 1
         
         if mapped_sequences is not None:
             self.mapped_sequences = set(mapped_sequences)

@@ -245,6 +245,20 @@ def hairpin_stats(candidates, mirna, hc_mirna):
 
 #                 assert abs(candidate.overhang_inner) < 10 or abs(offset_diff) < 5
             
+            
+            
+            if candidate.overhang_inner < -15:
+                candidate.overhang_inner = - 15
+            elif candidate.overhang_inner > 15:
+                candidate.overhang_inner = 15
+           
+           
+            if candidate.overhang_outer < -15:
+                candidate.overhang_outer = - 15
+            elif candidate.overhang_outer > 15:
+                candidate.overhang_outer = 15     
+
+            
             print "outer:"
             print candidate.overhang_outer, candidate.overhang_outer_10,
             print overhang_outer_5p, overhang_outer_3p
@@ -254,6 +268,8 @@ def hairpin_stats(candidates, mirna, hc_mirna):
             print (est_5pb, begin_5p), (est_5pe, end_5p),
             print (est_3pb, begin_3p), (est_3pe, end_3p)
         
+            assert -15 <= candidate.overhang_outer <= 15, candidate.overhang_outer
+            assert -15 <= candidate.overhang_inner <= 15, candidate.overhang_inner
         
         assert candidate.has_hairpin_struct_5p or candidate.has_hairpin_struct_3p
 #         assert candidate.has_5p == candidate.has_hairpin_struct_5p

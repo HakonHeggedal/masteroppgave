@@ -313,16 +313,16 @@ def main():
         pickle.dump(small_reads, open("small_reads.p", "wb"))
         pickle.dump(small_reads_count, open("small_reads_count.p", "wb"))
         pickle.dump(seq_to_candidates, open("seq_to_candidates.p", "wb"))
-           
+        
         pickle.dump(reads, open("reads.p", "wb"))
         pickle.dump(reads_count, open("reads_count.p", "wb"))
         
           
-        print "saved 123"
+        print "saved 456"
 
     
     
-    print "loading picled stuff", time.clock() - start_time
+    print "loading picled stuff ...", time.clock() - start_time
     candidates = pickle.load( open("candidates_pre.p", "rb"))
     candidate_to_miRNA = pickle.load( open("candidate_to_miRNA.p", "rb"))
     miRNA_high_conf = pickle.load( open("miRNA_high_conf.p", "rb"))
@@ -339,18 +339,7 @@ def main():
     print "loaded back", time.clock() - start_time
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
     
     
     # overhang calculated using fold seq.
@@ -445,16 +434,18 @@ def main():
 
 
 #     A/U ends for all remaining candidates
-    tailing.tailing_au(candidates, not_mapped_reads)
+    tailing.tailing_au_simple(candidates, not_mapped_reads)
     
 
-
+    
+    
+#     tailing.tailing_au(candidates, not_mapped_reads)
+    
 
 #     degree of entropy in structure and nucleotides
     entropy.entropy(candidates)
     
 
-    
 #      
 #     heterogenity (position counting)
     heterogenity.heterogenity(candidates)
@@ -488,6 +479,8 @@ def main():
 
 
     FEATURES = [
+                "leading_au",
+                "tailing_au"
                 "overhang_inner",
                 "overhang_outer",
                 "ratio_short_long_5p",
@@ -504,13 +497,14 @@ def main():
                 ]
      
 #     log_scaled = [True]*2 + [False]*5
-    log_scaled = [False]*13
+#     log_scaled = [False]*15
      
-    print log_scaled
-    for feat_name, logs in zip(FEATURES, log_scaled):
+#     print log_scaled
+#     for feat_name, logs in zip(FEATURES, log_scaled):
+    for feat_name in FEATURES:
       
         plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead,
-                      miRNA_high_conf, feat_name, logs )
+                      miRNA_high_conf, feat_name )
           
     
     print
