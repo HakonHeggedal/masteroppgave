@@ -65,8 +65,8 @@ class Candidate:
         self.short_seq_3p_offset = -1
         
         
-        self.leading_au = 1
-        self.tailing_au = 1
+        self.leading_au = 0
+        self.tailing_au = 0
         
         if mapped_sequences is not None:
             self.mapped_sequences = set(mapped_sequences)

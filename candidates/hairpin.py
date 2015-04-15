@@ -247,6 +247,13 @@ def hairpin_stats(candidates, mirna, hc_mirna):
             
             
             
+            # overhang direction depends on strand ... hotfix:
+            if candidate.chromosome_direction == "-":
+                candidate.overhang_inner = - candidate.overhang_inner
+                candidate.overhang_outer = - candidate.overhang_outer
+
+            
+            
             if candidate.overhang_inner < -15:
                 candidate.overhang_inner = - 15
             elif candidate.overhang_inner > 15:
@@ -256,7 +263,9 @@ def hairpin_stats(candidates, mirna, hc_mirna):
             if candidate.overhang_outer < -15:
                 candidate.overhang_outer = - 15
             elif candidate.overhang_outer > 15:
-                candidate.overhang_outer = 15     
+                candidate.overhang_outer = 15
+                
+            
 
             
             print "outer:"

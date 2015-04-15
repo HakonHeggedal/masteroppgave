@@ -434,7 +434,8 @@ def main():
 
 
 #     A/U ends for all remaining candidates
-    tailing.tailing_au_simple(candidates, not_mapped_reads)
+    tailing.tailing_au_fast(candidates, not_mapped_reads)
+#     tailing.tailing_au_simple(candidates, not_mapped_reads)
     
 
     
@@ -480,7 +481,7 @@ def main():
 
     FEATURES = [
                 "leading_au",
-                "tailing_au"
+                "tailing_au",
                 "overhang_inner",
                 "overhang_outer",
                 "ratio_short_long_5p",

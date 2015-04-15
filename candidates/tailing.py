@@ -9,10 +9,101 @@ import math
 import pickle
 
 from candidates.interval_tree_misc import reverse_compliment
+from SuffixTree import SubstringDict
 
 
 
 
+def tailing_au_fast(candidates=None, sequences=None):
+    
+    
+    
+    min_tailfree = 15
+    # adding all canididate seqs to a substring dict
+    find_candidates = SubstringDict()
+
+    for i, candidate in enumerate(candidates):
+        find_candidates[candidate.hairpin_padded_40] = i
+        
+    leading_au = []
+    tailing_au = []
+    all_nonmatching = []
+    
+    print "making dict of all hairpins"
+    
+    for sequence in sequences:
+        
+        seq = sequence.nucleotides
+        count = sequence.duplicates if sequence.duplicates <= 1 else math.log(sequence.duplicates)
+        
+        nontailing, is_tailing_au =  _remove_trailing(seq)
+        noleading, is_leading_au = _remove_trailing_start(seq)
+        
+        if is_tailing_au and len(nontailing) > min_tailfree:
+            assert len(nontailing) != len(seq)
+            
+            tailing_au.append((nontailing, seq, count))
+            
+        if is_leading_au and len(noleading) > min_tailfree:
+            assert len(noleading) != len(seq)
+            
+            leading_au.append((noleading, seq, count))
+            
+        all_nonmatching.append((seq, count))
+            
+    tailing_sums = [0.0] * len(candidates)
+    leading_sums = [0.0] * len(candidates)
+    full_hit_sums = [0.0] * len(candidates)
+    
+    print "aligning au-tailing sequences"
+    for (nontailing, seq, count) in tailing_au:
+         
+        nontailing_hits = find_candidates[nontailing]
+        seq_hits = find_candidates[seq]
+        only_tailing = set(nontailing_hits) - set(seq_hits)
+         
+        for c_nr in only_tailing:
+            tailing_sums[c_nr] += count
+    
+    print "aligning au-leading sequences"
+    for (noleading, seq, count) in leading_au:
+        
+        noleading_hits = find_candidates[noleading]
+        seq_hits = find_candidates[seq]
+        only_leading = set(noleading_hits)- set(seq_hits)
+        
+        for c_nr in only_leading:
+            leading_sums[c_nr] += count
+    
+    print "aligning all seqs"
+    for (seq, count) in all_nonmatching:
+        
+        seq_hits = find_candidates[seq]
+        
+        for c_nr in seq_hits:
+            full_hit_sums[c_nr] += count
+    
+    
+    print "fix score"
+    for candidate, lead, tail, full in zip(candidates, leading_sums, tailing_sums, full_hit_sums):
+        
+        
+#         sum_hits_candidate = 0.0
+#         for sequence in candidate.mapped_sequences:
+#             count = float(sequence.data[1].split("-")[1])
+#             sum_hits_candidate += math.log(count) if count > 1 else count
+        
+        
+        tailing_score = math.log(tail + 1) / (math.log(full + 1) + 1)
+        leading_score = math.log(lead + 1) / (math.log(full + 1) + 1)
+        
+        candidate.tailing_au = tailing_score
+        candidate.leading_au = leading_score
+        
+        
+
+            
+            
 
 def tailing_au_simple(candidates=None, sequences=None):
     
@@ -41,7 +132,7 @@ def tailing_au_simple(candidates=None, sequences=None):
     end_chars = {"A":0.0, "C":0.0, "G":0.0, "T":0.0}
     
     for s in sequences:
-        n = seq = s.nucleotides[-1]
+        n = s.nucleotides[-1]
         end_chars[n] += 1
         
     print end_chars
@@ -64,11 +155,13 @@ def tailing_au_simple(candidates=None, sequences=None):
             assert len(au_start) != len(seq)
             pre_au.append((au_start, seq, count))
             
-            
         tail_a, is_tail_a = _remove_trailing(seq, set("Aa"))
         
         if is_tail_a and tail_a > min_tailfree:
             tail_a_list.append((tail_a, seq, count))
+            
+            
+
             
     
     print "long tails", len([1 for (au, seq, count) in tail_au if len(seq) - len(au) > 1])
@@ -132,6 +225,8 @@ def tailing_au_simple(candidates=None, sequences=None):
             
             seq = sequence.nucleotides
             count = sequence.duplicates if sequence.duplicates <= 1 else math.log(sequence.duplicates)
+            
+            
             
             if seq in hairpin:
                 full_hits_missed += count
@@ -373,6 +468,8 @@ def _remove_trailing_start(sequence, chars=set("AUTaut")):
 # t = "QWEWRRTAYAUAUT"
 # print _remove_trailing_AU(t)
 
-        
-    
-            
+#         
+# a = []
+# b = []
+# print set(a) - set(b)
+
