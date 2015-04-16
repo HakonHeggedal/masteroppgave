@@ -96,14 +96,14 @@ def small_seq_stats(candidates):
         area_3p_short = {pos: 0.0 for pos in range(start_3, end_3)}
         
         
+        area_5p_1115 = {pos: 0.0 for pos in range(start_5, end_5)}
+        area_3p_1115 = {pos: 0.0 for pos in range(start_3, end_3)}
+        
         area_5p_long = set(range(start_5, end_5))
         area_5p_long_sum = 0.0
         area_3p_long = set(range(start_3, end_3))
         area_3p_long_sum = 0.0
-        
 
-#         area_5p_long = {pos: 0.0 for pos in range(start_5, end_5)}
-#         area_3p_long = {pos: 0.0 for pos in range(start_3, end_3)}
 
         
 
@@ -121,8 +121,12 @@ def small_seq_stats(candidates):
             
             if start_seq in area_5p_short:
                 area_5p_short[start_seq] += copies
+                if 10 < len(seq) < 16:
+                    area_5p_1115[start_seq] += copies
             elif start_seq in area_3p_short:
                 area_3p_short[start_seq] += copies
+                if 10 < len(seq) < 16:
+                    area_3p_1115[start_seq] += copies
             else:
                 "seq not in any mature", (start_5, end_5), (start_3, end_3)
 #                 assert 0, ((start_5, end_5), (start_3, end_3))
@@ -159,11 +163,13 @@ def small_seq_stats(candidates):
         ratio_short_long_3p = math.log(ratio_short_long_3p)
         
         
+        
+        # only using length 11 to 15 for alignment stats
         # weighted average and weighted variance
         
-        if has_small_seqs_5p:
-            short_5p_positions = area_5p_short.keys()
-            short_5p_weigths = map(log_over_one, area_5p_short.values())
+        if sum(area_5p_1115.values()):
+            short_5p_positions = area_5p_1115.keys()
+            short_5p_weigths = map(log_over_one, area_5p_1115.values())
             
             avg_5p = numpy.average(short_5p_positions, weights=short_5p_weigths)
             
@@ -178,13 +184,13 @@ def small_seq_stats(candidates):
                 offset = abs(avg_5p - start_5)
                 c.short_seq_5p_offset = offset
         
-        if has_small_seqs_3p:
-            short_3p_positions = area_3p_short.keys()
-            short_3p_weigths = map(log_over_one, area_3p_short.values())
+        if sum(area_3p_1115.values()):
+            short_3p_positions = area_3p_1115.keys()
+            short_3p_weigths = map(log_over_one, area_3p_1115.values())
             
             avg_3p = numpy.average(short_3p_positions, weights=short_3p_weigths)
             
-            offset_3p_squared = [ (p - avg_3p)**2 for p in short_3p_positions]
+            offset_3p_squared = [(p - avg_3p)**2 for p in short_3p_positions]
             biased_variance_3p = numpy.average(offset_3p_squared, weights=short_3p_weigths)
             st_dev_3p = math.sqrt(biased_variance_3p)
             
@@ -193,6 +199,39 @@ def small_seq_stats(candidates):
             if c.has_3p:
                 offset = abs(avg_3p -  start_3)
                 c.short_seq_3p_offset = offset
+
+#         if has_small_seqs_5p:
+#             short_5p_positions = area_5p_short.keys()
+#             short_5p_weigths = map(log_over_one, area_5p_short.values())
+#             
+#             avg_5p = numpy.average(short_5p_positions, weights=short_5p_weigths)
+#             
+#             offset_5p_squared = [ (p - avg_5p)**2 for p in short_5p_positions]
+#             biased_variance_5p = numpy.average(offset_5p_squared, weights=short_5p_weigths)
+#             st_dev_5p = math.sqrt(biased_variance_5p)
+#             
+#             
+#             c.short_seq_5p_stdev = st_dev_5p
+#             
+#             if c.has_5p:
+#                 offset = abs(avg_5p - start_5)
+#                 c.short_seq_5p_offset = offset
+#         
+#         if has_small_seqs_3p:
+#             short_3p_positions = area_3p_short.keys()
+#             short_3p_weigths = map(log_over_one, area_3p_short.values())
+#             
+#             avg_3p = numpy.average(short_3p_positions, weights=short_3p_weigths)
+#             
+#             offset_3p_squared = [(p - avg_3p)**2 for p in short_3p_positions]
+#             biased_variance_3p = numpy.average(offset_3p_squared, weights=short_3p_weigths)
+#             st_dev_3p = math.sqrt(biased_variance_3p)
+#             
+#             c.short_seq_3p_stdev = st_dev_3p
+#             
+#             if c.has_3p:
+#                 offset = abs(avg_3p -  start_3)
+#                 c.short_seq_3p_offset = offset
         
         
         c.ratio_short_long_5p = ratio_short_long_5p
@@ -210,7 +249,7 @@ def small_seq_stats(candidates):
 #         print c.ratio_short_long_5p
 #         print c.ratio_short_long_3p
         
-        if has_small_seqs_5p:
+        if sum(area_5p_1115.values()):
             print "\n"
             print (start_5, end_5)
             print c.short_seq_5p_stdev
@@ -218,8 +257,8 @@ def small_seq_stats(candidates):
             print c.short_seq_5p_offset, avg_5p, start_5, c.has_5p
             print c.short_seq_5p_offset
             print [(k,v) for k,v in area_5p_short.items() if v > 0.0]
-            
-        if has_small_seqs_3p:
+             
+        if sum(area_3p_1115.values()):
             print "\n"
             print (start_3, end_3)
             print c.short_seq_5p_stdev

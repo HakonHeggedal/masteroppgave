@@ -29,7 +29,7 @@ def tailing_au_fast(candidates=None, sequences=None):
     tailing_au = []
     all_nonmatching = []
     
-    print "making dict of all hairpins"
+    print "\nmaking dict of all hairpins"
     
     for sequence in sequences:
         
@@ -88,21 +88,29 @@ def tailing_au_fast(candidates=None, sequences=None):
     for candidate, lead, tail, full in zip(candidates, leading_sums, tailing_sums, full_hit_sums):
         
         
-#         sum_hits_candidate = 0.0
-#         for sequence in candidate.mapped_sequences:
-#             count = float(sequence.data[1].split("-")[1])
-#             sum_hits_candidate += math.log(count) if count > 1 else count
+        sum_hits_candidate = 0.0
+        for sequence in candidate.mapped_sequences:
+            count = float(sequence.data[1].split("-")[1])
+            sum_hits_candidate += math.log(count) if count > 1 else count
         
+        full_score_lead = full + sum_hits_candidate + lead
+        full_score_lead = math.log(full_score_lead) if full_score_lead > 1 else full_score_lead
+        full_score_lead += 1
         
-        tailing_score = math.log(tail + 1) / (math.log(full + 1) + 1)
-        leading_score = math.log(lead + 1) / (math.log(full + 1) + 1)
+        full_score_tail = full + sum_hits_candidate + tail
+        full_score_tail = math.log(full_score_tail) if full_score_tail > 1 else full_score_tail
+        full_score_tail += 1
+        
+        tail_score = math.log(tail) if tail > 1 else tail
+        lead_score = math.log(lead) if lead > 1 else lead
+        
+        tailing_score = tail_score / full_score_tail
+        leading_score = lead_score / full_score_lead
         
         candidate.tailing_au = tailing_score
         candidate.leading_au = leading_score
         
         
-
-            
             
 
 def tailing_au_simple(candidates=None, sequences=None):

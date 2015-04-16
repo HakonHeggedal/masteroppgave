@@ -144,7 +144,6 @@ def main():
       
     miRNA_bowtie_output = "miRNA.map"
     ml_folds = 10
-      
     is_new_run = False
     
     
@@ -191,7 +190,7 @@ def main():
             
     #     assert False
             
-        print "\nhigh confidence set:",len(miRNA_high_conf),
+        print "\nhigh confidence set:", len(miRNA_high_conf),
         print miRNA_high_conf.issubset(miRNA_species.keys())
             
         print "\nreading miRNA family info (mifam)"
@@ -427,7 +426,10 @@ def main():
 
 #     aligning small sequences against hairpins
     align_small_seqs(candidates, small_reads, small_reads_count)
-    small_seq_stats(candidates)
+    
+    small_seq_stats(_mirna_hc)
+    assert 0
+    small_seq_stats(candidates)    
 #     small_seq_stats(_mirna_hc) # for testing only
     
 
