@@ -144,6 +144,9 @@ def main():
       
     miRNA_bowtie_output = "miRNA.map"
     ml_folds = 10
+    
+    
+    is_new_run = True
     is_new_run = False
     
     
@@ -438,9 +441,7 @@ def main():
 #     A/U ends for all remaining candidates
     tailing.tailing_au_fast(candidates, not_mapped_reads)
 #     tailing.tailing_au_simple(candidates, not_mapped_reads)
-    
 
-    
     
 #     tailing.tailing_au(candidates, not_mapped_reads)
     
