@@ -121,6 +121,7 @@ def best_interval(intervals, offset, max_end=100): #TODO: max limit to ends, i.e
 
 def _old_best_interval(intervals, offset):
     '''
+        old. has bugs.
         finding best interval region given a list of intervals
          returns the interval region with highest total frequency in start and end positions
         the end position must be close to the end of any interval starting in the best start position 

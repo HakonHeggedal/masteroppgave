@@ -36,10 +36,9 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, hpID_to_mseqs, candidate_tree,
         genome_offset = int(loki[3])
         hairpin = loki[4]
 
-#         _OLDmature_pos = hairpinID_to_mature[miRNAid]
         mature_seqs = hpID_to_mseqs[miRNAid] if miRNAid in hpID_to_mseqs else []
         
-
+        mature_seqs_fixed = []
         mature_pos = []
         for seq in mature_seqs:
             if strand_dir == "-":
@@ -50,42 +49,24 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, hpID_to_mseqs, candidate_tree,
             else:
                 print "mature seq not mapping:", seq, mature_seqs
             assert seq in hairpin
-        
+            mature_seqs_fixed.append(seq)
+                    
         
         if mature_pos:
             mature_pos = sorted(mature_pos)
             
         # sometimes the mature seqs overlap --> remove the last of them
         if len(mature_pos) > 1:
+            
             if mature_pos[-2][1] > mature_pos[-1][0]:
-#                 print
-#                 print mature_pos
-#                 print "remove last of overlapping mature seqs",
-#                 print mature_pos[-2],mature_pos[-2][1], mature_pos[-1], mature_pos[-1][0],
-#                 print mature_pos[-2][1] > mature_pos[-1][0]
-                
                 mature_pos.pop(-1)
-#                 print _OLDmature_pos, mature_pos
-#                 assert False
                 
-            elif mature_pos[0][1] > mature_pos[1][0]:
-#                 print
-#                 print mature_pos
-#                 print "remove last of overlapping mature seqs, part 2",
-#                 print mature_pos[0],mature_pos[0][1], mature_pos[1], mature_pos[1][0],
-#                 print mature_pos[0][1] > mature_pos[1][0]
-                
+            elif mature_pos[0][1] > mature_pos[1][0]:                
                 mature_pos.pop(1)
-#                 print _OLDmature_pos, mature_pos
-#                 assert False
+
 
 #         print _OLDmature_pos, mature_pos
         assert len(mature_pos) <= 2
-        
-
-#         mature_len = max( map(len, mature_seqs)) if mature_seqs else 10
-#         if mature_len < 12:
-#             mature_len = 20
             
         begin_5p = -1
         end_5p = -1
@@ -126,8 +107,7 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, hpID_to_mseqs, candidate_tree,
         
         tree = candidate_tree[chromosome]
         if not tree:
-#             print "no:", chromosome
-            continue # TODO : SKIP everything? ALLWAYS?
+            continue
         
         candidates = tree[genome_offset:genome_offset+len(hairpin)]
 
@@ -150,7 +130,9 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, hpID_to_mseqs, candidate_tree,
 
                 shift_start = abs(genome_offset - candidate.data.pos_5p_begin)
                 shift_end = abs( (genome_offset+len(hairpin)) - candidate.data.pos_3p_end)
-
+                
+                
+                # use candidate as miRNA
                 if shift_start + shift_end < len(hairpin) / 2:
                     
                     candidate_to_miRNAid[hashval] = miRNAid
@@ -163,10 +145,14 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, hpID_to_mseqs, candidate_tree,
                         print candidate.data.miRNAid, "miRNAid ???", miRNAid
                     assert candidate.data.candidate_type < 1 # undecided or candidate
                     
+
+                    
                     c_type = structure.TYPE_HIGH_CONF if miRNAid in miRNA_high_conf else structure.TYPE_LOW_CONF
                     candidate.data.candidate_type = c_type
                     candidate.data.miRNAid = miRNAid
+                    candidate.data.mirBase_matures = mature_seqs_fixed
                     is_candidate = True
+                    
                     break
 
 
@@ -244,6 +230,8 @@ def align_miRNAs(mirna_hits, hairpinID_to_mature, hpID_to_mseqs, candidate_tree,
                          begin_3p,
                          end_3p,
                          sequences)
+        
+        candidate.mirBase_matures = mature_seqs_fixed
         
         candidate.hairpin = hairpin
         c_type = structure.TYPE_HIGH_CONF if miRNAid in miRNA_high_conf else structure.TYPE_LOW_CONF

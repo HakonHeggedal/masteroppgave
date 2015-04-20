@@ -16,20 +16,24 @@ class Candidate:
 
         self.chromosome = chromosome
         self.chromosome_direction = strand_dir
+        
         self.hairpin_start = hairpin_start
         self.hairpin_end = hairpin_end
         self.pos_5p_begin = begin_5p # in the genome... large value
         self.pos_5p_end = end_5p
         self.pos_3p_begin = begin_3p
         self.pos_3p_end = end_3p
+        
         self.hairpin = None
         self.mapped_sequences = set()
         self.small_subs = 0
         self.small_subs_5p = 0
         self.small_subs_3p = 0
+        
         self.padding_size = 40
         self.candidate_type = TYPE_UNDECIDED
         self.miRNAid = None
+        
         self.bulge_factor = -1
         self.peak_5b = -1
         self.peak_5e = -1
@@ -64,9 +68,10 @@ class Candidate:
         self.short_seq_5p_offset = -1
         self.short_seq_3p_offset = -1
         
-        
         self.leading_au = 0
         self.tailing_au = 0
+        
+        self.mirBase_matures = None
         
         if mapped_sequences is not None:
             self.mapped_sequences = set(mapped_sequences)
@@ -124,13 +129,6 @@ class Candidate:
         
     def set_tailing(self,tailing):
         self.tailing = tailing
-    
-#     def set_small_seq(self, index, copies):
-#         self.small_subs += copies
-#         if index == self.padding_size:
-#             self.small_subs_5p += copies
-#         elif index == self.padding_size + self.pos_3p_begin - self.pos_5p_begin:
-#             self.small_subs_3p += copies
     
     def set_bitpair_entropy(self, bitpair_dict):
         self.bitpair_entropy_dict = bitpair_dict

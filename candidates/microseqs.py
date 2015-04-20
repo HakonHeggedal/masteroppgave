@@ -3,12 +3,12 @@ Created on 19. nov. 2014
 
 @author: hakon
 '''
-# import SuffixTree
+
 
 from SuffixTree import SubstringDict
 import math
 import numpy
-
+from colorama.ansi import Fore
 
 def align_small_seqs(candidates, small_seqs, small_seqs_copies):
     
@@ -25,7 +25,7 @@ def align_small_seqs(candidates, small_seqs, small_seqs_copies):
     find_candidates = SubstringDict()
 
     for i, candidate in enumerate(candidates):
-        find_candidates[candidate.hairpin_padded_40] = i 
+        find_candidates[candidate.hairpin_padded_40] = i
 
     
     # for each small seq. find the set of matching candidates
@@ -49,7 +49,6 @@ def align_small_seqs(candidates, small_seqs, small_seqs_copies):
             c_used.add(cnr)
             s_used.add(j)
         
-            
     print "\tmost frequent small hit", max_frequent_seq, "times"
     print "\tsmall seq hits:", len(s_used)
     print "\tcandidates with small seqs:",len(c_used)
@@ -74,10 +73,10 @@ def small_seq_stats(candidates):
     
     
     has_small_seqs = [c for c in candidates if c.small_subs]
-    print len(has_small_seqs)
+    print "small seqs:", len(has_small_seqs)
     
     for c in has_small_seqs:
-        print
+
         hairpin = c.hairpin_padded_40
         total_subseqs = sum(c.small_subs.values())
         
@@ -103,13 +102,30 @@ def small_seq_stats(candidates):
         area_5p_long_sum = 0.0
         area_3p_long = set(range(start_3, end_3))
         area_3p_long_sum = 0.0
-
+        
+        print "\n---------------"
+        print "---------------"
+        print "---------------"
+        print "---------------"
+        print "direction:", c.chromosome_direction
+        print c.pos_5p_begin - c.hairpin_start, c.pos_3p_end - c.hairpin_start
+        print hairpin
+        print " "*start_5 + "5"*(end_5 - start_5) + " "*(start_3 - end_5) + "3"*(end_3 - start_3)
 
         
+        
+        for seq in  c.mirBase_matures:
+            
+            start_seq = hairpin.find(seq)
+
+            print " " * (start_seq) + seq, "\t", (start_seq)
 
         for seq, copies in c.small_subs.iteritems():
-            start_seq = hairpin.find(seq) + 40
+            start_seq = hairpin.find(seq)
             
+            if 10 < len(seq) < 16:
+                print " " * (start_seq) + seq, "\t", (start_seq, copies)
+#             print " " * (start_seq) + seq, "\t", (start_seq, copies)
             
 #             end_seq = start_seq + len(seq)
 #             if start_seq > end_3:
@@ -121,12 +137,16 @@ def small_seq_stats(candidates):
             
             if start_seq in area_5p_short:
                 area_5p_short[start_seq] += copies
+                
                 if 10 < len(seq) < 16:
                     area_5p_1115[start_seq] += copies
+                    
             elif start_seq in area_3p_short:
                 area_3p_short[start_seq] += copies
+                
                 if 10 < len(seq) < 16:
                     area_3p_1115[start_seq] += copies
+                    
             else:
                 "seq not in any mature", (start_5, end_5), (start_3, end_3)
 #                 assert 0, ((start_5, end_5), (start_3, end_3))
@@ -134,27 +154,34 @@ def small_seq_stats(candidates):
 #         print "ends before:", start_5, sorted(ends_before) 
 #         print "starts after:", end_3, sorted(starts_after) 
 #         print len(c.mapped_sequences)
-        
+
+        print "+" * len(hairpin)
+        print hairpin
         if len(c.mapped_sequences):
             for i in c.mapped_sequences:
                  
                 copies = float(i.data[1].split("-")[1])
                 seq_start = i.begin-c.hairpin_start + 40
+                
+                print " " * seq_start + i.data[2], "\t", (seq_start, copies)
                  
                 if seq_start in area_5p_long:
                     area_5p_long_sum += log_over_one(copies)
                 elif seq_start in area_3p_long:
                     area_3p_long_sum += log_over_one(copies)
                 else:
-                    print seq_start,
+                    pass
+#                     print seq_start,
+            
+            print
                      
         area_5p_short_sum = log_sum(area_5p_short.values()) + 1.0
         area_3p_short_sum = log_sum(area_3p_short.values()) + 1.0
         area_5p_long_sum += 1.0
         area_3p_long_sum += 1.0
 
-        has_small_seqs_5p = area_5p_short_sum != 1.0
-        has_small_seqs_3p = area_3p_short_sum != 1.0
+#         has_small_seqs_5p = area_5p_short_sum != 1.0
+#         has_small_seqs_3p = area_3p_short_sum != 1.0
         
         ratio_short_long_5p = area_5p_short_sum / area_5p_long_sum if area_5p_long_sum else 0.0
         ratio_short_long_3p = area_3p_short_sum / area_3p_long_sum if area_3p_long_sum else 0.0
@@ -237,7 +264,6 @@ def small_seq_stats(candidates):
         c.ratio_short_long_5p = ratio_short_long_5p
         c.ratio_short_long_3p = ratio_short_long_3p
         
-        
 
 #         print min(area_5p_long), max(area_5p_long),
 #         print min(area_3p_long), max(area_3p_long)
@@ -248,19 +274,19 @@ def small_seq_stats(candidates):
 #         print ratio_short_long_5p, "\t", ratio_short_long_3p
 #         print c.ratio_short_long_5p
 #         print c.ratio_short_long_3p
+
         
         if sum(area_5p_1115.values()):
             print "\n"
-            print (start_5, end_5)
+            print (start_5, end_5), (start_3, end_3)
             print c.short_seq_5p_stdev
             print "has 5p?"
             print c.short_seq_5p_offset, avg_5p, start_5, c.has_5p
-            print c.short_seq_5p_offset
             print [(k,v) for k,v in area_5p_short.items() if v > 0.0]
              
         if sum(area_3p_1115.values()):
             print "\n"
-            print (start_3, end_3)
+            print (start_5, end_5), (start_3, end_3)
             print c.short_seq_5p_stdev
             print "has 3p?"
             print c.short_seq_3p_offset, avg_3p, start_3, c.has_3p
@@ -279,6 +305,7 @@ def small_seq_stats(candidates):
 # 
 # print [(k,v) for k,v in teste.items()]
 # print zip(teste.keys(), teste.values())
+
 
     
     
