@@ -59,14 +59,17 @@ class Candidate:
         
         self.stops_before_5p = 0.0
         self.starts_after_3p = 0.0
-        self.ratio_short_long_5p = 1.0
-        self.ratio_short_long_3p = 1.0
+        
+        self.ratio_short_long = 1.0
+        self.ratio_short_long_5p = 1.0 # merge
+        self.ratio_short_long_3p = 1.0 # merge
         self.has_short_seqs_5p = False
         self.has_short_seqs_3p = False
-        self.short_seq_5p_stdev = -1
+        self.short_seq_5p_stdev = -1 # rename hack
         self.short_seq_3p_stdev = -1
         self.short_seq_5p_offset = -1
         self.short_seq_3p_offset = -1
+        self.short_seq_align = 0.0
         
         self.leading_au = 0
         self.tailing_au = 0

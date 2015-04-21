@@ -63,24 +63,6 @@ def one_grid(param):
     return (best_score, best_c, best_gamma, results)
     
 
-    
-#     
-# c_values = [10.0 ** i for i in xrange(-3,4)]
-# gamma_values = [10.0 ** i for i in xrange(-3,4)]
-# 
-# x = 4
-# a = range(10)
-# print a
-# print a[:x]+ a[x+1:]
-# 
-# 
-# derp = [ [0]*len(c_values) for _ in range(len(gamma_values))]
-# print derp
-# derp[0][0] = 1
-# print derp
-
-
-
 
 
 

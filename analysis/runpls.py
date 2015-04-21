@@ -44,6 +44,7 @@ from matplotlib import pyplot
 
 import pickle
 from candidates.hairpin import hairpin_stats
+from misc.correlation import plot_pearson_correlation, plot_spearman_correlation
 
 def _align_bowtie(bowtie_output_file, collapsed_seq_file):
     from subprocess import check_output
@@ -431,7 +432,7 @@ def main():
     align_small_seqs(candidates, small_reads, small_reads_count)
     
     small_seq_stats(_mirna_hc)
-    assert 0
+#     assert 0
     small_seq_stats(candidates)    
 #     small_seq_stats(_mirna_hc) # for testing only
     
@@ -479,27 +480,42 @@ def main():
 #       
 #         plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead,
 #                       miRNA_high_conf, feat_name, logs )
-         
-
+    
+    removed_nonvalues = [c for c in candidates if c.ratio_short_long_5p != 1.0]
+    
+    print "nonvalues left", len( [c for c in candidates if c.ratio_short_long_5p == 1.0])
+    
+    plot_any.plot(removed_nonvalues, candidate_to_miRNA, candidate_to_dead,
+                      miRNA_high_conf, "ratio_short_long_5p", isLog=True )
 
     FEATURES = [
+                "short_seq_5p_stdev",  # easy hack
+                "short_seq_align",
+                "ratio_short_long",
+#                 "ratio_short_long_5p",  # hack: actually unscaled s/l score
                 "leading_au",
                 "tailing_au",
                 "overhang_inner",
                 "overhang_outer",
-                "ratio_short_long_5p",
-                "ratio_short_long_3p",
+#                 "ratio_short_long_5p",
+#                 "ratio_short_long_3p",
                 "loop_size",              
                 "folds_5p",
                 "folds_3p",
                 "folds_before",
                 "folds_after", 
-                "short_seq_5p_stdev",
-                "short_seq_3p_stdev",
-                "short_seq_5p_offset",
-                "short_seq_3p_offset"
+#                 "short_seq_5p_stdev", # not that
+#                 "short_seq_3p_stdev",
+#                 "short_seq_5p_offset",
+#                 "short_seq_3p_offset"
                 ]
      
+#     plot_pearson_correlation(candidates, FEATURES)
+#     plot_spearman_correlation(candidates, FEATURES)
+#     
+#     assert 0
+
+
 #     log_scaled = [True]*2 + [False]*5
 #     log_scaled = [False]*15
      
@@ -513,6 +529,7 @@ def main():
     
     print
     print " features finished:", time.clock() - start_time, " seconds"
+
 
 #     
 # 
@@ -596,8 +613,10 @@ def main():
 #     assert False
 #     # roc plot 234
 #      
+    # used by learn_param.py
     # uncomment this part to save stuff
-     
+    
+    print "saving ..."
     vector_data = map(vectorize.candidates_to_array, annotated_data)
     scaled_data = map(preprocessing.scale, vector_data)
      
