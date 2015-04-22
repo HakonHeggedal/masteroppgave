@@ -6,7 +6,8 @@ from inputs import special_types
 from ml.miRNA_conf_group import create_folds
 import itertools
 
-from candidates.microseqs import align_small_seqs, small_seq_stats
+from candidates.microseqs import align_small_seqs, small_seq_stats,\
+    length_distribution
 import numpy
 from sklearn import svm, preprocessing, metrics
 
@@ -66,8 +67,7 @@ def main():
     start_time = time.clock()
     print "starting miRNA analysis"
     
-    
-    ml_folds = 10
+
     
 #     fasta2 = ["Demux.SRhi10002.Adipocyte", "Demux.SRhi10002.Alveolar", "Demux.SRhi10002.Amniotic",
 #              "Demux.SRhi10002.Dendritic1", "Demux.SRhi10002.Dendritic2", "Demux.SRhi10002.Endothelial",
@@ -167,6 +167,8 @@ def main():
         merge.write_collapsed(all_reads_file, reads, reads_count)
         
         print "long reads:", len(reads), "small:", len(small_reads), len(small_reads_count)
+        print "fraction small / all:", len(small_reads)*1.0 / (len(small_reads) + len(reads))
+
             
             
     #     aligning to genome using bowtie
@@ -342,9 +344,9 @@ def main():
     print "loaded back", time.clock() - start_time
     
     
-
+    length_distribution(small_reads, small_reads_count)
     
-    
+    assert 0
     # overhang calculated using fold seq.
     overhang.get_alignment(candidates)
     
@@ -481,12 +483,25 @@ def main():
 #         plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead,
 #                       miRNA_high_conf, feat_name, logs )
     
-    removed_nonvalues = [c for c in candidates if c.ratio_short_long_5p != 1.0]
+#     removed_nonvalues = [c for c in candidates if c.ratio_short_long_5p != 1.0]
+#     
+#     print "nonvalues left", len( [c for c in candidates if c.ratio_short_long_5p == 1.0])
+#     
+#     plot_any.plot(removed_nonvalues, candidate_to_miRNA, candidate_to_dead,
+#                       miRNA_high_conf, "ratio_short_long_5p", isLog=True )
     
-    print "nonvalues left", len( [c for c in candidates if c.ratio_short_long_5p == 1.0])
-    
-    plot_any.plot(removed_nonvalues, candidate_to_miRNA, candidate_to_dead,
-                      miRNA_high_conf, "ratio_short_long_5p", isLog=True )
+    correlate_scores = []
+    for i in range(13, 19):
+        res = plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead,
+                  miRNA_high_conf, "short_seq_align_9_"+str(i), isLog=False )
+        
+        correlate_scores.append(res)
+       
+    for l in correlate_scores:
+        print l 
+        
+    for l in zip(*correlate_scores):
+        print l
 
     FEATURES = [
                 "short_seq_5p_stdev",  # easy hack

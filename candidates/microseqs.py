@@ -8,7 +8,73 @@ Created on 19. nov. 2014
 from SuffixTree import SubstringDict
 import math
 import numpy
+from matplotlib import pyplot
 
+
+
+def length_distribution(sequences, copies):
+    from matplotlib import pyplot
+    
+    lengths = {}
+    lenghts_unique = {}
+    for s, c in zip(sequences, copies):
+        l = len(s)
+        if l in lengths:
+            lengths[l] += c
+        else:
+            lengths[l] = c
+            
+        if l in lenghts_unique:
+            lenghts_unique[l] += 1
+        else:
+            lenghts_unique[l] = 1
+    
+    res = sorted(lengths.items())
+    lengths, rpm_sum = zip(*res)
+    print res
+    print lengths, rpm_sum
+    
+    pyplot.title("Small sequence length distribution")
+    pyplot.plot(lengths, rpm_sum)
+    pyplot.xlabel("sequence lenght")
+    pyplot.ylabel("RPM")
+    pyplot.grid(True)
+    pyplot.show()
+
+
+    res = sorted(lenghts_unique.items())
+    lengths, uniques = zip(*res)
+    print res
+    print lengths, uniques
+    
+    pyplot.title("Short sequence length distribution")
+    pyplot.plot(lengths, uniques)
+    pyplot.grid(True)
+    pyplot.xlabel("sequence lenght")
+    pyplot.ylabel("unique sequences")
+    pyplot.yticks([5000*x for x in range(0,8)])
+    pyplot.show()
+    
+    relative_copies = [r*1.0 / u for r, u in zip(rpm_sum, uniques)]
+    
+    pyplot.title("RPM vs unique, short sequences")
+    pyplot.plot(lengths, relative_copies)
+    pyplot.grid(True)
+    pyplot.xlabel("sequence lenght")
+    pyplot.ylabel("unique sequences")
+#     pyplot.yticks([5000*x for x in range(0,8)])
+    pyplot.show()
+
+
+    relative_copies = [u*1.0 / r for r, u in zip(rpm_sum, uniques)]
+    
+    pyplot.title("RPM vs unique, short sequences")
+    pyplot.plot(lengths, relative_copies)
+    pyplot.grid(True)
+    pyplot.xlabel("sequence lenght")
+    pyplot.ylabel("unique sequences")
+#     pyplot.yticks([5000*x for x in range(0,8)])
+    pyplot.show()
 
 def align_small_seqs(candidates, small_seqs, small_seqs_copies):
     
@@ -124,9 +190,9 @@ def small_seq_stats(candidates):
             start_seq = hairpin.find(seq)
             end_seq = start_seq + len(seq)
             
-            if 10 < len(seq) < 16:
+            if 5 < len(seq) < 18:
                 print " " * (start_seq) + seq, "\t", (start_seq, copies)
-                medium_short.append( (start_seq, end_seq, copies) )
+                medium_short.append( (len(seq), start_seq, end_seq, copies) )
             
             
             if start_seq in area_5p_short:
@@ -195,48 +261,107 @@ def small_seq_stats(candidates):
         
         starts = (start_5, start_3)
         ends = (end_5, end_3)
+#         
+#         small_sum = 0.0
+#         align_sum = 0.0
+#         
+#         unscaled_sum = 0.0
+#         unscaled_align_sum = 0.0
         
-        small_sum = 0.0
-        align_sum = 0.0
-        
-        unscaled_sum = 0.0
-        unscaled_align_sum = 0.0
-        
-        # finding distances to start / end of mature sequences
-        for (start, end, copies) in medium_short:
-        
-            start_dist = mindist(starts, start)
-            end_dist = mindist(ends, end)
-            
-            min_dist = min(start_dist, end_dist)
-            
-            
-#             weight = copies if copies < 1.0 else math.log(copies)
-            weight = math.log(copies+1.0)
-            
-            dist_weight = weight / (min_dist + 1.0)
-            
-            align_sum += dist_weight
-            small_sum += weight
-            
-            if min_dist < 15:
-                                
-                unscaled_sum += weight
-                unscaled_align_sum += weight / (min_dist + 1.0)
-            
-        
-        align_score = align_sum / small_sum if small_sum else 0
-        
-        c.short_seq_5p_stdev = unscaled_align_sum / unscaled_sum  if unscaled_sum else -1
         
 
         
+
+        distances = []
+        # finding distances to start / end of mature sequences
+        for (length, start, end, copies) in medium_short:
+        
+            start_dist = mindist(starts, start)
+            end_dist = mindist(ends, end)
+            min_dist = min(start_dist, end_dist)
+            
+            weight = math.log(copies+1.0)
+            
+            dist_weight_log = weight / (min_dist + 1.0)            
+            dist_weigth = copies / (min_dist + 1.0)
+            
+            distances.append( (length, dist_weigth, dist_weight_log, copies) )
+                    
+        
+        
+        dist_11_13 = sum( w for l, w, _lw, c in distances if 9 <= l <= 13 )
+        dist_11_14 = sum( w for l, w, _lw, c in distances if 9 <= l <= 14 )
+        dist_11_15 = sum( w for l, w, _lw, c in distances if 9 <= l <= 15 )
+        dist_11_16 = sum( w for l, w, _lw, c in distances if 9 <= l <= 16 )
+        dist_11_17 = sum( w for l, w, _lw, c in distances if 9 <= l <= 17 )
+        dist_11_18 = sum( w for l, w, _lw, c in distances if 9 <= l <= 18 )
+        
+        small_11_13 = sum( c for l, w, _lw, c in distances if 9 <= l <= 13 )
+        small_11_14 = sum( c for l, w, _lw, c in distances if 9 <= l <= 14 )
+        small_11_15 = sum( c for l, w, _lw, c in distances if 9 <= l <= 15 )
+        small_11_16 = sum( c for l, w, _lw, c in distances if 9 <= l <= 16 )
+        small_11_17 = sum( c for l, w, _lw, c in distances if 9 <= l <= 17 )
+        small_11_18 = sum( c for l, w, _lw, c in distances if 9 <= l <= 18 )
+
+        score_11_13 = dist_11_13 / small_11_13 if small_11_13 else 0
+        score_11_14 = dist_11_14 / small_11_14 if small_11_14 else 0
+        score_11_15 = dist_11_15 / small_11_15 if small_11_15 else 0
+        score_11_16 = dist_11_16 / small_11_16 if small_11_16 else 0
+        score_11_17 = dist_11_17 / small_11_17 if small_11_17 else 0
+        score_11_18 = dist_11_18 / small_11_18 if small_11_18 else 0
+
+        
+        c.short_seq_align_9_13 = score_11_13
+        c.short_seq_align_9_14 = score_11_14
+        c.short_seq_align_9_15 = score_11_15
+        c.short_seq_align_9_16 = score_11_16
+        c.short_seq_align_9_17 = score_11_17
+        c.short_seq_align_9_18 = score_11_18
+
+
+#         dist_9_13 = sum( w for l, w, _lw, c in distances if 9 <= l <= 13 )
+#         dist_9_14 = sum( w for l, w, _lw, c in distances if 9 <= l <= 14 )
+#         dist_9_15 = sum( w for l, w, _lw, c in distances if 9 <= l <= 15 )
+#         dist_9_16 = sum( w for l, w, _lw, c in distances if 9 <= l <= 16 )
+#         dist_9_17 = sum( w for l, w, _lw, c in distances if 9 <= l <= 17 )
+#         dist_9_18 = sum( w for l, w, _lw, c in distances if 9 <= l <= 18 )
+#         
+#         
+#         small_9_13 = sum( c for l, w, _lw, c in distances if 9 <= l <= 13 )
+#         small_9_14 = sum( c for l, w, _lw, c in distances if 9 <= l <= 14 )
+#         small_9_15 = sum( c for l, w, _lw, c in distances if 9 <= l <= 15 )
+#         small_9_16 = sum( c for l, w, _lw, c in distances if 9 <= l <= 16 )
+#         small_9_17 = sum( c for l, w, _lw, c in distances if 9 <= l <= 17 )
+#         small_9_18 = sum( c for l, w, _lw, c in distances if 9 <= l <= 18 )
+# 
+#         score_9_13 = dist_9_13 / small_9_13 if small_9_13 else 0
+#         score_9_14 = dist_9_14 / small_9_14 if small_9_14 else 0
+#         score_9_15 = dist_9_15 / small_9_15 if small_9_15 else 0
+#         score_9_16 = dist_9_16 / small_9_16 if small_9_16 else 0
+#         score_9_17 = dist_9_17 / small_9_17 if small_9_17 else 0
+#         score_9_18 = dist_9_18 / small_9_18 if small_9_18 else 0
+# 
+#         
+#         c.short_seq_align_9_13 = score_9_13
+#         c.short_seq_align_9_14 = score_9_14
+#         c.short_seq_align_9_15 = score_9_15
+#         c.short_seq_align_9_16 = score_9_16
+#         c.short_seq_align_9_17 = score_9_17
+#         c.short_seq_align_9_18 = score_9_18
+#             
+#             
+#         
+#         align_score = align_sum / small_sum if small_sum else 0
+#         
+#         c.short_seq_5p_stdev = unscaled_align_sum / unscaled_sum  if unscaled_sum else -1
+        
+
 #         c.ratio_short_long_5p = ratio_short_long_5p
 #         c.ratio_short_long_3p = ratio_short_long_3p
 
         
         c.ratio_short_long = ratio_short_long_5p + ratio_short_long_3p  
-        c.short_seq_align = align_score
+#         c.short_seq_align = align_score
         
         if unscaled_short > 1.0:
             c.ratio_short_long_5p = unscaled_short_fraction
@@ -363,4 +488,21 @@ def mindist(goalpos, pos):
 #             if c.has_3p:
 #                 offset = abs(avg_3p -  start_3)
 #                 c.short_seq_3p_offset = offset
-        
+
+
+
+
+
+
+
+
+# 
+# 
+# res =  sorted(test.items())
+# 
+# a, b =  zip(*res)
+# 
+# pyplot.plot(a,b)
+# pyplot.show()
+
+

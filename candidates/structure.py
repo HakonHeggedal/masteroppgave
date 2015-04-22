@@ -61,15 +61,25 @@ class Candidate:
         self.starts_after_3p = 0.0
         
         self.ratio_short_long = 1.0
-        self.ratio_short_long_5p = 1.0 # merge
-        self.ratio_short_long_3p = 1.0 # merge
+        self.ratio_short_long_logval = 1.0
+#         self.ratio_short_long_5p = 1.0 # merge
+#         self.ratio_short_long_3p = 1.0 # merge
         self.has_short_seqs_5p = False
         self.has_short_seqs_3p = False
-        self.short_seq_5p_stdev = -1 # rename hack
-        self.short_seq_3p_stdev = -1
-        self.short_seq_5p_offset = -1
-        self.short_seq_3p_offset = -1
+        self.short_seq_5p_stdev = -1 # not used
+        self.short_seq_3p_stdev = -1 # not used
+        self.short_seq_5p_offset = -1 # not used
+        self.short_seq_3p_offset = -1 # not used
+        
+        
         self.short_seq_align = 0.0
+        self.short_seq_align_11_13 = 0.0
+        self.short_seq_align_11_14 = 0.0
+        self.short_seq_align_11_15 = 0.0
+        self.short_seq_align_11_16 = 0.0
+        self.short_seq_align_11_17 = 0.0
+        self.short_seq_align_11_18 = 0.0 # too long
+
         
         self.leading_au = 0
         self.tailing_au = 0
@@ -83,11 +93,11 @@ class Candidate:
     def set_seq_outside(self, sequences_before, sequences_after):
         self.sequences_before = sequences_before
         self.sequences_after = sequences_after
-    
+
+
     def set_hairpin_padding(self, hairpin, padded_40):
         self.hairpin = hairpin
         self.hairpin_padded_40 = padded_40
-    
     
     def set_fold_hairpin(self, fold, en):
         self.hairpin_fold = fold

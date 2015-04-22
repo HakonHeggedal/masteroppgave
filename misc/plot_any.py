@@ -21,7 +21,7 @@ def plot(candidates, candidate_to_miRNAid, candidate_to_dead, mirna_high_conf, n
     log_text = " log scaled" if isLog else ""
     
     plot_name = name.replace("_", " ")
-    outfile = name + ".png"
+    outfile = "figures/" + name + ".png"
     
     candidate_only = []
     mirna_high = []
@@ -73,13 +73,13 @@ def plot(candidates, candidate_to_miRNAid, candidate_to_dead, mirna_high_conf, n
     print "\tKolmogorov-Smirnov test: miRNA high/low conf:"
     print "\t\tKS: ", ks_val, "two sided p val: ", p_2s
     
-    tval, prob = stats.ttest_ind(mirna_high, mirna_low, equal_var=True)
+    tval_same_var, prob_same = stats.ttest_ind(mirna_high, mirna_low, equal_var=True)
     print "\tStudents T-test (same variance): miRNA high/low conf:"
-    print "\t\ttval: ",tval, "probability: ", prob 
+    print "\t\ttval: ",tval_same_var , "probability: ", prob_same 
     
-    tval, prob = stats.ttest_ind(mirna_high, mirna_low, equal_var=False)
+    tval_diff_var, prob_diff = stats.ttest_ind(mirna_high, mirna_low, equal_var=False)
     print "\tWelchs T-test: miRNA high/low conf:"
-    print "\t\ttval: ",tval, "probability: ", prob 
+    print "\t\ttval: ",tval_diff_var , "probability: ", prob_diff 
 
     pyplot.plot(x, dens_cand(x), "b")
     pyplot.plot(y, dens_high(y), "r")
@@ -91,7 +91,8 @@ def plot(candidates, candidate_to_miRNAid, candidate_to_dead, mirna_high_conf, n
     pyplot.show()
     pyplot.close()
     
-
+    
+    return (ks_val, p_2s, tval_same_var, prob_same, tval_diff_var, prob_diff)
 
 #     print candidate_only
 #     print mirna_high
@@ -109,3 +110,17 @@ def plot(candidates, candidate_to_miRNAid, candidate_to_dead, mirna_high_conf, n
 # 
 # for feat_name, logs in zip(FEATURES, log_scaled):
 #     print 123
+
+
+
+
+
+
+
+
+
+
+
+
+
+
