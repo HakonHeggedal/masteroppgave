@@ -46,6 +46,7 @@ from matplotlib import pyplot
 import pickle
 from candidates.hairpin import hairpin_stats
 from misc.correlation import plot_pearson_correlation, plot_spearman_correlation
+from misc.plot_lines import plot_kstest, plot_ttest
 
 def _align_bowtie(bowtie_output_file, collapsed_seq_file):
     from subprocess import check_output
@@ -158,7 +159,7 @@ def main():
         
         print "merging",len(fasta_files), "collapsed files" if len(fasta_files)>1 else ""
             
-        dict_collapsed = merge.collapse_collapsed(fasta_files, min_len=10, min_count=2)
+        dict_collapsed = merge.collapse_collapsed(fasta_files, min_len=8, min_count=2)
             
     #     split small and larger sequences
     #     write reads to file
@@ -344,9 +345,9 @@ def main():
     print "loaded back", time.clock() - start_time
     
     
-    length_distribution(small_reads, small_reads_count)
+#     length_distribution(small_reads, small_reads_count)
     
-    assert 0
+#     assert 0
     # overhang calculated using fold seq.
     overhang.get_alignment(candidates)
     
@@ -490,23 +491,54 @@ def main():
 #     plot_any.plot(removed_nonvalues, candidate_to_miRNA, candidate_to_dead,
 #                       miRNA_high_conf, "ratio_short_long_5p", isLog=True )
     
-    correlate_scores = []
-    for i in range(13, 19):
+    short_correlate_13_17_max = []
+    maxlen_range = range(13, 18)
+    
+    for i in maxlen_range:
         res = plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead,
-                  miRNA_high_conf, "short_seq_align_9_"+str(i), isLog=False )
+                  miRNA_high_conf, "short_seq_align_10_"+str(i), isLog=False )
         
-        correlate_scores.append(res)
+        short_correlate_13_17_max.append(res)
        
-    for l in correlate_scores:
+    for l in short_correlate_13_17_max:
         print l 
-        
-    for l in zip(*correlate_scores):
+    
+    print
+    for l in zip(*short_correlate_13_17_max):
         print l
+        
+    (ks_val, p_2s_ks, t_student, p_student, t_welch, p_welch) = zip(*short_correlate_13_17_max)
+    
+    
+    plot_kstest(ks_val, maxlen_range, True)
+    plot_ttest(t_student, t_welch, maxlen_range, True)
+    
+        
+
+    short_correlate_8_17_min = []
+    for i in range(8, 17):
+        res = plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead,
+                  miRNA_high_conf, "short_seq_align_" + str(i) + "_17", isLog=False )
+        
+        short_correlate_8_17_min.append(res)
+       
+    for l in short_correlate_8_17_min:
+        print l 
+    
+    print
+    for l in zip(*short_correlate_8_17_min):
+        print l
+        
+    (ks_val, p_2s_ks, t_student, p_student, t_welch, p_welch) = zip(*short_correlate_8_17_min)
+    
+    plot_kstest(ks_val, maxlen_range, False)
+    plot_ttest(t_student, t_welch, maxlen_range, False)
+
 
     FEATURES = [
-                "short_seq_5p_stdev",  # easy hack
-                "short_seq_align",
+#                 "short_seq_align", # 0 until best val is found
                 "ratio_short_long",
+                "ratio_short_long_logval",
 #                 "ratio_short_long_5p",  # hack: actually unscaled s/l score
                 "leading_au",
                 "tailing_au",
@@ -529,6 +561,7 @@ def main():
 #     plot_spearman_correlation(candidates, FEATURES)
 #     
 #     assert 0
+
 
 
 #     log_scaled = [True]*2 + [False]*5
@@ -654,6 +687,8 @@ def main():
 #     main()
 main()
 # print "finished everything in ", time.clock() - start_time, " seconds"
+
+
 
 
 

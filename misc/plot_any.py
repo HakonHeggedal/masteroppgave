@@ -81,16 +81,16 @@ def plot(candidates, candidate_to_miRNAid, candidate_to_dead, mirna_high_conf, n
     print "\tWelchs T-test: miRNA high/low conf:"
     print "\t\ttval: ",tval_diff_var , "probability: ", prob_diff 
 
-    pyplot.plot(x, dens_cand(x), "b")
-    pyplot.plot(y, dens_high(y), "r")
-    pyplot.plot(z, dens_low(z), "g")
-    pyplot.plot(ae, dens_dead(ae), "m")
-    pyplot.savefig(outfile)
+    pyplot.plot(x, dens_cand(x), "b", label="Candidates")
+    pyplot.plot(y, dens_high(y), "r", label="miRNA high confidence")
+    pyplot.plot(z, dens_low(z), "g", label="miRNA low confidence")
+    pyplot.plot(ae, dens_dead(ae), "m", label="dead miRNA")
+    pyplot.legend(loc='upper left') # make legend using this one
     pyplot.xlabel(plot_name + log_text)
     pyplot.ylabel("frequency")
+    pyplot.savefig(outfile)
     pyplot.show()
     pyplot.close()
-    
     
     return (ks_val, p_2s, tval_same_var, prob_same, tval_diff_var, prob_diff)
 

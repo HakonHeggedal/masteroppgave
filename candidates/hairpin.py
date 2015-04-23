@@ -55,6 +55,8 @@ def hairpin_stats(candidates, mirna, hc_mirna):
             
             candidate.folds_5p = folds_5p
             candidate.folds_before = folds_before
+            candidate.estimate_3pb = est_3pb
+            candidate.estimate_3pe = est_3pe
             
             
             
@@ -89,6 +91,7 @@ def hairpin_stats(candidates, mirna, hc_mirna):
             
             candidate.folds_3p = folds_3p
             candidate.folds_after = folds_after
+            candidate.estimate_5pb
             
             
             if offset_3pb != -1000 and offset_3pe != -1000:

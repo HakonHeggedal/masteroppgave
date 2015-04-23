@@ -46,6 +46,11 @@ class Candidate:
         self.has_hairpin_struct = False
         self.has_hairpin_struct_5p = False
         self.has_hairpin_struct_3p = False
+        
+        self.estimate_5pb = -1 # only if there is no 5p or 3p seq
+        self.estimate_5pe = -1
+        self.estimate_3pb = -1
+        self.estimate_3pe = -1
 
         self.overhang_inner = 15
         self.overhang_outer = 15
@@ -73,12 +78,24 @@ class Candidate:
         
         
         self.short_seq_align = 0.0
-        self.short_seq_align_11_13 = 0.0
-        self.short_seq_align_11_14 = 0.0
-        self.short_seq_align_11_15 = 0.0
-        self.short_seq_align_11_16 = 0.0
-        self.short_seq_align_11_17 = 0.0
-        self.short_seq_align_11_18 = 0.0 # too long
+        self.short_seq_align_10_13 = 0.0
+        self.short_seq_align_10_14 = 0.0
+        self.short_seq_align_10_15 = 0.0
+        self.short_seq_align_10_16 = 0.0
+        self.short_seq_align_10_17 = 0.0
+        self.short_seq_align_10_18 = 0.0 # too long ? 
+        self.short_seq_align_10_19 = 0.0 # too long ? 
+
+        self.short_seq_align_8_17 = 0.0 # too long ? 
+        self.short_seq_align_9_17 = 0.0 # too long ? 
+        self.short_seq_align_10_17 = 0.0 # too long ? 
+        self.short_seq_align_11_17 = 0.0 # too long ? 
+        self.short_seq_align_12_17 = 0.0 # too long ? 
+        self.short_seq_align_13_17 = 0.0 # too long ? 
+        self.short_seq_align_14_17 = 0.0 # too long ? 
+        self.short_seq_align_15_17 = 0.0 # too long ? 
+        self.short_seq_align_16_17 = 0.0 # too long ? 
+
 
         
         self.leading_au = 0
