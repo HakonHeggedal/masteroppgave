@@ -45,7 +45,8 @@ from matplotlib import pyplot
 
 import pickle
 from candidates.hairpin import hairpin_stats
-from misc.correlation import plot_pearson_correlation, plot_spearman_correlation
+# from misc import correlati   # plot_pearson_correlation, plot_spearman_correlation
+# from misc import
 from misc.plot_lines import plot_kstest, plot_ttest
 
 def _align_bowtie(bowtie_output_file, collapsed_seq_file):
@@ -233,8 +234,7 @@ def main():
     #     candidate_tree, sequence_tree, candidates, seq_to_candidates = interval_tree_search.find_candidates(fixed_lines)
         candidate_tree, sequence_tree, candidates, seq_to_candidates = interval_tree_search.find_candidates_2(fixed_lines)
             
-            
-    #     assert False
+
         print "\n\tfound candidates in ", time.clock() - start_time, " seconds"
         print "\tbowtie hits", len(fixed_lines)
         print "\tcandidate tree", len(candidate_tree)
@@ -246,8 +246,7 @@ def main():
     # 0            1   2[0] [1]      [2] [3]
     # ['1-15830', '-', 'gi|224589818|ref|NC_000006.11|',
     #         NC_000006.11
-    #    heterogenity.heterogenity(candidates)
-    #     assert False
+
         
         print "\naligning miRNAs to sequences"
         candidate_to_miRNA = interval_tree_miRNA.align_miRNAs(miRNA_bowtie_hits,
@@ -269,26 +268,7 @@ def main():
                                                                  sequence_tree,
                                                                  seq_to_candidates)
             
-    #
-    #     print len(candidate_to_dead)
-    #     assert False
-      
-      
-      
-    # 
-    #     pre_hairpin.hairpin_cutoff_seqs(candidates)
-    #     
-    #     
-    #     plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead, miRNA_high_conf, "stops_before_5p", False )
-    #     plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead, miRNA_high_conf, "starts_after_3p", False )
-    #     
-    #     assert False
-    #     
-    #     def _has_sequences_outside(candidate):
-    #         candidate.sequences_before
-    #         candidate.sequences_after
-    #         
-    #     map(_has_sequences_outside, candidates)
+
             
         print "\npadding all miRNA and Candidates"
         gene.include_padding(candidates)
@@ -544,14 +524,12 @@ def main():
                 "tailing_au",
                 "overhang_inner",
                 "overhang_outer",
-#                 "ratio_short_long_5p",
-#                 "ratio_short_long_3p",
                 "loop_size",              
                 "folds_5p",
                 "folds_3p",
                 "folds_before",
                 "folds_after", 
-#                 "short_seq_5p_stdev", # not that
+#                 "short_seq_5p_stdev", # not in use
 #                 "short_seq_3p_stdev",
 #                 "short_seq_5p_offset",
 #                 "short_seq_3p_offset"
