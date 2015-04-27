@@ -31,13 +31,13 @@ def plot_pearson_correlation(candidates, feat_names):
     for i, feature1 in enumerate(features):
         for j, feature2 in enumerate(features):
             
-            score, pval = pearsonr(feature1, feature2)
+            score, _pval = pearsonr(feature1, feature2)
             
             results[i][j] = abs(score)
     
     feat_names_space = [n.replace("_", " ") for n in feat_names]         
     
-    plot_color_grid(results, feat_names_space, feat_names_space)
+    plot_color_grid(results, feat_names_space, feat_names_space, "pearson")
     
     for r in results: print r
 
@@ -52,13 +52,13 @@ def plot_spearman_correlation(candidates, feat_names):
     for i, feature1 in enumerate(features):
         for j, feature2 in enumerate(features):
             
-            score, pval = spearmanr(feature1, feature2)
+            score, _pval = spearmanr(feature1, feature2)
             
             results[i][j] = abs(score)
     
     feat_names_space = [n.replace("_", " ") for n in feat_names]         
     
-    plot_color_grid(results, feat_names_space, feat_names_space)
+    plot_color_grid(results, feat_names_space, feat_names_space, "spearman")
             
     for r in results: print r
     
@@ -67,13 +67,13 @@ def plot_spearman_correlation(candidates, feat_names):
     
     
 
-def plot_color_grid(arraylike, row_labels, column_labels):
+def plot_color_grid(arraylike, row_labels, column_labels, name):
     
     
     arraylike = numpy.array(arraylike)
         #  create 
-    fig, ax = plot.subplots()
-    heatmap = ax.pcolor(arraylike)
+    _fig, ax = plot.subplots()
+    _heatmap = ax.pcolor(arraylike)
      
     # put the major ticks at the middle of each cell
     ax.set_xticks(numpy.arange(arraylike.shape[0])+0.5, minor=False)
@@ -82,9 +82,7 @@ def plot_color_grid(arraylike, row_labels, column_labels):
     ax.set_xticklabels(row_labels, minor=False,  rotation="vertical")
     ax.set_yticklabels(column_labels, minor=False)
     
-#     plot.xlabel("gamma")
-#     plot.ylabel("C")
-    plot.show()
-#     plot.savefig(plot_name)
+#     plot.show()
+    plot.savefig("figures/"+name+".png")
 
 

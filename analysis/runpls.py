@@ -45,9 +45,9 @@ from matplotlib import pyplot
 
 import pickle
 from candidates.hairpin import hairpin_stats
-# from misc import correlati   # plot_pearson_correlation, plot_spearman_correlation
 # from misc import
 from misc.plot_lines import plot_kstest, plot_ttest
+from misc.correlation import plot_spearman_correlation, plot_pearson_correlation
 
 def _align_bowtie(bowtie_output_file, collapsed_seq_file):
     from subprocess import check_output
@@ -325,7 +325,8 @@ def main():
     print "loaded back", time.clock() - start_time
     
     
-#     length_distribution(small_reads, small_reads_count)
+    
+    length_distribution(small_reads, small_reads_count)
     
 #     assert 0
     # overhang calculated using fold seq.
@@ -414,7 +415,7 @@ def main():
 #     aligning small sequences against hairpins
     align_small_seqs(candidates, small_reads, small_reads_count)
     
-    small_seq_stats(_mirna_hc)
+#     small_seq_stats(_mirna_hc)
 #     assert 0
     small_seq_stats(candidates)    
 #     small_seq_stats(_mirna_hc) # for testing only
@@ -496,7 +497,8 @@ def main():
         
 
     short_correlate_8_17_min = []
-    for i in range(8, 17):
+    minlen_range = range(8, 18)
+    for i in minlen_range:
         res = plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead,
                   miRNA_high_conf, "short_seq_align_" + str(i) + "_17", isLog=False )
         
@@ -511,42 +513,30 @@ def main():
         
     (ks_val, p_2s_ks, t_student, p_student, t_welch, p_welch) = zip(*short_correlate_8_17_min)
     
-    plot_kstest(ks_val, maxlen_range, False)
-    plot_ttest(t_student, t_welch, maxlen_range, False)
+    plot_kstest(ks_val, minlen_range, False)
+    plot_ttest(t_student, t_welch, minlen_range, False)
 
 
     FEATURES = [
 #                 "short_seq_align", # 0 until best val is found
                 "ratio_short_long",
                 "ratio_short_long_logval",
-#                 "ratio_short_long_5p",  # hack: actually unscaled s/l score
                 "leading_au",
                 "tailing_au",
                 "overhang_inner",
                 "overhang_outer",
-                "loop_size",              
+                "loop_size",
                 "folds_5p",
                 "folds_3p",
                 "folds_before",
                 "folds_after", 
-#                 "short_seq_5p_stdev", # not in use
-#                 "short_seq_3p_stdev",
-#                 "short_seq_5p_offset",
-#                 "short_seq_3p_offset"
                 ]
      
-#     plot_pearson_correlation(candidates, FEATURES)
-#     plot_spearman_correlation(candidates, FEATURES)
-#     
-#     assert 0
+    plot_pearson_correlation(candidates, FEATURES)
+    plot_spearman_correlation(candidates, FEATURES)
 
 
 
-#     log_scaled = [True]*2 + [False]*5
-#     log_scaled = [False]*15
-     
-#     print log_scaled
-#     for feat_name, logs in zip(FEATURES, log_scaled):
     for feat_name in FEATURES:
       
         plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead,

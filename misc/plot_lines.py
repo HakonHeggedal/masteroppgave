@@ -6,6 +6,7 @@ Created on 22. apr. 2015
 
 
 from matplotlib import pyplot
+import numpy
 
 
     
@@ -45,6 +46,26 @@ def plot_ttest(t_student, t_welch, lengths, is_maxlen=True):
     
     maxormin = "max" if is_maxlen else "min"
     
+    smin = str(lengths[0])
+    smax = str(lengths[-1])
+    name = "figures/T-test" + smin + "_" + smax + maxormin + ".png"
+    
+    
+    lengths = numpy.array(lengths)
+    t_student = numpy.array(t_student)
+    t_welch = numpy.array(t_welch)
+    
+    
+    print len(lengths)
+    print len(t_student)
+    print len(t_welch)
+    print lengths
+    print
+    print t_student
+    print 
+    print t_welch
+    print
+    
     pyplot.title("small sequences")
     pyplot.grid(True)
     pyplot.plot(lengths, t_student, label="Students T-test")
@@ -58,11 +79,24 @@ def plot_ttest(t_student, t_welch, lengths, is_maxlen=True):
     pyplot.xticks(lengths)
     
     pyplot.show()
+    pyplot.savefig(name)
 
 
 def plot_kstest(ks_scores, lengths, is_maxlen=True):
     
     maxormin = "max" if is_maxlen else "min"
+    
+    smin = str(lengths[0])
+    smax = str(lengths[-1])
+    name = "figures/KS-test_" + smin + "_" + smax + maxormin + ".png"
+    print len(lengths)
+    print len(ks_scores)
+    print lengths
+    print
+    print ks_scores
+    
+    lengths = numpy.array(lengths)
+    ks_scores = numpy.array(ks_scores)
     
     pyplot.plot(lengths, ks_scores, label="KS-test" )
     pyplot.xlabel(maxormin+" sequence length")
@@ -73,7 +107,16 @@ def plot_kstest(ks_scores, lengths, is_maxlen=True):
     pyplot.ylim(ymin=0)
     
     pyplot.show()
-  
+    pyplot.savefig(name)
+    
+    
+
+# l = [8, 9, 10, 11, 12, 13, 14, 15, 16]
+# 
+# k = (0.32195773081201329, 0.39503893214682978, 0.48829810901001114, 0.60422691879866519, 0.62631813125695213, 0.66547274749721919, 0.66760845383759737, 0.6690989988876529, 0.65937708565072306)
+# 
+# plot_kstest(k, l, False)
+
 # r = range(13, 18)
 # 
 # ks_val = (0.11948832035595103, 0.14335928809788656, 0.15668520578420464, 0.18002224694104552, 0.19942157953281425)

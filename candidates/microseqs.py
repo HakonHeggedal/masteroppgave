@@ -14,7 +14,7 @@ from candidates.interval_tree_misc import reverse_compliment
 
 
 def length_distribution(sequences, copies):
-    from matplotlib import pyplot
+
     
     lengths = {}
     lenghts_unique = {}
@@ -34,48 +34,55 @@ def length_distribution(sequences, copies):
     lengths, rpm_sum = zip(*res)
     print res
     print lengths, rpm_sum
-    
-    pyplot.title("Small sequence length distribution")
+    name = "Short sequence length distribution RPM"
+    save_name = "short_rpm_dist"
+    pyplot.title(name)
     pyplot.plot(lengths, rpm_sum)
     pyplot.xlabel("sequence lenght")
     pyplot.ylabel("RPM")
     pyplot.grid(True)
     pyplot.show()
-
-
+    pyplot.savefig("figures/" + save_name + ".png")
+    
+    
     res = sorted(lenghts_unique.items())
     lengths, uniques = zip(*res)
     print res
     print lengths, uniques
     
-    pyplot.title("Short sequence length distribution")
+    name = "Short unique sequence length distribution"
+    save_name = "short_unique_dist"
+    pyplot.title(name)
     pyplot.plot(lengths, uniques)
     pyplot.grid(True)
     pyplot.xlabel("sequence lenght")
     pyplot.ylabel("unique sequences")
     pyplot.yticks([5000*x for x in range(0,8)])
     pyplot.show()
+    pyplot.savefig("figures/" + name + ".png")
     
     relative_copies = [r*1.0 / u for r, u in zip(rpm_sum, uniques)]
-    
-    pyplot.title("RPM vs unique, short sequences")
+    name = "RPM vs unique, short sequences"
+    pyplot.title(name)
     pyplot.plot(lengths, relative_copies)
     pyplot.grid(True)
     pyplot.xlabel("sequence lenght")
     pyplot.ylabel("unique sequences")
 #     pyplot.yticks([5000*x for x in range(0,8)])
     pyplot.show()
+    pyplot.savefig("figures/" + name + ".png")
 
 
     relative_copies = [u*1.0 / r for r, u in zip(rpm_sum, uniques)]
-    
-    pyplot.title("RPM vs unique, short sequences")
+    name = "unique vs RPM, short sequences"
+    pyplot.title(name)
     pyplot.plot(lengths, relative_copies)
     pyplot.grid(True)
     pyplot.xlabel("sequence lenght")
     pyplot.ylabel("unique sequences")
 #     pyplot.yticks([5000*x for x in range(0,8)])
     pyplot.show()
+    pyplot.savefig("figures/" + name + ".png")
 
 def align_small_seqs(candidates, small_seqs, small_seqs_copies):
     

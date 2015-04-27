@@ -95,6 +95,7 @@ class Candidate:
         self.short_seq_align_14_17 = 0.0 # too long ? 
         self.short_seq_align_15_17 = 0.0 # too long ? 
         self.short_seq_align_16_17 = 0.0 # too long ? 
+        self.short_seq_align_17_17 = 0.0 # too long ? 
 
 
         
