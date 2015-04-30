@@ -248,7 +248,6 @@ def small_seq_stats(candidates):
             medium_short.append( (len(seq), start_seq, end_seq, copies) )
         
         
-
         print "+" * len(hairpin)
         print hairpin
         
@@ -354,7 +353,7 @@ def small_seq_stats(candidates):
         def score_distance(minlen, maxlen):
             
             distance_weighted = sum( w for l, w, _lw, c in distances if minlen <= l <= maxlen )
-            all_weights = small_10_13 = sum( c for l, w, _lw, c in distances if minlen <= l <= maxlen )
+            all_weights = sum( c for l, w, _lw, c in distances if minlen <= l <= maxlen )
             score = distance_weighted / all_weights if all_weights else 0
             
             return score
@@ -370,51 +369,32 @@ def small_seq_stats(candidates):
         
         
 
-        c.short_seq_align_8_17 = score_distance(8,17)
-        c.short_seq_align_9_17 = score_distance(9,17)
-        c.short_seq_align_10_17 = score_distance(10,17)
-        c.short_seq_align_11_17 = score_distance(11,17)
-        c.short_seq_align_12_17 = score_distance(12,17)
-        c.short_seq_align_13_17 = score_distance(13,17)
-        c.short_seq_align_14_17 = score_distance(14,17)
-        c.short_seq_align_15_17 = score_distance(15,17)
-        c.short_seq_align_16_17 = score_distance(16,17)
+        c.short_seq_align_8_17 = score_distance(8,8)
+        c.short_seq_align_9_17 = score_distance(9,9)
+        c.short_seq_align_10_17 = score_distance(10,10)
+        c.short_seq_align_11_17 = score_distance(11,11)
+        c.short_seq_align_12_17 = score_distance(12,12)
+        c.short_seq_align_13_17 = score_distance(13,13)
+        c.short_seq_align_14_17 = score_distance(14,14)
+        c.short_seq_align_15_17 = score_distance(15,15)
+        c.short_seq_align_16_17 = score_distance(16,16)
         c.short_seq_align_17_17 = score_distance(17,17)
         
-        
-        
-        
-
-
-
-#         dist_10_13 = sum( w for l, w, _lw, c in distances if 10 <= l <= 13 )
-#         dist_10_14 = sum( w for l, w, _lw, c in distances if 10 <= l <= 14 )
-#         dist_10_15 = sum( w for l, w, _lw, c in distances if 10 <= l <= 15 )
-#         dist_10_16 = sum( w for l, w, _lw, c in distances if 10 <= l <= 16 )
-#         dist_10_17 = sum( w for l, w, _lw, c in distances if 10 <= l <= 17 )
-#         dist_10_18 = sum( w for l, w, _lw, c in distances if 10 <= l <= 18 )
+#         c.short_seq_align_8_17 = score_distance(8,17)
+#         c.short_seq_align_9_17 = score_distance(9,17)
+#         c.short_seq_align_10_17 = score_distance(10,17)
+#         c.short_seq_align_11_17 = score_distance(11,17)
+#         c.short_seq_align_12_17 = score_distance(12,17)
+#         c.short_seq_align_13_17 = score_distance(13,17)
+#         c.short_seq_align_14_17 = score_distance(14,17)
+#         c.short_seq_align_15_17 = score_distance(15,17)
+#         c.short_seq_align_16_17 = score_distance(16,17)
+#         c.short_seq_align_17_17 = score_distance(17,17)
 #         
-#         small_10_13 = sum( c for l, w, _lw, c in distances if 10 <= l <= 13 )
-#         small_10_14 = sum( c for l, w, _lw, c in distances if 10 <= l <= 14 )
-#         small_10_15 = sum( c for l, w, _lw, c in distances if 10 <= l <= 15 )
-#         small_10_16 = sum( c for l, w, _lw, c in distances if 10 <= l <= 16 )
-#         small_10_17 = sum( c for l, w, _lw, c in distances if 10 <= l <= 17 )
-#         small_10_18 = sum( c for l, w, _lw, c in distances if 10 <= l <= 18 )
-# 
-#         score_10_13 = dist_10_13 / small_10_13 if small_10_13 else 0
-#         score_10_14 = dist_10_14 / small_10_14 if small_10_14 else 0
-#         score_10_15 = dist_10_15 / small_10_15 if small_10_15 else 0
-#         score_10_16 = dist_10_16 / small_10_16 if small_10_16 else 0
-#         score_10_17 = dist_10_17 / small_10_17 if small_10_17 else 0
-#         score_10_18 = dist_10_18 / small_10_18 if small_10_18 else 0
-# 
-#         
-#         c.short_seq_align_10_13 = score_10_13
-#         c.short_seq_align_10_14 = score_10_14
-#         c.short_seq_align_10_15 = score_10_15
-#         c.short_seq_align_10_16 = score_10_16
-#         c.short_seq_align_10_17 = score_10_17
-#         c.short_seq_align_10_18 = score_10_18
+        
+
+
+
 
 def min_dist(goalpos, pos):
     

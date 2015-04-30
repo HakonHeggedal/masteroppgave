@@ -6,6 +6,7 @@ Created on 29. okt. 2014
 from candidates.interval_tree_search import MIN_HAIRPIN_LOOP
 
 
+
 def read_miRNA_fasta(fasta_file):
     ''' reads miRNAs from mirbase file, and returns {id: dna_seq}'''
     
@@ -209,10 +210,82 @@ def combine_hairpin_mature(id_to_hairpin, id_to_mature):
     return harpinID_to_mature, harpinID_to_matseqs
 
 
+def write_human_hairpins(hp_dict, human_hairpin_filename):
+    
+    with open(human_hairpin_filename, "w") as write_hp:
+        
+        for miRNA_name, seq in hp_dict.iteritems():
+            
+            write_hp.write(miRNA_name + "\n")
+            write_hp.write(seq + "\n")
 
 
+def not_human_file(mature_file, other_mature_file):
+    
+    
+    with open(other_mature_file, "w") as write_human:
+    
+        with open(mature_file) as matures:
+            
+            print "opened both"
+            
+            is_human = False
+            info_line = ""
+            for line in matures:
+                line = line.strip()
+                if line[0] == ">":
+    #                     print line[:4],
+                    is_human = False
+                    if line[:4] != ">hsa":
+                        is_human = True
+                        info_line = line
+    #                         print "-",
+                else:
+    #                     if len(line) > 5:
+                    if is_human:
+    
+                        info_line = info_line.split(" ")[0] + "\n"
+                        line = line + "\n"
+                        write_human.write(info_line)
+                        write_human.write(line)
+    #                         print ".",
+                    
 
 
+def human_only_file(mature_file, human_mature_file):
+    
+    with open(human_mature_file, "w") as write_human:
+        
+        with open(mature_file) as matures:
+            
+            print "opened both"
+            
+            is_human = False
+            info_line = ""
+            for line in matures:
+                line = line.strip()
+                if line[0] == ">":
+#                     print line[:4],
+                    is_human = False
+                    if line[:4] == ">hsa":
+                        is_human = True
+                        info_line = line
+#                         print "-",
+                else:
+#                     if len(line) > 5:
+                    if is_human:
+    
+                        info_line = info_line.split(" ")[0] + "\n"
+                        line = line + "\n"
+                        write_human.write(info_line)
+                        write_human.write(line)
+#                         print ".",
+                    
+
+            
+                     
+            
+        
 
 
 def write_miRNA(mi_rnas, filename):

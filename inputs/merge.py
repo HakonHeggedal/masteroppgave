@@ -107,6 +107,67 @@ def write_collapsed(output_name, reads, reads_count):
             file_out.write(read + "\n")
             
 
+def one_large_fasta(fasta_files, write_file_name):
+
+    all_sequences = {}
+    print 123
+    
+    for filename in fasta_files:
+        
+        current_seqs = {}
+        
+        total_count = 0
+        total_norm_seqs = 0
+
+
+        print filename
+        
+        with open(filename) as fasta_file:
+            
+            count = 0
+            for line in fasta_file:
+                line = line.strip()
+                if not line:
+                    count = 0
+                    continue
+                if line[0] == ">":
+                    count = int(line.split("-")[1])
+                    total_count += count
+                else:                        
+                    
+                    if len(line) >= 10 and count >= 0 and _legal_DNA(line):
+                        current_seqs[line] = count
+                        count = 0
+        
+        for s, c  in current_seqs.iteritems():
+#             c_norm = c * 1000000.0 / total_count
+            c_norm = c 
+            
+            total_norm_seqs += c_norm
+
+            
+            if s in all_sequences:
+                all_sequences[s] += c_norm
+            else:
+                all_sequences[s] = c_norm
+    
+    print "writing to file"
+    i = 0
+    with open(write_file_name, "w") as write_file:
+        
+        for i, (seq, count) in enumerate(all_sequences.iteritems()):
+            
+            identifier = ">" + str(i) + "_x" + str(count) + "\n"
+            
+            write_file.write(identifier)
+            write_file.write(seq + "\n")
+            
+    print "one large file. nr of sequences:", i
+    
+    return
+ 
+             
+    
 
 def _legal_DNA(sequence, chars=set("ACGT")):
     

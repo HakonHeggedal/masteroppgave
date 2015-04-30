@@ -4,11 +4,11 @@ from inputs import special_types
 
 
 from ml.miRNA_conf_group import create_folds
-import itertools
+# import itertools
 
 from candidates.microseqs import align_small_seqs, small_seq_stats,\
     length_distribution
-import numpy
+# import numpy
 from sklearn import svm, preprocessing, metrics
 
 
@@ -23,7 +23,7 @@ from inputs import dead_mirna
 
 from candidates import interval_tree_search, interval_tree_miRNA, interval_tree_dead
 from candidates import hairpin
-from candidates import stem
+# from candidates import stem
 from candidates import heterogenity
 from candidates import vienna
 from candidates import tailing
@@ -35,19 +35,19 @@ from candidates import overhang
 
 from misc import plot_any
 
-from ml import vectorize, param_estimate
+from ml import vectorize
 
 
-from multiprocessing import Pool
 
-
-from matplotlib import pyplot
+# from matplotlib import pyplot
 
 import pickle
 from candidates.hairpin import hairpin_stats
 # from misc import
 from misc.plot_lines import plot_kstest, plot_ttest
 from misc.correlation import plot_spearman_correlation, plot_pearson_correlation
+from inputs.merge import one_large_fasta
+from inputs.mirbase import human_only_file, not_human_file, write_human_hairpins
 
 def _align_bowtie(bowtie_output_file, collapsed_seq_file):
     from subprocess import check_output
@@ -60,8 +60,6 @@ def _align_bowtie(bowtie_output_file, collapsed_seq_file):
                    human_index, collapsed_seq_file, bowtie_output_file]
 
     print check_output(bowtie_cmds)
-
-
 
 
 
@@ -112,6 +110,9 @@ def main():
   
 #     fasta_files =  ["SRR207110.collapsed", "SRR207111.collapsed", "SRR207112.collapsed"] 
 #     fasta_file = "SRR797062.fa"
+
+
+
   
     fasta_files = ["SRR797062.collapsed"] #  small file for fast testing
     fasta_files_large_folder = ["fastas/Demux.SRhi." + str(i) + ".collapsed"  for i in range(296)]
@@ -151,6 +152,29 @@ def main():
     
     is_new_run = True
     is_new_run = False
+    
+    #===========================================================================
+    #  making data for mirdeep2
+    #===========================================================================
+#     not_human_file(mature_seq_file, "other_matures.fa")
+#     assert 0
+#     human_only_file(mature_seq_file, "human_matures.fa")
+#     
+#     
+#     hsa_to_hairpin, other_to_hairpin = mirbase.read_miRNA_fasta(hairpin_file)
+#     
+#     write_human_hairpins(hsa_to_hairpin, "human_hairpins.fa")
+#     assert 0
+#     
+#     
+#     assert 0
+#     
+    one_large_fasta(fasta_files, "all_fasta.fa")
+    assert 0
+    
+    #===========================================================================
+    # 
+    #===========================================================================
     
     
     if is_new_run:
@@ -531,7 +555,7 @@ def main():
                 "folds_before",
                 "folds_after", 
                 ]
-     
+    
     plot_pearson_correlation(candidates, FEATURES)
     plot_spearman_correlation(candidates, FEATURES)
 

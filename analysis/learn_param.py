@@ -14,12 +14,20 @@ import pickle
 from matplotlib import pyplot as plot
 import time
 import math
-from sklearn import svm
+from sklearn import svm, metrics
 import itertools
 
 
 
-
+def roc_plot(test_data, test_data_annotations):
+    probs = learner.predict_proba(test_data)
+    fpr, tpr, _thresholds = metrics.roc_curve(test_data_annotations, probs[:,1])
+    print fpr, tpr
+    roc_auc = metrics.auc(fpr, tpr)
+    print "area under curve:", roc_auc
+     
+    plot.plot(fpr, tpr)
+    plot.show()
 
 
 def filter_miRNAs(data, annotations):
@@ -134,20 +142,20 @@ column_labels = c_values
 
 
 #  create 
-fig, ax = plot.subplots()
-heatmap = ax.pcolor(array_res)
- 
-# put the major ticks at the middle of each cell
-ax.set_xticks(numpy.arange(array_res.shape[0])+0.5, minor=False)
-ax.set_yticks(numpy.arange(array_res.shape[1])+0.5, minor=False)
- 
-ax.set_xticklabels(row_labels, minor=False,  rotation="vertical")
-ax.set_yticklabels(column_labels, minor=False)
-
-plot.xlabel("gamma")
-plot.ylabel("C")
-plot.show()
-plot.savefig(plot_name)
+# fig, ax = plot.subplots()
+# heatmap = ax.pcolor(array_res)
+#  
+# # put the major ticks at the middle of each cell
+# ax.set_xticks(numpy.arange(array_res.shape[0])+0.5, minor=False)
+# ax.set_yticks(numpy.arange(array_res.shape[1])+0.5, minor=False)
+#  
+# ax.set_xticklabels(row_labels, minor=False,  rotation="vertical")
+# ax.set_yticklabels(column_labels, minor=False)
+# 
+# plot.xlabel("gamma")
+# plot.ylabel("C")
+# plot.show()
+# plot.savefig(plot_name)
 
 print "saved plot", time.clock() - start_time
 
@@ -186,10 +194,28 @@ print len(test_candidates) + len(test_miRNA) + len(test_dead)
 learner = svm.SVC(C=best_c,gamma=best_gamma, cache_size=500, probability=True)
 learner.fit(train, train_annotations)
 
+
+# print "123123123"
+# 
+# print "pls no nans here 123---"
+# print test_all
+# print "different under here???"
+# print test_miRNA
+# print test_candidates
+# print test_dead
+
+roc_plot(test_all, test_all_annotations)
+# roc_plot(test_miRNA, test_miRNA_annotations)
+# roc_plot(test_candidates, test_candidates_annotations)
+# roc_plot(test_dead, test_dead_annotations)
+
+
 score_all = learner.score(test_all, test_all_annotations)
 score_miRNA = learner.score(test_miRNA, test_miRNA_annotations)
 score_candidates = learner.score(test_candidates, test_candidates_annotations)
 score_dead = learner.score(test_dead, test_dead_annotations)
+
+
 
 print "final scores:"
 print "\t total score:\t\t", score_all
@@ -198,9 +224,25 @@ print "\t candidate score:\t", score_candidates
 print "\t dead score:\t\t", score_dead
 
 
+#     learner = svm.SVC(probability=True, cache_size=500)
+#     learner.fit(train, train_annotations)
+#     
+#     
+#     # roc plot 123
 
 
 
-print "finished", time.clock() - start_time
+# 
+#     probs = learner.predict_proba(test_all)
+#     fpr, tpr, _thresholds = metrics.roc_curve(test_all_annotations, probs[:,1])
+#          
+#     roc_auc = metrics.auc(fpr, tpr)
+#     print "area under curve:", roc_auc
+#      
+#     plot.plot(fpr, tpr)
+#     plot.show()
+
+
+print "finished" #, time.clock() - start_time
 
 
