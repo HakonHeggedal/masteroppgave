@@ -369,27 +369,27 @@ def small_seq_stats(candidates):
         
         
 
-        c.short_seq_align_8_17 = score_distance(8,8)
-        c.short_seq_align_9_17 = score_distance(9,9)
-        c.short_seq_align_10_17 = score_distance(10,10)
-        c.short_seq_align_11_17 = score_distance(11,11)
-        c.short_seq_align_12_17 = score_distance(12,12)
-        c.short_seq_align_13_17 = score_distance(13,13)
-        c.short_seq_align_14_17 = score_distance(14,14)
-        c.short_seq_align_15_17 = score_distance(15,15)
-        c.short_seq_align_16_17 = score_distance(16,16)
-        c.short_seq_align_17_17 = score_distance(17,17)
-        
-#         c.short_seq_align_8_17 = score_distance(8,17)
-#         c.short_seq_align_9_17 = score_distance(9,17)
-#         c.short_seq_align_10_17 = score_distance(10,17)
-#         c.short_seq_align_11_17 = score_distance(11,17)
-#         c.short_seq_align_12_17 = score_distance(12,17)
-#         c.short_seq_align_13_17 = score_distance(13,17)
-#         c.short_seq_align_14_17 = score_distance(14,17)
-#         c.short_seq_align_15_17 = score_distance(15,17)
-#         c.short_seq_align_16_17 = score_distance(16,17)
+#         c.short_seq_align_8_17 = score_distance(8,8)
+#         c.short_seq_align_9_17 = score_distance(9,9)
+#         c.short_seq_align_10_17 = score_distance(10,10)
+#         c.short_seq_align_11_17 = score_distance(11,11)
+#         c.short_seq_align_12_17 = score_distance(12,12)
+#         c.short_seq_align_13_17 = score_distance(13,13)
+#         c.short_seq_align_14_17 = score_distance(14,14)
+#         c.short_seq_align_15_17 = score_distance(15,15)
+#         c.short_seq_align_16_17 = score_distance(16,16)
 #         c.short_seq_align_17_17 = score_distance(17,17)
+        
+        c.short_seq_align_8_17 = score_distance(8,17)
+        c.short_seq_align_9_17 = score_distance(9,17)
+        c.short_seq_align_10_17 = score_distance(10,17)
+        c.short_seq_align_11_17 = score_distance(11,17)
+        c.short_seq_align_12_17 = score_distance(12,17)
+        c.short_seq_align_13_17 = score_distance(13,17)
+        c.short_seq_align_14_17 = score_distance(14,17)
+        c.short_seq_align_15_17 = score_distance(15,17)
+        c.short_seq_align_16_17 = score_distance(16,17)
+        c.short_seq_align_17_17 = score_distance(17,17)
 #         
         
 

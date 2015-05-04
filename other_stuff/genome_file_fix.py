@@ -4,6 +4,9 @@ Created on 30. apr. 2015
 @author: hakon
 '''
 
+
+# used to create genome file readable by mirdeep2
+
 print 123
 with open("hsa_37.fa") as read_file:
     with open("hsa_37_fix.fa", "w") as write_file:

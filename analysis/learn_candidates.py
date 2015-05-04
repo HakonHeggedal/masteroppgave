@@ -17,17 +17,45 @@ import math
 from sklearn import svm, metrics
 import itertools
 
-
-
-def roc_plot(test_data, test_data_annotations):
+def roc_plot(test_data, test_data_annotations, name=""):
     probs = learner.predict_proba(test_data)
     fpr, tpr, _thresholds = metrics.roc_curve(test_data_annotations, probs[:,1])
-    print fpr, tpr
     roc_auc = metrics.auc(fpr, tpr)
+    
+    print 
+    print "ROC PLOT:"
+    print fpr
+    print
+    print tpr
     print "area under curve:", roc_auc
-     
+    
+    title = "ROC plot " + name
+    
+#     f = name.replace(" ", "_")
+#     f = f.replace(",", "")
+    filename = "results/ROC_candidates.png"
+
     plot.plot(fpr, tpr)
+    plot.title(title)
+    plot.xticks([0.1*x for x in range(0, 11)])
+    plot.xlabel("False positive rate")
+    plot.yticks([0.1*x for x in range(0, 11)])
+    plot.ylabel("True positive rate")
+    plot.savefig(filename)
     plot.show()
+
+
+# def roc_plot(test_data, test_data_annotations):
+#     probs = learner.predict_proba(test_data)
+#     fpr, tpr, _thresholds = metrics.roc_curve(test_data_annotations, probs[:,1])
+#     print fpr
+#     print 
+#     print tpr
+#     roc_auc = metrics.auc(fpr, tpr)
+#     print "area under curve:", roc_auc
+#      
+#     plot.plot(fpr, tpr)
+#     plot.show()
 
 
 def filter_miRNAs(data, annotations):
@@ -53,27 +81,39 @@ def filter_dead(data, annotations):
     annotations = annotations[not_miRNA:]
     return data, annotations
 
+
+
+
 # from ml import vectorize
 # from sklearn import preprocessing
 # import math
 start_time = time.clock()
 
 
-print "starting"
+print
+print "Classifying new candidates as miRNA or not"
+print " - loading data ...",
 
-annotations = pickle.load( open("save_an.p", "rb"))
-print "loaded annotations ", time.clock() - start_time
+data_new = pickle.load( open("save_scaled_data_new.p", "rb"))
+annotations_new = pickle.load( open("save_an_new.p", "rb"))
+hp_candidates = pickle.load( open("save_hp_candidates_new.p", "rb"))
 
-data = pickle.load( open("save_scaled_data.p", "rb"))
 
-train_annotations = annotations[1:]
-train = data[1:]
+print "..loaded"
 
-print "loaded data", len(train), len(train_annotations), time.clock() - start_time
+# annotations = pickle.load( open("save_an.p", "rb"))
+# data = pickle.load( open("save_scaled_data.p", "rb"))
+
+train_annotations = annotations_new[1:]
+train = data_new[1:]
+
+
+print " - fixed data", len(train), len(train_annotations), time.clock() - start_time
 
 
 folds = range(len(train))
 
+# deep copy data for multiple threads, probably not needed
 copy_train = [numpy.copy(train) for _ in folds]
 copy_train_anno = [copy.deepcopy(train_annotations) for _ in folds]
 
@@ -88,11 +128,11 @@ pool = Pool(threads)
 
 zipzap = zip(copy_train, copy_train_anno, folds, filters)
 
-"ready to run the folds", time.clock() - start_time
+print " - starting SVM grid search to find best C and gamma", time.clock() - start_time
 
 res = pool.map(one_grid, zipzap)
 # res = map(one_grid, zipzap)
-
+print " - finished SVM grids", time.clock() - start_time
 
 
 best_scores, best_cs, best_gammas, results = zip(*res)
@@ -107,15 +147,19 @@ def log_avg(l):
 def avg(l):
     return sum(l) / len(l)
 
+best_c = log_avg(best_cs)
+best_gamma = log_avg(best_gammas)
 
 print 
 print "Results", time.clock() - start_time
 print "score?\t", avg(best_scores), log_avg(best_scores), best_scores
 print "c-val\t", avg(best_cs), log_avg(best_cs), best_cs
 print "gamma\t", avg(best_gammas), log_avg(best_gammas), best_gammas
+print "\nlog avg c and gammas are used:"
+print "\tC:", best_c
+print "\tgamma:", best_gamma
+print
 
-best_c = log_avg(best_cs)
-best_gamma = log_avg(best_gammas)
 
 np_res = numpy.array(results)
 array_res = numpy.mean( np_res , axis=0 )
@@ -156,8 +200,7 @@ column_labels = c_values
 # plot.ylabel("C")
 # plot.show()
 # plot.savefig(plot_name)
-
-print "saved plot", time.clock() - start_time
+# print "saved plot", time.clock() - start_time
 
 
 train = list(itertools.chain.from_iterable(train))
@@ -167,11 +210,11 @@ train_annotations = list(itertools.chain.from_iterable(train_annotations))
 
 #===============================================================================
 #  first candidates, then HC mirnas, then dead miRNA: 
-#  annotations is like [000000111111111000]
+#  annotations are like [000000111111111000]
 #===============================================================================
 print "\n final testing"
-test_all = data[0]
-test_all_annotations = annotations[0]
+test_all = data_new[0]
+test_all_annotations = annotations_new[0]
 
 test_miRNA = [c for c,a in zip(test_all, test_all_annotations) if a ]
 test_miRNA_annotations = [1] * len(test_miRNA)
@@ -195,14 +238,69 @@ learner = svm.SVC(C=best_c,gamma=best_gamma, cache_size=500, probability=True)
 learner.fit(train, train_annotations)
 
 
-# print "123123123"
-# 
-# print "pls no nans here 123---"
-# print test_all
-# print "different under here???"
-# print test_miRNA
-# print test_candidates
-# print test_dead
+
+
+#===============================================================================
+# test candidates here
+#===============================================================================
+
+
+all_examples = list(itertools.chain.from_iterable(data_new))
+all_annotations = list(itertools.chain.from_iterable(annotations_new))
+
+candidate_learner = svm.SVC(C=best_c,gamma=best_gamma, cache_size=500, probability=True)
+candidate_learner.fit(test_all, test_all_annotations)
+
+print
+print "------"
+print "classifying new candidates:"
+print len(hp_candidates)
+
+candidate_classes = candidate_learner.predict(hp_candidates)
+
+print "nr of miRNAs:", sum(candidate_classes)
+
+
+
+candidate_scores = candidate_learner.predict_proba(hp_candidates)
+
+print "sum scores:"
+print sum(candidate_scores)
+print
+
+
+candidate_scores = [a for a,b in candidate_scores]
+
+
+
+# c_scored = [(t,c) for t,c in zip(candidate_scores, hp_candidates)]
+
+
+
+candidate_scores_sorted = sorted(candidate_scores)
+
+
+
+plot.title("new miRNA candidates classification score")
+plot.plot(candidate_scores_sorted)
+plot.ylim(ymin=0,ymax=1)
+plot.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 roc_plot(test_all, test_all_annotations)
 # roc_plot(test_miRNA, test_miRNA_annotations)

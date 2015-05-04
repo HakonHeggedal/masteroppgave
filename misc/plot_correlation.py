@@ -9,39 +9,6 @@ from matplotlib import pyplot
 import numpy
 
 
-    
-
-# # pyplot.plot( ks_p)
-# # pyplot.plot( t_var)
-# # pyplot.plot( t_var_p)
-# 
-# r = range(13, 18)
-# 
-# # pyplot.plot(r, ks_val, label="KS-test" )
-# # pyplot.xlabel("max seq length")
-# # pyplot.ylabel("KS test score")
-# # pyplot.legend(loc='upper left')
-# # pyplot.show()
-# 
-# 
-# 
-# pyplot.title("small sequences")
-# pyplot.grid(True)
-# pyplot.plot(r, t_var, label="Students T-test")
-# pyplot.plot(r, t_sim, label="Welchs T-test")
-# pyplot.xlabel("max sequence length")
-# pyplot.ylabel("T-Test score")
-# pyplot.legend(loc='upper left')
-# 
-# 
-# # minorticks_on()
-# pyplot.xticks(r)
-# 
-# pyplot.show()
-
-
-
-
 def plot_ttest(t_student, t_welch, lengths, is_maxlen=True):
     
     maxormin = "max" if is_maxlen else "min"

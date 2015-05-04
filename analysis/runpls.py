@@ -44,10 +44,14 @@ from ml import vectorize
 import pickle
 from candidates.hairpin import hairpin_stats
 # from misc import
-from misc.plot_lines import plot_kstest, plot_ttest
-from misc.correlation import plot_spearman_correlation, plot_pearson_correlation
+# from misc import 
+from misc.plot_correlation import plot_kstest, plot_ttest
+# from misc import 
 from inputs.merge import one_large_fasta
 from inputs.mirbase import human_only_file, not_human_file, write_human_hairpins
+from misc.correlation_plots import plot_pearson_correlation, plot_spearman_correlation,\
+    plot_correlation
+import itertools
 
 def _align_bowtie(bowtie_output_file, collapsed_seq_file):
     from subprocess import check_output
@@ -154,26 +158,25 @@ def main():
     is_new_run = False
     
     #===========================================================================
-    #  making data for mirdeep2
+    # #  making data for mirdeep2
     #===========================================================================
-#     not_human_file(mature_seq_file, "other_matures.fa")
-#     assert 0
-#     human_only_file(mature_seq_file, "human_matures.fa")
-#     
-#     
-#     hsa_to_hairpin, other_to_hairpin = mirbase.read_miRNA_fasta(hairpin_file)
-#     
-#     write_human_hairpins(hsa_to_hairpin, "human_hairpins.fa")
-#     assert 0
-#     
-#     
-#     assert 0
-#     
-    one_large_fasta(fasta_files, "all_fasta.fa")
-    assert 0
-    
-    #===========================================================================
-    # 
+    # not_human_file(mature_seq_file, "other_matures.fa")
+    # assert 0
+    # human_only_file(mature_seq_file, "human_matures.fa")
+    #  
+    #  
+    # hsa_to_hairpin, other_to_hairpin = mirbase.read_miRNA_fasta(hairpin_file)
+    #  
+    # write_human_hairpins(hsa_to_hairpin, "human_hairpins.fa")
+    # assert 0
+    #  
+    #  
+    # assert 0
+    #  
+    # one_large_fasta(fasta_files, "all_fasta.fa")
+    # assert 0
+    #   
+    #  
     #===========================================================================
     
     
@@ -350,8 +353,8 @@ def main():
     
     
     
-    length_distribution(small_reads, small_reads_count)
-    
+#     length_distribution(small_reads, small_reads_count)
+#     
 #     assert 0
     # overhang calculated using fold seq.
     overhang.get_alignment(candidates)
@@ -377,6 +380,10 @@ def main():
     def _is_dead(c):
         hashval = c.chromosome+c.chromosome_direction+str(c.hairpin_start)
         return hashval in candidate_to_dead
+    
+    def get_miRNAid(c):
+        hashval = c.chromosome+c.chromosome_direction+str(c.hairpin_start)
+        return candidate_to_miRNA[hashval]
         
     
     
@@ -406,34 +413,29 @@ def main():
     print "LC mirnas:", len(_mirna_lc)
     print "\twith hairpin struct:\t", len([m for m in _mirna_lc if m.has_hairpin_struct])
     
-    candidates = [c for c in candidates if _is_miRNA(c) or c.has_hairpin_struct or _is_dead(c)]
+
+
+    
     print "removed candidates without hairpin struct.", len(candidates)
     
     
 #     fail_hc = [c for c in _mirna_hc if not c.has_hairpin_struct]
 #     fail_lc = [c for c in _mirnas if not c.has_hairpin_struct and not _is_hc(c)]
-    
+#     
 #     hairpin.hairpin_stats(fail_hc, candidate_to_miRNA, miRNA_high_conf)
 #     hairpin.hairpin_stats(fail_lc, candidate_to_miRNA, miRNA_high_conf)
 #     hairpin.hairpin_stats(_mirnas, candidate_to_miRNA, miRNA_high_conf)
 
     
+    
 
-# should I use this one?
-#     stem.compute_stem_start(candidates, candidate_to_miRNA, miRNA_high_conf)
 
-    annotated_data, annotations, _unknown_data = create_folds(candidates, candidate_to_miRNA, candidate_to_dead, miRNA_high_conf, miRNA_fam, ml_folds)
-#     assert 0
     
     not_mapped_reads = [structure.Sequence(i,n,read) for i,(read,n) in 
                         enumerate(zip(reads, reads_count))
                         if read not in seq_to_candidates]
     
-#     
-#     print len(not_mapped_reads)
-#     print len(seq_to_candidates)
-#     print len(not_mapped_reas) + len(seq_to_candidates)
-#     print len(reads)
+    
 
 
 #     aligning small sequences against hairpins
@@ -515,10 +517,9 @@ def main():
     (ks_val, p_2s_ks, t_student, p_student, t_welch, p_welch) = zip(*short_correlate_13_17_max)
     
     
-    plot_kstest(ks_val, maxlen_range, True)
-    plot_ttest(t_student, t_welch, maxlen_range, True)
+#     plot_kstest(ks_val, maxlen_range, True)
+#     plot_ttest(t_student, t_welch, maxlen_range, True)
     
-        
 
     short_correlate_8_17_min = []
     minlen_range = range(8, 18)
@@ -537,14 +538,14 @@ def main():
         
     (ks_val, p_2s_ks, t_student, p_student, t_welch, p_welch) = zip(*short_correlate_8_17_min)
     
-    plot_kstest(ks_val, minlen_range, False)
-    plot_ttest(t_student, t_welch, minlen_range, False)
+#     plot_kstest(ks_val, minlen_range, False)
+#     plot_ttest(t_student, t_welch, minlen_range, False)
 
 
     FEATURES = [
 #                 "short_seq_align", # 0 until best val is found
-                "ratio_short_long",
-                "ratio_short_long_logval",
+#                 "ratio_short_long",
+#                 "ratio_short_long_logval",
                 "leading_au",
                 "tailing_au",
                 "overhang_inner",
@@ -556,15 +557,15 @@ def main():
                 "folds_after", 
                 ]
     
-    plot_pearson_correlation(candidates, FEATURES)
-    plot_spearman_correlation(candidates, FEATURES)
+#     plot_pearson_correlation(candidates, FEATURES)
+#     plot_spearman_correlation(candidates, FEATURES)
 
 
 
-    for feat_name in FEATURES:
-      
-        plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead,
-                      miRNA_high_conf, feat_name )
+#     for feat_name in FEATURES:
+#       
+#         plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead,
+#                       miRNA_high_conf, feat_name )
           
     
     print
@@ -653,27 +654,110 @@ def main():
 #     assert False
 #     # roc plot 234
 #      
-    # used by learn_param.py
-    # uncomment this part to save stuff
+
+
+
+#===============================================================================
+# saving data for use in classification
+#===============================================================================
     
-    print "saving ..."
+    
+    def is_good_or_miRNA(c):
+        return _is_miRNA(c) or c.has_hairpin_struct or _is_dead(c)
+    
+    
+    def is_bad_or_miRNA(c):
+        return _is_miRNA(c) or _is_dead(c) or not c.has_hairpin_struct
+
+    
+    def is_good_candidate(c):
+        return c.has_hairpin_struct and not _is_dead(c) and not _is_miRNA(c)
+    
+    
+    
+#     # removed bad candidates 
+#     removed_bad_candidates = [c for c in candidates if is_good_or_miRNA(c)] # classifying LC, not using low quality miRNA
+#     annotated_data, annotations, low_confidence_data = create_folds(removed_bad_candidates, candidate_to_miRNA, candidate_to_dead, miRNA_high_conf, miRNA_fam, ml_folds)
+   
+    # all candidates
+    annotated_data, annotations, low_confidence_data = create_folds(candidates, candidate_to_miRNA, candidate_to_dead, miRNA_high_conf, miRNA_fam, ml_folds)
+    
+    # removed the good candidates (which are classified)
+    print "candidates?"    
+    not_good_candidates = [c for c in candidates if is_bad_or_miRNA(c)] # classifying bad candidates
+    annotated_data_new, annotations_new, _low_confidence_data = create_folds(not_good_candidates, candidate_to_miRNA, candidate_to_dead, miRNA_high_conf, miRNA_fam, ml_folds)
+    
+    
+    
+
+    
+    low_confidence_names = [map(get_miRNAid, l) for l in low_confidence_data]
+    
+    # data for LC classification: 
     vector_data = map(vectorize.candidates_to_array, annotated_data)
     scaled_data = map(preprocessing.scale, vector_data)
-     
-    pickle.dump(scaled_data, open("save_scaled_data.p", "wb"))
-    pickle.dump(annotations, open("save_an.p", "wb"))
-    pickle.dump(annotated_data, open("save_da.p", "wb"))
-     
-     
-     
-    print "saved 123"
+    
+    print "plotting correlation 123"
+    one_list_data = list(itertools.chain.from_iterable(scaled_data))
+    plot_correlation(one_list_data)
+    
+        # low confidence miRNA
+    low_confidence_data = map(vectorize.candidates_to_array, low_confidence_data)
+    low_confidence_data = map(preprocessing.scale, low_confidence_data)
+    
+    
+    # data for new miRNA classification:
+    vector_data_new = map(vectorize.candidates_to_array, annotated_data_new)
+    scaled_data_new = map(preprocessing.scale, vector_data_new)
+    
+    
+        # good candidates (not miRNA, has hairpin struct)
+    hp_candidates = [c for c in candidates if is_good_candidate(c)]
+    print "hp_candidates", len(hp_candidates)
+    hp_candidates = vectorize.candidates_to_array(hp_candidates)
+    hp_candidates = map(preprocessing.scale, hp_candidates)
+    
+    print
+    print "saving data ...",
+    #===========================================================================
+    # data used for classifying LOW CONFIDENCE:
+    #===========================================================================
+    pickle.dump(scaled_data, open("save_scaled_data.p", "wb")) # candidates, HC, DEAD
+    pickle.dump(annotations, open("save_an.p", "wb")) # annotations for data over [00001111000]
+    pickle.dump(low_confidence_data, open("save_low_confidence_data.p", "wb")) # low confidence miRNA
+    pickle.dump(low_confidence_names, open("save_low_confidence_names.p", "wb")) # mirbase names, like >hsa-mir-516a-1
+#     pickle.dump(annotated_data, open("save_da.p", "wb")) # extra stuff not needed
+    
+    #===========================================================================
+    # data used for classifying new miRNA:
+    #===========================================================================
+    pickle.dump(scaled_data_new, open("save_scaled_data_new.p", "wb")) # non-hp candidates, HC, DEAD
+    pickle.dump(annotations_new, open("save_an_new.p", "wb")) # annotations for data over [001111000]
+    pickle.dump(hp_candidates, open("save_hp_candidates_new.p", "wb")) # annotations for data over [001111000]
+    #TODO: position in genome for all candidates probably...
+    
+    
+    print "...saved."
+    print "Now loading back for testing ...",
+    
     annotations = pickle.load( open("save_an.p", "rb"))
     scaled123 = pickle.load( open("save_scaled_data.p", "rb"))
-    annotated_data = pickle.load( open("save_da.p", "rb"))
+    low_confidence_data = pickle.load( open("save_low_confidence_data.p", "rb"))
+    low_confidence_names = pickle.load( open("save_low_confidence_names.p", "rb"))
+#     annotated_data = pickle.load( open("save_da.p", "rb"))
+
+    scaled_data_new = pickle.load( open("save_scaled_data_new.p", "rb"))
+    annotations_new = pickle.load( open("save_an_new.p", "rb"))
+    hp_candidates = pickle.load( open("save_hp_candidates_new.p", "rb"))
+
+
      
-    print "and loaded back for testing", len(scaled123)
+    print "... done", (len(scaled123))
     print "finished:", time.clock() - start_time, "seconds"
-#         
+    
+    
+
+#    
 #     
 # if __name__ == "__main__":
 #     main()

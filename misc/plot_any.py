@@ -89,7 +89,7 @@ def plot(candidates, candidate_to_miRNAid, candidate_to_dead, mirna_high_conf, n
     pyplot.xlabel(plot_name + log_text)
     pyplot.ylabel("frequency")
     pyplot.savefig(outfile)
-    pyplot.show()
+#     pyplot.show()
     pyplot.close()
     
     return (ks_val, p_2s, tval_same_var, prob_same, tval_diff_var, prob_diff)

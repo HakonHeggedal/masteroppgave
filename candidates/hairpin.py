@@ -311,9 +311,6 @@ def hairpin_stats(candidates, mirna, hc_mirna):
         
 
         
-#         print begin_5p, end_5p, begin_3p, end_3p
-#         print b5, e5, b3, e3
-        
         assert b5 < e5 <= b3 < e3
         
         folds_5p, folds_in_5p, folds_out_5p = _folds(fold, b5, e5)
@@ -330,12 +327,6 @@ def hairpin_stats(candidates, mirna, hc_mirna):
         candidate.folds_3p = folds_3p
         candidate.folds_before = folds_before
         candidate.folds_after = folds_after
-        
-        
-#         print "stats:"
-#         print b5, e5, b3, e3
-#         print folds_before, folds_5p, loop_size, folds_3p, folds_after
-
 
 
 

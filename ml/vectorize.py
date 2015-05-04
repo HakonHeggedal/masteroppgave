@@ -41,12 +41,14 @@ def candidates_to_array(candidates):
         for el in candidate.mapped_sequences:
             name = el.data[1]
             aa += float(name.split("-")[1])
+            
+        aa = math.log(aa + 1.0)
         
-        a = len(candidate.mapped_sequences)
-        a = math.log(a) if a > 0 else a
+#         a = len(candidate.mapped_sequences) # nr of mapped sequences
+#         a = math.log(a) if a > 0 else a
         
         
-        b = candidate.hairpin_energy
+#         b = candidate.hairpin_energy
         bb = candidate.hairpin_energy_10
         
         c = candidate.entropy_nucleotides
@@ -59,13 +61,13 @@ def candidates_to_array(candidates):
         
         i = candidate.quality
         
-        j = candidate.bindings_max_10
+#         j = candidate.bindings_max_10 # max number of bindings in one direction in the hp-struct
         k = candidate.overhang_level_outer_10 
         l = candidate.overhang_outer_10 
         m = candidate.overhang_level_inner_10 
         n = candidate.overhang_inner_10
         
-        o = candidate.bulge_factor # skip 123
+#         o = candidate.bulge_factor # skip 123
         
 #         p = candidate.small_subs
 #         q = candidate.small_subs_5p
@@ -74,13 +76,13 @@ def candidates_to_array(candidates):
         p = candidate.has_short_seqs_5p
         pp = candidate.has_short_seqs_3p
         
-        q = candidate.ratio_short_long_5p
-        qq = candidate.short_seq_5p_stdev
-        qqq = candidate.short_seq_5p_offset
+        q = candidate.ratio_short_long
+#         qq = candidate.short_seq_5p_stdev
+#         qqq = candidate.short_seq_5p_offset
         
-        r = candidate.ratio_short_long_3p
-        rr = candidate.short_seq_3p_stdev
-        rrr = candidate.short_seq_3p_offset
+#         r = candidate.ratio_short_long_3p
+#         rr = candidate.short_seq_3p_stdev
+#         rrr = candidate.short_seq_3p_offset
         
         s = candidate.loop_size # noise?
         t = candidate.folds_5p
@@ -98,7 +100,8 @@ def candidates_to_array(candidates):
         
         
 #         features = [a,aa,b,bb,c,d,e,f,g,h,i,j,k,l,m,n,o,q,r]
-        features = [a,aa,b,bb,c,d,e,f,g,h,i,j,k,l,m,n,o,p,pp,q,qq,qqq,r,rr,rrr,s,t,u,v,w,x,y,z]
+#         features = [a,aa,b,bb,c,d,e,f,g,h,i,j,k,l,m,n,o,p,pp,q,s,t,u,v,w,x,y,z]
+        features = [aa,bb,c,d,e,f,g,h,i,k,l,m,n,p,pp,q,s,t,u,v,w,x,y,z]
         
         all_candidates.append(features)
         
