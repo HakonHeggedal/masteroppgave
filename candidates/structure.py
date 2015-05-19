@@ -78,13 +78,16 @@ class Candidate:
         
         
         self.short_seq_align = 0.0
+        self.short_seq_align_10_10 = 0.0
+        self.short_seq_align_10_11 = 0.0
+        self.short_seq_align_10_12 = 0.0
         self.short_seq_align_10_13 = 0.0
         self.short_seq_align_10_14 = 0.0
         self.short_seq_align_10_15 = 0.0
         self.short_seq_align_10_16 = 0.0
         self.short_seq_align_10_17 = 0.0
-        self.short_seq_align_10_18 = 0.0 # too long ? 
-        self.short_seq_align_10_19 = 0.0 # too long ? 
+#         self.short_seq_align_10_18 = 0.0 # too long ? 
+#         self.short_seq_align_10_19 = 0.0 # too long ? 
 
         self.short_seq_align_8_17 = 0.0 # too long ? 
         self.short_seq_align_9_17 = 0.0 # too long ? 

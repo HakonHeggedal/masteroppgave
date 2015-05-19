@@ -134,7 +134,7 @@ def align_small_seqs(candidates, small_seqs, small_seqs_copies):
     print "\tcandidates with small seqs:",len(c_used)
 
 
-def small_seq_stats(candidates):
+def small_seq_stats(candidates, sc=0, na=0, c_to_m=0):
     '''
     compares the amount of small sequences vs long sequences in 3p and 5p positions
     uses log values of values larger than 1 RPM in each sum
@@ -142,6 +142,31 @@ def small_seq_stats(candidates):
     stores the log score, as some sums are still very large
     '''
     
+    na = [x for li in na for x in li] # remove folds
+    sc = zip(*sc)
+    print len(na), na[0], len(set(na))
+    print len(sc), sc[0]
+    
+    names_to_scores = {n:s for n,s in zip(na,sc)}
+    
+    print na[0]
+    print sc[0]
+    print names_to_scores[na[0]]
+    
+    
+    print len(names_to_scores)
+    
+    
+    def get_name_scores(c):
+        hashval = c.chromosome+c.chromosome_direction+str(c.hairpin_start)
+        
+        mi_name = c_to_m[hashval]
+        scores = names_to_scores[mi_name] if mi_name in names_to_scores else ""
+        return mi_name, scores
+    
+#     def _is_miRNA(c):
+#         hashval = c.chromosome+c.chromosome_direction+str(c.hairpin_start)
+#         return hashval in candidate_to_miRNA
     
     def log_over_one(val):
         return math.log(val) if val > 1.0 else val
@@ -151,7 +176,7 @@ def small_seq_stats(candidates):
         list_sum = sum(log_list)
         return list_sum
     
-    
+    print "candidates:", len(candidates)
     has_small_seqs = [c for c in candidates if c.small_subs]
     print "small seqs:", len(has_small_seqs)
     
@@ -160,6 +185,7 @@ def small_seq_stats(candidates):
     for c in has_small_seqs:    
         
         hairpin = c.hairpin_padded_40[padding:-padding]
+        folding = c.hairpin_fold_40[padding:-padding]
         if c.chromosome_direction == "-":
             hairpin = reverse_compliment(hairpin)
         
@@ -187,8 +213,6 @@ def small_seq_stats(candidates):
             
             #swap 3p 5p positions
             has_5p, has_3p = has_3p, has_5p
-            
-        
         
         # filter out bad positions
         if not (begin_5 < end_5 < begin_3 < end_3):
@@ -207,18 +231,15 @@ def small_seq_stats(candidates):
             if begin_3 > end_3:
                 begin_3 = -1
                 end_3 = -1
-        
-        
-        
+
 #         assert begin_5 < end_5 < begin_3 < end_3, (begin_5, end_5, begin_3, end_3)
         
-        mature_pos = [pos for pos in [begin_5, end_5, begin_3, end_3] if 0 <= pos <= len(hairpin)]        
-
-
+        mature_pos = [pos for pos in [begin_5, end_5, begin_3, end_3] if 0 <= pos <= len(hairpin)]     
+        
         medium_short = []
         
 
-        
+         
         print "\n---------------"
         print "---------------"
         print [begin_5, end_5, begin_3, end_3]
@@ -227,10 +248,12 @@ def small_seq_stats(candidates):
         print c.has_3p
         print "direction:", c.chromosome_direction
         print c.pos_5p_begin - c.hairpin_start, c.pos_3p_end - c.hairpin_start
+        print get_name_scores(c)
+        print folding
         print hairpin
         print " "*begin_5 + "5"*(end_5 - begin_5) + " "*(begin_3 - end_5) + "3"*(end_3 - begin_3)
-
-        
+ 
+         
         if c.mirBase_matures:
             for seq in c.mirBase_matures:
                 
@@ -248,8 +271,8 @@ def small_seq_stats(candidates):
             medium_short.append( (len(seq), start_seq, end_seq, copies) )
         
         
-        print "+" * len(hairpin)
-        print hairpin
+#         print "+" * len(hairpin)
+#         print hairpin
         
         unscaled_long = 0
         scaled_long = 0
@@ -271,10 +294,12 @@ def small_seq_stats(candidates):
                 unscaled_long += copies
                 scaled_long += log_over_one(copies)
                 
-#                 if seq_start in area_5p_long:
-#                     area_5p_long_sum += log_over_one(copies)
-#                 elif seq_start in area_3p_long:
-#                     area_3p_long_sum += log_over_one(copies)
+#===============================================================================
+# #                 if seq_start in area_5p_long:
+# #                     area_5p_long_sum += log_over_one(copies)
+# #                 elif seq_start in area_3p_long:
+# #                     area_3p_long_sum += log_over_one(copies)
+#===============================================================================
 
 
 
@@ -302,33 +327,7 @@ def small_seq_stats(candidates):
         
         assert nondecreasing(mature_pos), (mature_pos, len(hairpin))
 
-#         area_5p_long_sum += 1.0
-#         area_3p_long_sum += 1.0
-        
-        
-#         area_5p_short_sum = log_sum(area_5p_short.values()) + 1.0
-#         area_3p_short_sum = log_sum(area_3p_short.values()) + 1.0
 
-#         has_small_seqs_5p = area_5p_short_sum != 1.0
-#         has_small_seqs_3p = area_3p_short_sum != 1.0
-        
-#         ratio_short_long_5p = area_5p_short_sum / area_5p_long_sum if area_5p_long_sum else 0.0
-#         ratio_short_long_3p = area_3p_short_sum / area_3p_long_sum if area_3p_long_sum else 0.0
-        
-#         ratio_short_long_5p = math.log(ratio_short_long_5p)
-#         ratio_short_long_3p = math.log(ratio_short_long_3p)
-        
-        
-        
-        
-
-#         
-#         small_sum = 0.0
-#         align_sum = 0.0
-#         
-#         unscaled_sum = 0.0
-#         unscaled_align_sum = 0.0
-        
         
 
         
@@ -390,7 +389,8 @@ def small_seq_stats(candidates):
         c.short_seq_align_15_17 = score_distance(15,17)
         c.short_seq_align_16_17 = score_distance(16,17)
         c.short_seq_align_17_17 = score_distance(17,17)
-#         
+        
+        c.short_seq_align = score_distance(13,17)
         
 
 

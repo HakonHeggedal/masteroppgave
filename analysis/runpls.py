@@ -146,13 +146,11 @@ def main():
     dead_mirna_bowtie_out = "dead_hairpin_locations.map"
       
       
-      
     all_reads_file = "all.collapsed"
     bowtie_output = "bowtie_out.map"
       
     miRNA_bowtie_output = "miRNA.map"
     ml_folds = 10
-    
     
     is_new_run = True
     is_new_run = False
@@ -362,8 +360,7 @@ def main():
 
     # calculating hairpin stats (length + overhang using pairing prob.)
     hairpin_stats(candidates, candidate_to_miRNA, miRNA_high_conf)
-    
-#     assert 0
+
     
     def _is_miRNA(c):
         hashval = c.chromosome+c.chromosome_direction+str(c.hairpin_start)
@@ -416,8 +413,6 @@ def main():
 
 
     
-    print "removed candidates without hairpin struct.", len(candidates)
-    
     
 #     fail_hc = [c for c in _mirna_hc if not c.has_hairpin_struct]
 #     fail_lc = [c for c in _mirnas if not c.has_hairpin_struct and not _is_hc(c)]
@@ -441,8 +436,18 @@ def main():
 #     aligning small sequences against hairpins
     align_small_seqs(candidates, small_reads, small_reads_count)
     
-#     small_seq_stats(_mirna_hc)
-#     assert 0
+    
+    lc_10 = pickle.load( open("lc_scores_10.p", "rb"))
+    lc_names = pickle.load( open("save_low_confidence_names.p", "rb"))
+    
+    
+    
+    small_seq_stats(_mirna_lc, lc_10, lc_names, candidate_to_miRNA)
+    print lc_names[0]
+    assert 0
+    
+    
+    
     small_seq_stats(candidates)    
 #     small_seq_stats(_mirna_hc) # for testing only
     
@@ -472,8 +477,6 @@ def main():
     
 #     plotting all features
 
-#     plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead,
-#                       miRNA_high_conf, "bulge_factor" )
     
        
 #     FEATURES = ["hairpin_energy", "hairpin_energy_10", "hairpin_energy_40",
@@ -517,8 +520,8 @@ def main():
     (ks_val, p_2s_ks, t_student, p_student, t_welch, p_welch) = zip(*short_correlate_13_17_max)
     
     
-#     plot_kstest(ks_val, maxlen_range, True)
-#     plot_ttest(t_student, t_welch, maxlen_range, True)
+    plot_kstest(ks_val, maxlen_range, True)
+    plot_ttest(t_student, t_welch, maxlen_range, True)
     
 
     short_correlate_8_17_min = []
@@ -538,8 +541,8 @@ def main():
         
     (ks_val, p_2s_ks, t_student, p_student, t_welch, p_welch) = zip(*short_correlate_8_17_min)
     
-#     plot_kstest(ks_val, minlen_range, False)
-#     plot_ttest(t_student, t_welch, minlen_range, False)
+    plot_kstest(ks_val, minlen_range, False)
+    plot_ttest(t_student, t_welch, minlen_range, False)
 
 
     FEATURES = [
@@ -693,13 +696,29 @@ def main():
     
     low_confidence_names = [map(get_miRNAid, l) for l in low_confidence_data]
     
+    
+    
+    def sum_reads(c):
+        reads = 0.0
+        for el in c.mapped_sequences:
+            name = el.data[1]
+            reads += float(name.split("-")[1])
+        
+        return reads
+        
+            
+    
+    low_confidence_reads = [sum_reads(c) for fold in low_confidence_data for c in fold ]
+    print low_confidence_reads
+    
+    pickle.dump(low_confidence_reads, open("low_confidence_reads.p", "wb"))
+    assert 0
+    
+    
     # data for LC classification: 
     vector_data = map(vectorize.candidates_to_array, annotated_data)
     scaled_data = map(preprocessing.scale, vector_data)
     
-    print "plotting correlation 123"
-    one_list_data = list(itertools.chain.from_iterable(scaled_data))
-    plot_correlation(one_list_data)
     
         # low confidence miRNA
     low_confidence_data = map(vectorize.candidates_to_array, low_confidence_data)

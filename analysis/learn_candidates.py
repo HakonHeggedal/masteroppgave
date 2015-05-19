@@ -280,7 +280,7 @@ candidate_scores = [a for a,b in candidate_scores]
 candidate_scores_sorted = sorted(candidate_scores)
 
 
-
+scaled123 = pickle.load( open("save_scaled_data.p", "rb"))
 plot.title("new miRNA candidates classification score")
 plot.plot(candidate_scores_sorted)
 plot.ylim(ymin=0,ymax=1)

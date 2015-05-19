@@ -78,8 +78,15 @@ print
 print "Classifying low confidence miRNAs"
 print " - loading data ...",
 
-annotations = pickle.load( open("save_an.p", "rb"))
+hp_candidates = pickle.load( open("save_hp_candidates_new.p", "rb"))
+
+# data = pickle.load( open("save_scaled_data_new.p", "rb"))
+# annotations = pickle.load( open("save_an_new.p", "rb"))
+
+
+
 data = pickle.load( open("save_scaled_data.p", "rb"))
+annotations = pickle.load( open("save_an.p", "rb"))
 low_confidence_data = pickle.load( open("save_low_confidence_data.p", "rb"))
 low_confidence_names = pickle.load( open("save_low_confidence_names.p", "rb"))
 
@@ -89,6 +96,11 @@ train_annotations = annotations[1:]
 train = data[1:]
 low_confidence_data = list(itertools.chain.from_iterable(low_confidence_data))
 low_confidence_names = list(itertools.chain.from_iterable(low_confidence_names))
+
+
+
+hp_candidates = list(itertools.chain.from_iterable(hp_candidates))
+
 
 print " - fixed data", len(train), len(train_annotations), time.clock() - start_time
 
@@ -201,7 +213,6 @@ test_all_annotations = annotations[0]
 test_miRNA = [c for c,a in zip(test_all, test_all_annotations) if a ]
 test_miRNA_annotations = [1] * len(test_miRNA)
 
-
 first_miRNA = test_all_annotations.index(1)
 test_candidates = test_all[:first_miRNA]
 test_candidates_annotations = test_all_annotations[:first_miRNA]
@@ -209,7 +220,6 @@ test_candidates_annotations = test_all_annotations[:first_miRNA]
 first_dead = test_all_annotations.index(0,first_miRNA)
 test_dead = test_all[first_dead:]
 test_dead_annotations = test_all_annotations[first_dead:]
-
 
 
 print first_miRNA, first_dead, len(test_all_annotations)
@@ -223,6 +233,375 @@ learner.fit(train, train_annotations)
 #===============================================================================
 #  test low confidence here:
 #===============================================================================
+
+def learn_candidates(d):
+    train_stuff, annotation_stuff = d
+
+    lc_learner = svm.SVC(C=best_c,gamma=best_gamma, cache_size=500, probability=True)
+    lc_learner.fit(train_stuff, annotation_stuff)
+    lc_class = lc_learner.predict_proba(low_confidence_data)
+    
+    lc_class = map(list, lc_class)
+    lc_class = [x[1] for x in lc_class] # using only score for is miRNA
+
+    score_all = lc_learner.score(test_all, test_all_annotations)
+    score_miRNA = lc_learner.score(test_miRNA, test_miRNA_annotations)
+    score_candidates = lc_learner.score(test_candidates, test_candidates_annotations)
+    score_dead = lc_learner.score(test_dead, test_dead_annotations)
+    
+    phc = lc_learner.predict(test_miRNA)
+    plc = lc_learner.predict(low_confidence_data)
+    
+    print "----------"
+    print lc_learner.predict_proba(test_miRNA)
+    print sum(phc), len(phc), phc
+    print
+    print lc_learner.predict_proba(low_confidence_data)
+    print sum(plc), len(plc), plc
+    
+    print
+    print "final scores:"
+    print "\t total score:\t\t", score_all
+    print "\t HC miRNA score:\t", score_miRNA
+    print "\t candidate score:\t", score_candidates
+    print "\t dead score:\t\t", score_dead
+    print
+    return lc_class
+
+
+def learn_new_stuff(d):
+    train_stuff, annotation_stuff = d
+
+    lc_learner = svm.SVC(C=best_c,gamma=best_gamma, cache_size=500, probability=True)
+    lc_learner.fit(train_stuff, annotation_stuff)
+    lc_class = lc_learner.predict_proba(hp_candidates)
+    
+    lc_class = map(list, lc_class)
+    lc_class = [x[1] for x in lc_class] # using only score for is miRNA
+
+    score_all = lc_learner.score(test_all, test_all_annotations)
+    score_miRNA = lc_learner.score(test_miRNA, test_miRNA_annotations)
+    score_candidates = lc_learner.score(test_candidates, test_candidates_annotations)
+    score_dead = lc_learner.score(test_dead, test_dead_annotations)
+    
+    phc = lc_learner.predict(test_miRNA)
+    plc = lc_learner.predict(hp_candidates)
+    
+    print "----------"
+    print lc_learner.predict_proba(test_miRNA)
+    print sum(phc), len(phc), phc
+    print
+    print lc_learner.predict_proba(hp_candidates)
+    print sum(plc), len(plc), plc
+    
+    print
+    print "final scores:"
+    print "\t total score:\t\t", score_all
+    print "\t HC miRNA score:\t", score_miRNA
+    print "\t candidate score:\t", score_candidates
+    print "\t dead score:\t\t", score_dead
+    print
+    return lc_class
+
+
+def placement_scoring(result_lists):
+    print
+    
+    
+    placement_lists = map(single_placement, result_lists)
+    
+    placements = zip(*placement_lists)
+    
+    
+    mean_placements = map(numpy.mean, placements)
+    var_placements = map(numpy.std, placements)
+#     var_placements = map(numpy.var, placements)
+    
+    
+    for y in range(10):
+        print placements[y]
+        print mean_placements[y]
+        print var_placements[y]
+        print
+    
+    
+    all_res = result_lists[0]
+    
+    
+    if True:
+#     if False:
+        z = zip(mean_placements, var_placements, placements, all_res)
+        sz = sorted(z)
+        sorted_mean, sorted_stdev, sorted_placements, sorted_res_all = zip(*sz)
+        
+        
+        print "mean vs allscored"
+        plot.plot(sorted_mean, sorted_res_all)
+        plot.show()
+
+        print "mean", sorted_mean[:20]
+        print sorted_placements[0]
+        print sorted_res_all[:20]
+        plot.plot(sorted_mean[:20])
+        plot.show()
+        
+        print "stdev"
+        plot.plot(sorted_stdev)
+        plot.show()
+        
+        plot.plot(sorted_res_all)
+        plot.show()
+        
+        fig, ax1 = plot.subplots()
+           
+        ax1.plot(sorted_mean)
+    #     ax1.set_yscale("symlog")
+        ax1.set_ylabel("average classification position 10-fold", color="b")
+           
+        ax2 = ax1.twinx()
+        ax2.plot(sorted_stdev, "r")
+        ax2.set_ylabel("stdev classification position 10-fold", color="r")
+            
+        for tl in ax2.get_yticklabels():
+            tl.set_color("r")
+    
+        plot.show()
+    
+    
+    
+    
+    
+    
+    
+    
+    z = zip(all_res, mean_placements, var_placements, placements)
+    sz = sorted(z)
+    sorted_res_all, sorted_mean, sorted_stdev, sorted_placements = zip(*sz)
+    
+    
+    
+    
+#     z = zip(mean_placements, var_placements, placements, all_res)
+#     sz = sorted(z)
+#     sorted_mean, sorted_stdev, sorted_placements, sorted_res_all = zip(*sz)
+    
+
+    for y in range(10):
+        print sorted_res_all[y]
+        print sorted_mean[y]
+        print sorted_stdev[y]
+        print sorted_placements[y]
+        print
+    
+    
+    fig, ax1 = plot.subplots()
+    fig.subplots_adjust(right=0.75)
+      
+    ax1.plot(sorted_res_all)
+#     ax1.set_yscale("symlog")
+    ax1.set_ylabel("classification score all", color="b")
+      
+    ax2 = ax1.twinx()
+    ax2.plot(sorted_mean, "r")
+    ax2.set_ylabel("average classification position 10-fold", color="r")
+    
+    
+    for tl in ax2.get_yticklabels():
+        tl.set_color("r")
+        
+    ax3 = ax1.twinx()
+    ax3.plot(sorted_stdev, "g")
+#     ax3.set_yscale("symlog")
+    ax3.spines['right'].set_position(('axes', 1.2))
+    ax3.set_frame_on(True)
+    ax3.patch.set_visible(False)
+    
+    ax3.set_ylabel("variance classification position 10-fold", color="g")
+    for tl in ax3.get_yticklabels():
+        tl.set_color("g")
+        
+    
+      
+#     plot.title("Low confidence: reads vs classification score")
+    plot.show()
+
+#     
+#     fig, ax1 = plot.subplots()
+#       
+#     ax1.plot(sorted_res_all)
+# #     ax1.set_yscale("symlog")
+#     ax1.set_ylabel("classification score all", color="b")
+#       
+#     ax2 = ax1.twinx()
+#     ax2.plot(sorted_mean, "r")
+#     ax2.set_ylabel("average classification position 10-fold", color="r")
+#        
+#     for tl in ax2.get_yticklabels():
+#         tl.set_color("r")
+#         
+#     ax3 = ax1.twinx()
+#     ax3.plot(sorted_stdev, "g")
+# #     ax3.set_yscale("symlog")
+#     ax3.set_ylabel("variance classification position 10-fold", color="g")
+#       
+#     for tl in ax3.get_yticklabels():
+#         tl.set_color("g")
+#       
+# #     plot.title("Low confidence: reads vs classification score")
+#     plot.show()
+#      
+#     
+#     plot.plot(sorted_res_all)
+# #     plot.plot(sorted_mean)
+#     plot.show()
+#     
+#     
+#     plot.plot(sorted_res_all, sorted_mean, 'rx')
+#     plot.show()
+#     
+#     
+#     plot.plot(sorted_res_all, sorted_stdev)
+#     plot.show()
+#     plot.plot(sorted_stdev, sorted_mean)
+#     plot.show()
+    
+    assert 0
+
+def single_placement(result_list):
+    ''' returns the placement (by score), relative to the original list '''
+
+#     add numbers find position for all results
+    positions = range(len(result_list))
+    
+    pairs = zip(result_list, positions)
+    sorted_pairs = sorted(pairs)
+    
+    _sorted_result, original_positions = zip(*sorted_pairs) # only need the position
+    
+    
+    reverse_pos = reversed(positions)
+    position_pairs = zip(original_positions, reverse_pos)
+    score_positions = sorted(position_pairs)
+    
+    _original_pos, placements = zip(*score_positions)
+    
+    return placements
+    
+    
+    
+    
+    
+
+
+#     first sort by first entry
+
+#     then sort by 
+
+
+def predict_folds(data_list, annotation_list):
+    
+    print "10fold"
+    
+    res = map(learn_candidates, zip(data_list,annotation_list))
+    
+    all_d = list(itertools.chain.from_iterable(data_list))
+    all_a = list(itertools.chain.from_iterable(annotation_list))
+    
+    best_res = learn_candidates((all_d, all_a))
+    
+    
+    
+    res.insert(0, best_res) # insert best results first 123
+    
+    
+    print "making placement scores 123"
+    placement_scoring(res)
+    
+    pickle.dump(res, open("lc_scores_10.p", "wb"))
+    print len(res)
+    
+    
+    
+    sorted_by_best = sorted(zip(*res)) # all results sorted by result using all folds
+    
+    
+
+    
+    
+    lc_reads = pickle.load( open("low_confidence_reads.p", "rb"))
+    
+    zip_best_reads = zip(best_res, lc_reads)
+    sorted_reads = sorted(zip_best_reads)
+    
+    print len(sorted_reads)
+    reads_sorted = zip(*sorted_reads)[1]
+#     reads_sorted_logscaled = map(math.log, reads_sorted)
+    
+    mean_results = map(numpy.mean, sorted_by_best)
+    stdev_results = map(numpy.var, sorted_by_best)
+    
+    
+    
+    print len(sorted_by_best), 1550
+    
+    res_sorted = zip(*sorted_by_best)
+    
+    best_res = res_sorted[0]
+    print len(mean_results), len(stdev_results), len(best_res)
+    
+    plot.plot(mean_results, label="mean value")
+    plot.plot(stdev_results, label="variance")
+    plot.plot(best_res, label="score using all data")
+#     plot.plot(reads_sorted_logscaled, label="reads, log scaled")
+    plot.legend(loc='upper left')
+    plot.show()
+    
+    print len(res_sorted), 11
+    print len(res_sorted[0]), 1550
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+#     res = list(res)
+#     for i in range(len(res)):
+#         
+#         res = list(res)
+#         x = res.pop(0)
+#         res.append(x)
+#         sorted_by_best = sorted(zip(*res)) # all results sorted by result using all folds
+#         
+#         res = zip(*sorted_by_best)
+#         
+#         for r in reversed(res):
+#             plot.plot(r)   
+#         plot.savefig("results/lc_sorted_" + str(i) + ".png") 
+#         plot.show()
+#         
+#     
+#     
+#     all_sorted = map(sorted, res_sorted)
+#     
+#     
+#     for res in reversed(all_sorted):
+#         plot.plot(res)    
+#     plot.savefig("results/lc_all_sorted.png")
+#     plot.show()
+        
+
+   
+
+# predict_folds(data, annotations, learn_new_stuff)
+predict_folds(data, annotations)
+
+# assert 0
 
 all_examples = list(itertools.chain.from_iterable(data))
 all_annotations = list(itertools.chain.from_iterable(annotations))
@@ -240,6 +619,8 @@ print "---------------"
 print "low confidence data:"
 print len(low_confidence_data), len(low_confidence_names)
 print 
+
+
 
 
 lc_class = lc_learner.predict(low_confidence_data)
@@ -277,14 +658,38 @@ print len(underhalf),
 print sorted(underhalf, reverse=True)
 print
 
+score_list = [b for a,b in lc_0_1]
 
-plot_res = sorted( [b for a,b in lc_0_1] )
+print max(score_list)
+print score_list
+
+
+plot_res = sorted(score_list)
 plot.title("LC miRNA classification score")
 plot.plot(plot_res)
 plot.yticks([0.1*x for x in range(0, 11)])
 plot.xlabel("Low confidence miRNAs")
 plot.ylabel("Score")
 plot.savefig("results/LC_classification.png")
+plot.show()
+
+
+
+read_param = [x[0] for x in low_confidence_data]
+
+
+val_tups = zip(read_param, score_list)
+
+val_tups = sorted(val_tups)
+
+read_param, score_list = zip(*val_tups)
+
+plot.plot(read_param)
+plot.plot(score_list)
+plot.title("LC miRNA classification score")
+# plot.yticks([0.1*x for x in range(0, 11)])
+plot.xlabel("Low confidence miRNAs")
+plot.ylabel("Score")
 plot.show()
 
 
@@ -319,8 +724,6 @@ print "... wrote results to:", filepathname
 
 
 
-
-
 roc_plot(test_all, test_all_annotations, "HC, candidates and dead miRNA")
 # roc_plot(test_miRNA, test_miRNA_annotations)
 # roc_plot(test_candidates, test_candidates_annotations)
@@ -338,7 +741,8 @@ print "\t total score:\t\t", score_all
 print "\t HC miRNA score:\t", score_miRNA
 print "\t candidate score:\t", score_candidates
 print "\t dead score:\t\t", score_dead
-
+print "c-val\t", log_avg(best_cs),(avg(best_cs)), best_cs
+print "gamma\t", log_avg(best_gammas), (avg(best_gammas)), best_gammas
 
 #     learner = svm.SVC(probability=True, cache_size=500)
 #     learner.fit(train, train_annotations)
