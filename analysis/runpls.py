@@ -52,6 +52,8 @@ from inputs.mirbase import human_only_file, not_human_file, write_human_hairpins
 from misc.correlation_plots import plot_pearson_correlation, plot_spearman_correlation,\
     plot_correlation
 import itertools
+from other_stuff.mirna_split import fix_miRNA_training_test
+from other_stuff.mirdeep_results import mirdeep_make_roc_data
 
 def _align_bowtie(bowtie_output_file, collapsed_seq_file):
     from subprocess import check_output
@@ -153,7 +155,7 @@ def main():
     ml_folds = 10
     
     is_new_run = True
-    is_new_run = False
+#     is_new_run = False
     
     #===========================================================================
     # #  making data for mirdeep2
@@ -218,14 +220,13 @@ def main():
             
         hairpinID_to_mature, harpinID_to_matseqs = mirbase.combine_hairpin_mature(hsa_to_hairpin, hsa_to_mature)
         miRNA_high_conf = miRNA.read_high_confidence(high_conf_file)
-            
-        
-            
-    #     assert False
+         
+         
+#         pickle.dump(harpinID_to_matseqs, open("harpinID_to_matseqs.p", "wb"))
+#         pickle.dump(hsa_to_hairpin, open("hsa_to_hairpin.p", "wb"))
             
         print "\nhigh confidence set:", len(miRNA_high_conf),
         print miRNA_high_conf.issubset(miRNA_species.keys())
-            
         print "\nreading miRNA family info (mifam)"
         miRNA_fam = miRNA.read_family(miRNA_family_file)
         
@@ -284,7 +285,8 @@ def main():
                                                                miRNA_species,
                                                                miRNA_high_conf)
         
-            
+        mirdeep_make_roc_data(candidate_tree, candidate_to_miRNA, miRNA_high_conf)
+        
         candidate_to_dead = interval_tree_dead.align_dead_miRNAs(dead_miRNA_hits,
                                                                  id_to_dead_hp,
                                                                  id_to_dead_mature,
@@ -292,7 +294,7 @@ def main():
                                                                  candidates,
                                                                  sequence_tree,
                                                                  seq_to_candidates)
-            
+        
 
             
         print "\npadding all miRNA and Candidates"
@@ -312,7 +314,8 @@ def main():
     #     assert 0
         
         print "saving 123"
-            
+        
+        pickle.dump(candidate_tree, open("candidate_tree.p", "wb"))
         pickle.dump(candidates, open("candidates_pre.p", "wb"))
         pickle.dump(candidate_to_miRNA, open("candidate_to_miRNA.p", "wb"))
         pickle.dump(miRNA_high_conf, open("miRNA_high_conf.p", "wb"))
@@ -331,26 +334,50 @@ def main():
           
         print "saved 456"
 
+    print "loading miRNAs"
+    harpinID_to_matseqs = pickle.load( open("harpinID_to_matseqs.p", "rb"))
+    hsa_to_hairpin = pickle.load( open("hsa_to_hairpin.p", "rb"))
     
+    print "loading tree..."
+
+    candidate_tree = pickle.load( open("candidate_tree.p", "rb"))
     
     print "loading picled stuff ...", time.clock() - start_time
-    candidates = pickle.load( open("candidates_pre.p", "rb"))
     candidate_to_miRNA = pickle.load( open("candidate_to_miRNA.p", "rb"))
     miRNA_high_conf = pickle.load( open("miRNA_high_conf.p", "rb"))
     
+    
+    mirdeep_make_roc_data(candidate_tree, candidate_to_miRNA, miRNA_high_conf)
+    
+    candidates = pickle.load( open("candidates_pre.p", "rb"))
+    
     candidate_to_dead = pickle.load( open("candidate_to_dead.p", "rb"))
     miRNA_fam = pickle.load( open("miRNA_fam.p", "rb"))
+    
+    
     small_reads = pickle.load( open("small_reads.p", "rb"))
     small_reads_count = pickle.load( open("small_reads_count.p", "rb"))
     seq_to_candidates = pickle.load( open("seq_to_candidates.p", "rb"))
     
     reads = pickle.load( open("reads.p", "rb"))
     reads_count = pickle.load( open("reads_count.p", "rb"))
+    
+    
+
+    
 
     print "loaded back", time.clock() - start_time
     
     
     
+
+    
+    annotated_data, annotations, low_confidence_data = create_folds(candidates, candidate_to_miRNA, candidate_to_dead, miRNA_high_conf, miRNA_fam, ml_folds)
+    
+    
+    fix_miRNA_training_test(annotated_data, annotations, low_confidence_data, hsa_to_hairpin, harpinID_to_matseqs, candidate_to_miRNA)
+    
+    assert 0
 #     length_distribution(small_reads, small_reads_count)
 #     
 #     assert 0

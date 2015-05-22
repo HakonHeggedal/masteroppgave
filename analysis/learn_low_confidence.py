@@ -83,7 +83,7 @@ hp_candidates = pickle.load( open("save_hp_candidates_new.p", "rb"))
 # data = pickle.load( open("save_scaled_data_new.p", "rb"))
 # annotations = pickle.load( open("save_an_new.p", "rb"))
 
-
+low_confidence_reads = pickle.load( open("low_confidence_reads.p", "rb"))
 
 data = pickle.load( open("save_scaled_data.p", "rb"))
 annotations = pickle.load( open("save_an.p", "rb"))
@@ -230,12 +230,23 @@ learner = svm.SVC(C=best_c,gamma=best_gamma, cache_size=500, probability=True)
 learner.fit(train, train_annotations)
 
 
+
+
+
+
 #===============================================================================
 #  test low confidence here:
 #===============================================================================
 
+print len(low_confidence_data)
+low_confidence_data = [lc for lc, count in zip(low_confidence_data, low_confidence_reads) if count > 0]
+print len(low_confidence_data)
+
 def learn_candidates(d):
+    
     train_stuff, annotation_stuff = d
+
+
 
     lc_learner = svm.SVC(C=best_c,gamma=best_gamma, cache_size=500, probability=True)
     lc_learner.fit(train_stuff, annotation_stuff)
@@ -244,28 +255,28 @@ def learn_candidates(d):
     lc_class = map(list, lc_class)
     lc_class = [x[1] for x in lc_class] # using only score for is miRNA
 
-    score_all = lc_learner.score(test_all, test_all_annotations)
-    score_miRNA = lc_learner.score(test_miRNA, test_miRNA_annotations)
-    score_candidates = lc_learner.score(test_candidates, test_candidates_annotations)
-    score_dead = lc_learner.score(test_dead, test_dead_annotations)
-    
-    phc = lc_learner.predict(test_miRNA)
-    plc = lc_learner.predict(low_confidence_data)
-    
-    print "----------"
-    print lc_learner.predict_proba(test_miRNA)
-    print sum(phc), len(phc), phc
-    print
-    print lc_learner.predict_proba(low_confidence_data)
-    print sum(plc), len(plc), plc
-    
-    print
-    print "final scores:"
-    print "\t total score:\t\t", score_all
-    print "\t HC miRNA score:\t", score_miRNA
-    print "\t candidate score:\t", score_candidates
-    print "\t dead score:\t\t", score_dead
-    print
+#     score_all = lc_learner.score(test_all, test_all_annotations)
+#     score_miRNA = lc_learner.score(test_miRNA, test_miRNA_annotations)
+#     score_candidates = lc_learner.score(test_candidates, test_candidates_annotations)
+#     score_dead = lc_learner.score(test_dead, test_dead_annotations)
+#     
+#     phc = lc_learner.predict(test_miRNA)
+#     plc = lc_learner.predict(low_confidence_data)
+#     
+#     print "----------"
+#     print lc_learner.predict_proba(test_miRNA)
+#     print sum(phc), len(phc), phc
+#     print
+#     print lc_learner.predict_proba(low_confidence_data)
+#     print sum(plc), len(plc), plc
+#     
+#     print
+#     print "final scores:"
+#     print "\t total score:\t\t", score_all
+#     print "\t HC miRNA score:\t", score_miRNA
+#     print "\t candidate score:\t", score_candidates
+#     print "\t dead score:\t\t", score_dead
+#     print
     return lc_class
 
 

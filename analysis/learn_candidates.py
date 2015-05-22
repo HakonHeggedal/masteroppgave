@@ -24,9 +24,9 @@ def roc_plot(test_data, test_data_annotations, name=""):
     
     print 
     print "ROC PLOT:"
-    print fpr
-    print
-    print tpr
+#     print fpr
+#     print
+#     print tpr
     print "area under curve:", roc_auc
     
     title = "ROC plot " + name

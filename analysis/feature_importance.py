@@ -362,7 +362,6 @@ all_opt = list(all_opt)
 
 names = list(itertools.chain.from_iterable(low_confidence_names))
 
-
 paired = zip(low_confidence_reads, all_opt, names)
 paired = zip(all_opt, low_confidence_reads, names)
 
@@ -381,7 +380,7 @@ reads_sorted, scores, names = zip(*paired_reads[:100])
 scores, reads_sorted, names = zip(*paired_reads)
 
 
-# 
+
 x_ticvals = [x for x in xrange(0, len(low_confidence_reads), 100)] + [len(reads_sorted)]
 print x_ticvals
  
@@ -501,7 +500,6 @@ print " - fixed data", len(train), len(train_annotations)
 # print len(FEATURE_NAMES)
 # 
 # assert 0
-
 # 
 # print scale_to_0_1(0)
 # print scale_to_0_1(0.5)
@@ -509,6 +507,7 @@ print " - fixed data", len(train), len(train_annotations)
 # print scale_to_0_1(0.7)
 # print scale_to_0_1(0.8)
 # print scale_to_0_1(0.999)
+
 
 
 
