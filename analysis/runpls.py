@@ -54,6 +54,7 @@ from misc.correlation_plots import plot_pearson_correlation, plot_spearman_corre
 import itertools
 from other_stuff.mirna_split import fix_miRNA_training_test
 from other_stuff.mirdeep_results import mirdeep_make_roc_data
+from misc.plot_mirdeep import plot_mirdeep
 
 def _align_bowtie(bowtie_output_file, collapsed_seq_file):
     from subprocess import check_output
@@ -155,7 +156,7 @@ def main():
     ml_folds = 10
     
     is_new_run = True
-#     is_new_run = False
+    is_new_run = False
     
     #===========================================================================
     # #  making data for mirdeep2
@@ -285,7 +286,7 @@ def main():
                                                                miRNA_species,
                                                                miRNA_high_conf)
         
-        mirdeep_make_roc_data(candidate_tree, candidate_to_miRNA, miRNA_high_conf)
+        mirdeep_new = mirdeep_make_roc_data(candidate_tree, candidate_to_miRNA, miRNA_high_conf)
         
         candidate_to_dead = interval_tree_dead.align_dead_miRNAs(dead_miRNA_hits,
                                                                  id_to_dead_hp,
@@ -315,6 +316,7 @@ def main():
         
         print "saving 123"
         
+        pickle.dump(mirdeep_new, open("mirdeep_new.p", "wb"))
         pickle.dump(candidate_tree, open("candidate_tree.p", "wb"))
         pickle.dump(candidates, open("candidates_pre.p", "wb"))
         pickle.dump(candidate_to_miRNA, open("candidate_to_miRNA.p", "wb"))
@@ -335,19 +337,24 @@ def main():
         print "saved 456"
 
     print "loading miRNAs"
+    mirdeep_new = pickle.load( open("mirdeep_new.p", "rb"))
+    print len(mirdeep_new)
+#     assert 0
+
+    
     harpinID_to_matseqs = pickle.load( open("harpinID_to_matseqs.p", "rb"))
     hsa_to_hairpin = pickle.load( open("hsa_to_hairpin.p", "rb"))
     
-    print "loading tree..."
+#     print "loading tree..."
 
-    candidate_tree = pickle.load( open("candidate_tree.p", "rb"))
+#     candidate_tree = pickle.load( open("candidate_tree.p", "rb"))
     
     print "loading picled stuff ...", time.clock() - start_time
     candidate_to_miRNA = pickle.load( open("candidate_to_miRNA.p", "rb"))
     miRNA_high_conf = pickle.load( open("miRNA_high_conf.p", "rb"))
     
     
-    mirdeep_make_roc_data(candidate_tree, candidate_to_miRNA, miRNA_high_conf)
+#     mirdeep_make_roc_data(candidate_tree, candidate_to_miRNA, miRNA_high_conf)
     
     candidates = pickle.load( open("candidates_pre.p", "rb"))
     
@@ -368,16 +375,22 @@ def main():
 
     print "loaded back", time.clock() - start_time
     
-    
-    
+
+    def get_miRNAid(c):
+        hashval = c.chromosome+c.chromosome_direction+str(c.hairpin_start)
+        return candidate_to_miRNA[hashval] if hashval in candidate_to_miRNA else None
 
     
     annotated_data, annotations, low_confidence_data = create_folds(candidates, candidate_to_miRNA, candidate_to_dead, miRNA_high_conf, miRNA_fam, ml_folds)
     
+    names = [map(get_miRNAid, data_fold) for data_fold in annotated_data]
+#     names = map(get_miRNAid, annotated_data[0])
+    pickle.dump(names, open("names_data.p", "wb"))
+    print len(names[0]), len(annotated_data[0])
+#     assert 0
     
     fix_miRNA_training_test(annotated_data, annotations, low_confidence_data, hsa_to_hairpin, harpinID_to_matseqs, candidate_to_miRNA)
     
-    assert 0
 #     length_distribution(small_reads, small_reads_count)
 #     
 #     assert 0
@@ -405,9 +418,7 @@ def main():
         hashval = c.chromosome+c.chromosome_direction+str(c.hairpin_start)
         return hashval in candidate_to_dead
     
-    def get_miRNAid(c):
-        hashval = c.chromosome+c.chromosome_direction+str(c.hairpin_start)
-        return candidate_to_miRNA[hashval]
+
         
     
     
@@ -471,7 +482,7 @@ def main():
     
     small_seq_stats(_mirna_lc, lc_10, lc_names, candidate_to_miRNA)
     print lc_names[0]
-    assert 0
+#     assert 0
     
     
     
@@ -528,53 +539,58 @@ def main():
 #     plot_any.plot(removed_nonvalues, candidate_to_miRNA, candidate_to_dead,
 #                       miRNA_high_conf, "ratio_short_long_5p", isLog=True )
     
-    short_correlate_13_17_max = []
-    maxlen_range = range(13, 18)
-    
-    for i in maxlen_range:
-        res = plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead,
-                  miRNA_high_conf, "short_seq_align_10_"+str(i), isLog=False )
-        
-        short_correlate_13_17_max.append(res)
-       
-    for l in short_correlate_13_17_max:
-        print l 
-    
-    print
-    for l in zip(*short_correlate_13_17_max):
-        print l
-        
-    (ks_val, p_2s_ks, t_student, p_student, t_welch, p_welch) = zip(*short_correlate_13_17_max)
-    
-    
-    plot_kstest(ks_val, maxlen_range, True)
-    plot_ttest(t_student, t_welch, maxlen_range, True)
-    
+#     short_correlate_13_17_max = []
+#     maxlen_range = range(13, 18)
+#     
+#     for i in maxlen_range:
+#         res = plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead,
+#                   miRNA_high_conf, "short_seq_align_10_"+str(i), isLog=False )
+#         
+#         short_correlate_13_17_max.append(res)
+#        
+#     for l in short_correlate_13_17_max:
+#         print l 
+#     
+#     print
+#     for l in zip(*short_correlate_13_17_max):
+#         print l
+#         
+#     (ks_val, p_2s_ks, t_student, p_student, t_welch, p_welch) = zip(*short_correlate_13_17_max)
+#     
+#     
+#     plot_kstest(ks_val, maxlen_range, True)
+#     plot_ttest(t_student, t_welch, maxlen_range, True)
+#     
+# 
+#     short_correlate_8_17_min = []
+#     minlen_range = range(8, 18)
+#     for i in minlen_range:
+#         res = plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead,
+#                   miRNA_high_conf, "short_seq_align_" + str(i) + "_17", isLog=False )
+#         
+#         short_correlate_8_17_min.append(res)
+#        
+#     for l in short_correlate_8_17_min:
+#         print l 
+#     
+#     print
+#     for l in zip(*short_correlate_8_17_min):
+#         print l
+#         
+#     (ks_val, p_2s_ks, t_student, p_student, t_welch, p_welch) = zip(*short_correlate_8_17_min)
+#     
+#     plot_kstest(ks_val, minlen_range, False)
+#     plot_ttest(t_student, t_welch, minlen_range, False)
 
-    short_correlate_8_17_min = []
-    minlen_range = range(8, 18)
-    for i in minlen_range:
-        res = plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead,
-                  miRNA_high_conf, "short_seq_align_" + str(i) + "_17", isLog=False )
-        
-        short_correlate_8_17_min.append(res)
-       
-    for l in short_correlate_8_17_min:
-        print l 
-    
-    print
-    for l in zip(*short_correlate_8_17_min):
-        print l
-        
-    (ks_val, p_2s_ks, t_student, p_student, t_welch, p_welch) = zip(*short_correlate_8_17_min)
-    
-    plot_kstest(ks_val, minlen_range, False)
-    plot_ttest(t_student, t_welch, minlen_range, False)
 
+    FEATURES_old = [ "hairpin_energy_10", "entropy_nucleotides", "entropy_structure", "heterogenity_5_begin",
+                "heterogenity_5_end", "heterogenity_3_begin", "heterogenity_3_end",
+                "quality", "overhang_level_outer_10",
+                "overhang_outer_10", "overhang_level_inner_10", "overhang_inner_10"]
 
     FEATURES = [
-#                 "short_seq_align", # 0 until best val is found
-#                 "ratio_short_long",
+                "ratio_short_long",
+                "short_seq_align", # 0 until best val is found
 #                 "ratio_short_long_logval",
                 "leading_au",
                 "tailing_au",
@@ -587,6 +603,8 @@ def main():
                 "folds_after", 
                 ]
     
+    all_features = FEATURES + FEATURES_old
+    logvals = [True] + [False]*10 + [False]*len(FEATURES_old)
 #     plot_pearson_correlation(candidates, FEATURES)
 #     plot_spearman_correlation(candidates, FEATURES)
 
@@ -596,7 +614,11 @@ def main():
 #       
 #         plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead,
 #                       miRNA_high_conf, feat_name )
-          
+
+    for feat_name, lv in zip(all_features, logvals):
+       
+        plot_mirdeep(candidates, candidate_to_miRNA, candidate_to_dead,
+                      miRNA_high_conf, mirdeep_new, feat_name, lv)
     
     print
     print " features finished:", time.clock() - start_time, " seconds"

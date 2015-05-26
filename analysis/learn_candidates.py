@@ -249,7 +249,8 @@ all_examples = list(itertools.chain.from_iterable(data_new))
 all_annotations = list(itertools.chain.from_iterable(annotations_new))
 
 candidate_learner = svm.SVC(C=best_c,gamma=best_gamma, cache_size=500, probability=True)
-candidate_learner.fit(test_all, test_all_annotations)
+# candidate_learner.fit(test_all, test_all_annotations)
+candidate_learner.fit(all_examples, all_annotations)
 
 print
 print "------"
@@ -295,12 +296,24 @@ plot.show()
 
 
 
+#===============================================================================
+# loading data from mirdeep 
+#===============================================================================
+
+classes_mirdeep = pickle.load( open("classes_mirdeep.p", "rb"))
+scores_mirdeep = pickle.load( open("scores_mirdeep.p", "rb"))
 
 
+fpr_mirdeep, tpr_mirdeep, _thresholds = metrics.roc_curve(classes_mirdeep, scores_mirdeep)
+roc_auc = metrics.auc(fpr_mirdeep, tpr_mirdeep)
 
+found_by_mirDeep = pickle.load( open("found_by_mirDeep.p", "rb"))
 
+print len( zip(test_all, found_by_mirDeep))
+print len( test_all)
+print len(found_by_mirDeep)
 
-
+print sum(test_all_annotations)
 
 roc_plot(test_all, test_all_annotations)
 # roc_plot(test_miRNA, test_miRNA_annotations)

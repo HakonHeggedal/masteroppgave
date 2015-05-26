@@ -54,7 +54,6 @@ def fix_miRNA_training_test(annotated_data, annotations, low_confidence_data, hs
     print len(training_hairpins), list(training_hairpins)[0]
     print len(test_hairpins), list(test_hairpins)[0]
     
-    
     training_matures = set()
     test_matures = set()
     

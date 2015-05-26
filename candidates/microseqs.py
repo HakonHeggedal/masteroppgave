@@ -142,27 +142,27 @@ def small_seq_stats(candidates, sc=0, na=0, c_to_m=0):
     stores the log score, as some sums are still very large
     '''
     
-    na = [x for li in na for x in li] # remove folds
-    sc = zip(*sc)
-    print len(na), na[0], len(set(na))
-    print len(sc), sc[0]
+#     na = [x for li in na for x in li] # unpack folds
+#     sc = zip(*sc)
+#     print len(na), na[0], len(set(na))
+#     print len(sc), sc[0]
+#     
+#     names_to_scores = {n:s for n,s in zip(na,sc)}
+#     
+#     print na[0]
+#     print sc[0]
+#     print names_to_scores[na[0]]
+#     
+#     
+#     print len(names_to_scores)
     
-    names_to_scores = {n:s for n,s in zip(na,sc)}
     
-    print na[0]
-    print sc[0]
-    print names_to_scores[na[0]]
-    
-    
-    print len(names_to_scores)
-    
-    
-    def get_name_scores(c):
-        hashval = c.chromosome+c.chromosome_direction+str(c.hairpin_start)
-        
-        mi_name = c_to_m[hashval]
-        scores = names_to_scores[mi_name] if mi_name in names_to_scores else ""
-        return mi_name, scores
+#     def get_name_scores(c):
+#         hashval = c.chromosome+c.chromosome_direction+str(c.hairpin_start)
+#         
+#         mi_name = c_to_m[hashval]
+#         scores = names_to_scores[mi_name] if mi_name in names_to_scores else ""
+#         return mi_name, scores
     
 #     def _is_miRNA(c):
 #         hashval = c.chromosome+c.chromosome_direction+str(c.hairpin_start)
@@ -248,7 +248,7 @@ def small_seq_stats(candidates, sc=0, na=0, c_to_m=0):
         print c.has_3p
         print "direction:", c.chromosome_direction
         print c.pos_5p_begin - c.hairpin_start, c.pos_3p_end - c.hairpin_start
-        print get_name_scores(c)
+#         print get_name_scores(c)
         print folding
         print hairpin
         print " "*begin_5 + "5"*(end_5 - begin_5) + " "*(begin_3 - end_5) + "3"*(end_3 - begin_3)
