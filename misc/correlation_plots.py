@@ -98,7 +98,7 @@ def plot_color_grid(arraylike, row_labels, column_labels, name, vmin=-1, vmax=1)
 
     fig, ax = plot.subplots()
     
-    plot.title("feature correlation " + name_spaces)
+    plot.title(name_spaces)
     heatmap = ax.pcolor(arraylike, cmap=cm.get_cmap("RdBu"), vmin=vmin, vmax=vmax)
 
     # put the major ticks at the middle of each cell
@@ -119,8 +119,8 @@ def plot_color_grid(arraylike, row_labels, column_labels, name, vmin=-1, vmax=1)
     fig.colorbar(heatmap)
     
     
-    plot.show()
     plot.savefig("figures/"+name+".png")
+    plot.show()
     
     
 

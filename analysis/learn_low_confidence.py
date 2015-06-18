@@ -16,6 +16,7 @@ import time
 import math
 from sklearn import svm, metrics
 import itertools
+from sympy.core.tests.test_args import nd
 
 start_time = time.clock()
 
@@ -40,6 +41,7 @@ def roc_plot(test_data, test_data_annotations, name=""):
     plot.xticks([0.1*x for x in range(0, 11)])
     plot.xlabel("False positive rate")
     plot.yticks([0.1*x for x in range(0, 11)])
+    plot.ylim(ymin=0, ymax=1)
     plot.ylabel("True positive rate")
     plot.savefig(filename)
     plot.show()
@@ -69,9 +71,41 @@ def filter_dead(data, annotations):
     return data, annotations
 
 
+def remove_candidates(data, annotations, keep=0):
+    ''' removes canididates, and their annotations (0s) '''
+    not_candidate = annotations.index(1)
+    
+    data = data[not_candidate-keep:]
+    annotations = annotations[not_candidate-keep:]
+    return data, annotations
 
 
+def compute_kernel_param(train, train_annotations, filters):
 
+    folds = range(len(train))
+    
+    # deep copy data for multiple threads, probably not needed
+    copy_train = [numpy.copy(train) for _ in folds]
+    copy_train_anno = [copy.deepcopy(train_annotations) for _ in folds]
+    
+    
+
+    
+    threads = len(train)
+    pool = Pool(threads)
+    
+    zipzap = zip(copy_train, copy_train_anno, folds, filters)
+    
+    print " - starting SVM grid search to find best C and gamma"
+    
+    res = pool.map(one_grid, zipzap)
+    # res = map(one_grid, zipzap)
+    print " - finished SVM grids"
+    
+    
+    best_scores, best_cs, best_gammas, results = zip(*res)
+    
+    return best_scores, best_cs, best_gammas, results
 
 
 print
@@ -90,7 +124,29 @@ annotations = pickle.load( open("save_an.p", "rb"))
 low_confidence_data = pickle.load( open("save_low_confidence_data.p", "rb"))
 low_confidence_names = pickle.load( open("save_low_confidence_names.p", "rb"))
 
+data_new = pickle.load( open("save_scaled_data_new.p", "rb"))
+annotations_new = pickle.load( open("save_an_new.p", "rb"))
+
 print "..loaded"
+
+
+
+print "removing candidates from data"
+
+data = data_new
+annotations = annotations_new
+
+# nd, na = [], []
+# 
+# for dl, al in zip(data, annotations):
+#     d, a = remove_candidates(dl, al)
+#     nd.append(d)
+#     na.append(a)
+#     
+# data = nd
+# annotations = na
+
+# data, annotations = [remove_candidates(d, a) for d, a in zip(data, annotations)]
 
 train_annotations = annotations[1:]
 train = data[1:]
@@ -107,29 +163,28 @@ print " - fixed data", len(train), len(train_annotations), time.clock() - start_
 
 folds = range(len(train))
 
-# deep copy data for multiple threads, probably not needed
-copy_train = [numpy.copy(train) for _ in folds]
-copy_train_anno = [copy.deepcopy(train_annotations) for _ in folds]
-
-
-filters = [filter_miRNAs for _ in folds]
+# filters = [filter_miRNAs for _ in folds]
 # filters = [filter_candidates for _ in folds]
 # filters = [filter_dead for _ in folds]
-# filters = [None for _ in folds]
+filters = [None for _ in folds]
 
-threads = len(train)
-pool = Pool(threads)
+best_scores, best_cs, best_gammas, grid_results = compute_kernel_param(train, train_annotations, filters)
 
-zipzap = zip(copy_train, copy_train_anno, folds, filters)
+print map(len, [best_scores, best_cs, best_gammas, grid_results])
+pickle.dump(grid_results, open("svm_grid_results.p", "wb"))
+pickle.dump(best_scores, open("svm_grid_best_scores.p", "wb"))
+pickle.dump(best_cs, open("svm_grid_best_cs.p", "wb"))
+pickle.dump(best_gammas, open("svm_grid_best_gammas.p", "wb"))
 
-print " - starting SVM grid search to find best C and gamma", time.clock() - start_time
+grid_results = pickle.load( open("svm_grid_results.p", "rb"))
+best_scores = pickle.load( open("svm_grid_best_scores.p", "rb"))
+best_cs = pickle.load( open("svm_grid_best_cs.p", "rb"))
+best_gammas = pickle.load( open("svm_grid_best_gammas.p", "rb"))
 
-res = pool.map(one_grid, zipzap)
-# res = map(one_grid, zipzap)
-print " - finished SVM grids", time.clock() - start_time
+print map(len, [best_scores, best_cs, best_gammas, grid_results])
+print "------------++++++++"
 
 
-best_scores, best_cs, best_gammas, results = zip(*res)
 
 def log_avg(l): 
     '''   average of log values, then scaled back '''
@@ -155,7 +210,7 @@ print "\tC:", best_c
 print "\tgamma:", best_gamma
 print
 
-np_res = numpy.array(results)
+np_res = numpy.array(grid_results)
 array_res = numpy.mean( np_res, axis=0 )
 
 
@@ -245,7 +300,6 @@ print len(low_confidence_data)
 def learn_candidates(d):
     
     train_stuff, annotation_stuff = d
-
 
 
     lc_learner = svm.SVC(C=best_c,gamma=best_gamma, cache_size=500, probability=True)
@@ -346,44 +400,48 @@ def placement_scoring(result_lists):
         sorted_mean, sorted_stdev, sorted_placements, sorted_res_all = zip(*sz)
         
         
-        print "mean vs allscored"
-        plot.plot(sorted_mean, sorted_res_all)
-        plot.show()
-
-        print "mean", sorted_mean[:20]
-        print sorted_placements[0]
-        print sorted_res_all[:20]
-        plot.plot(sorted_mean[:20])
-        plot.show()
-        
-        print "stdev"
-        plot.plot(sorted_stdev)
-        plot.show()
-        
-        plot.plot(sorted_res_all)
-        plot.show()
+#         print "mean vs allscored"
+#         plot.plot(sorted_mean, sorted_res_all)
+#         plot.title("10 fold mean vs all data score")
+#         plot.show()
+# 
+#         print "mean", sorted_mean[:20]
+#         print sorted_placements[0]
+#         print sorted_res_all[:20]
+#         plot.plot(sorted_mean[:20])
+#         plot.title("20 best avg results")
+#         plot.show()
+#         
+#         print "stdev"
+#         plot.plot(sorted_stdev)
+#         plot.title("stdev")
+#         plot.show()
+#         
+#         plot.plot(sorted_res_all)
+#         plot.title("all folds sorted by mean placement result")
+#         plot.show()
         
         fig, ax1 = plot.subplots()
-           
-        ax1.plot(sorted_mean)
-    #     ax1.set_yscale("symlog")
-        ax1.set_ylabel("average classification position 10-fold", color="b")
+        
+        
+        ax1.plot(sorted_stdev, "r")
+        ax1.set_ylabel("stdev classification position 10-fold", color="r")
+        
+#         ax1.yaxis.tick_right()
+        for tl in ax1.get_yticklabels():
+            tl.set_color("r")
            
         ax2 = ax1.twinx()
-        ax2.plot(sorted_stdev, "r")
-        ax2.set_ylabel("stdev classification position 10-fold", color="r")
-            
+
+        ax2.plot(sorted_mean, "b")
         for tl in ax2.get_yticklabels():
-            tl.set_color("r")
-    
+            tl.set_color("b")
+    #     ax2.set_yscale("symlog")
+        ax2.set_ylabel("average classification position 10-fold", color="b")
+
         plot.show()
     
-    
-    
-    
-    
-    
-    
+
     
     z = zip(all_res, mean_placements, var_placements, placements)
     sz = sorted(z)
@@ -410,10 +468,12 @@ def placement_scoring(result_lists):
       
     ax1.plot(sorted_res_all)
 #     ax1.set_yscale("symlog")
-    ax1.set_ylabel("classification score all", color="b")
+    ax1.set_ylabel("classification score all data", color="b")
       
     ax2 = ax1.twinx()
+    ax2.set_axis_bgcolor('red')
     ax2.plot(sorted_mean, "r")
+    
     ax2.set_ylabel("average classification position 10-fold", color="r")
     
     
@@ -432,8 +492,10 @@ def placement_scoring(result_lists):
         tl.set_color("g")
         
     
-      
-#     plot.title("Low confidence: reads vs classification score")
+    ax1.set_zorder(ax3.get_zorder()+1) # put ax1 in front of ax3
+    ax1.patch.set_visible(False) # hide the 'canvas'
+#     ax2.patch.set_visible(True) # hide the 'canvas'
+    plot.title("LC reads vs classification score")
     plot.show()
 
 #     
@@ -476,7 +538,7 @@ def placement_scoring(result_lists):
 #     plot.plot(sorted_stdev, sorted_mean)
 #     plot.show()
     
-    assert 0
+#     assert 0
 
 def single_placement(result_list):
     ''' returns the placement (by score), relative to the original list '''
@@ -560,11 +622,12 @@ def predict_folds(data_list, annotation_list):
     best_res = res_sorted[0]
     print len(mean_results), len(stdev_results), len(best_res)
     
-    plot.plot(mean_results, label="mean value")
+    plot.plot(mean_results, label="average score")
     plot.plot(stdev_results, label="variance")
     plot.plot(best_res, label="score using all data")
 #     plot.plot(reads_sorted_logscaled, label="reads, log scaled")
     plot.legend(loc='upper left')
+    plot.title("LC 10-fold score stability testing")
     plot.show()
     
     print len(res_sorted), 11
@@ -610,6 +673,7 @@ def predict_folds(data_list, annotation_list):
    
 
 # predict_folds(data, annotations, learn_new_stuff)
+
 predict_folds(data, annotations)
 
 # assert 0
@@ -681,6 +745,7 @@ plot.plot(plot_res)
 plot.yticks([0.1*x for x in range(0, 11)])
 plot.xlabel("Low confidence miRNAs")
 plot.ylabel("Score")
+plot.title("Low confidence scores, sorted")
 plot.savefig("results/LC_classification.png")
 plot.show()
 
@@ -748,10 +813,10 @@ score_dead = learner.score(test_dead, test_dead_annotations)
 
 
 print "final scores:"
-print "\t total score:\t\t", score_all
-print "\t HC miRNA score:\t", score_miRNA
-print "\t candidate score:\t", score_candidates
-print "\t dead score:\t\t", score_dead
+print "\t total score:\t\t", score_all, "\t", len(test_all_annotations)
+print "\t HC miRNA score:\t", score_miRNA, "\t", len(test_miRNA_annotations)
+print "\t candidate score:\t", score_candidates, "\t", len(test_candidates_annotations)
+print "\t dead score:\t\t", score_dead, "\t", len(test_dead_annotations)
 print "c-val\t", log_avg(best_cs),(avg(best_cs)), best_cs
 print "gamma\t", log_avg(best_gammas), (avg(best_gammas)), best_gammas
 

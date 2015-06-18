@@ -79,7 +79,7 @@ def candidates_to_array(candidates):
 #         pp = one_null_bool(candidate.has_short_seqs_3p)
         
         p = candidate.short_seq_align
-        q = candidate.ratio_short_long
+        q = math.log(candidate.ratio_short_long)
         
         s = candidate.loop_size # noise?
         t = candidate.folds_5p

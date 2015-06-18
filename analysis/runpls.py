@@ -581,6 +581,55 @@ def main():
 #     
 #     plot_kstest(ks_val, minlen_range, False)
 #     plot_ttest(t_student, t_welch, minlen_range, False)
+    
+    
+    d_hp = 0
+    d_tot = 0
+    
+    c_hp = 0
+    c_tot = 0
+    
+    h_hp = 0
+    h_tot = 0
+    
+    l_hp = 0
+    l_tot = 0
+    
+    m_hp = 0
+    m_tot = 0
+    
+    for c in candidates:
+        hashval = c.chromosome + c.chromosome_direction + str(c.hairpin_start)
+        
+        hairpin_one = 1 if c.has_hairpin_struct else 0
+        
+        if hashval in candidate_to_dead:
+            d_hp += hairpin_one
+            d_tot += 1
+        
+        elif hashval in candidate_to_miRNA:
+            mi = candidate_to_miRNA[hashval]
+            
+            if mi in miRNA_high_conf:
+                h_hp += hairpin_one
+                h_tot += 1
+            else:
+                l_hp += hairpin_one
+                l_tot += 1
+        elif hashval in mirdeep_new:
+            m_hp += hairpin_one
+            m_tot += 1
+        else:
+            c_hp += hairpin_one
+            c_tot += 1
+            
+    print "==============================================================================="
+    print "dead:    \t", d_hp, d_tot, (d_hp*1.0 / d_tot)
+    print "candidates:\t", c_hp, c_tot, (c_hp*1.0 / c_tot)
+    print "high conf:\t", h_hp, h_tot, (h_hp*1.0 / h_tot)
+    print "low conf:\t", l_hp, l_tot, (l_hp*1.0 / l_tot)
+    print "mirDeep2:\t", m_hp, m_tot, (m_hp*1.0 / m_tot)
+    print "==============================================================================="
 
 
     FEATURES_old = [ "hairpin_energy_10", "entropy_nucleotides", "entropy_structure", "heterogenity_5_begin",
@@ -615,11 +664,13 @@ def main():
 #         plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead,
 #                       miRNA_high_conf, feat_name )
 
-    for feat_name, lv in zip(all_features, logvals):
-       
-        plot_mirdeep(candidates, candidate_to_miRNA, candidate_to_dead,
-                      miRNA_high_conf, mirdeep_new, feat_name, lv)
-    
+    #===========================================================================
+    # for feat_name, lv in zip(all_features, logvals):
+    #     
+    #     plot_mirdeep(candidates, candidate_to_miRNA, candidate_to_dead,
+    #                   miRNA_high_conf, mirdeep_new, feat_name, lv)
+    #  
+    #===========================================================================
     print
     print " features finished:", time.clock() - start_time, " seconds"
 
@@ -741,8 +792,6 @@ def main():
     
     
     
-
-    
     low_confidence_names = [map(get_miRNAid, l) for l in low_confidence_data]
     
     
@@ -761,29 +810,34 @@ def main():
     print low_confidence_reads
     
     pickle.dump(low_confidence_reads, open("low_confidence_reads.p", "wb"))
-    assert 0
+#     assert 0
+    
+    
+    def scale_data(data):
+        return preprocessing.scale(data, with_mean=False, with_std=False)
+        
     
     
     # data for LC classification: 
     vector_data = map(vectorize.candidates_to_array, annotated_data)
-    scaled_data = map(preprocessing.scale, vector_data)
+    scaled_data = map(scale_data, vector_data)
     
     
         # low confidence miRNA
     low_confidence_data = map(vectorize.candidates_to_array, low_confidence_data)
-    low_confidence_data = map(preprocessing.scale, low_confidence_data)
+    low_confidence_data = map(scale_data, low_confidence_data)
     
     
     # data for new miRNA classification:
     vector_data_new = map(vectorize.candidates_to_array, annotated_data_new)
-    scaled_data_new = map(preprocessing.scale, vector_data_new)
+    scaled_data_new = map(scale_data, vector_data_new)
     
     
         # good candidates (not miRNA, has hairpin struct)
     hp_candidates = [c for c in candidates if is_good_candidate(c)]
     print "hp_candidates", len(hp_candidates)
     hp_candidates = vectorize.candidates_to_array(hp_candidates)
-    hp_candidates = map(preprocessing.scale, hp_candidates)
+    hp_candidates = map(scale_data, hp_candidates)
     
     print
     print "saving data ...",
