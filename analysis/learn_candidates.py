@@ -9,7 +9,7 @@ import copy
 from multiprocessing import Pool
 # from multiprocessing import current_process
 # from multiprocessing import cpu_count
-from ml.grid import one_grid
+from ml.grid import one_grid, filter_candidates, filter_miRNAs
 import pickle
 from matplotlib import pyplot as plot
 import time
@@ -17,8 +17,9 @@ import math
 from sklearn import svm, metrics
 import itertools
 from numpy import unravel_index
-import matplotlib
+# import matplotlib
 from matplotlib import cm
+
 
 
 
@@ -51,17 +52,7 @@ def roc_plot(learner, test_data, test_data_annotations, name=""):
     plot.show()
 
 
-# def roc_plot(test_data, test_data_annotations):
-#     probs = learner.predict_proba(test_data)
-#     fpr, tpr, _thresholds = metrics.roc_curve(test_data_annotations, probs[:,1])
-#     print fpr
-#     print 
-#     print tpr
-#     roc_auc = metrics.auc(fpr, tpr)
-#     print "area under curve:", roc_auc
-#      
-#     plot.plot(fpr, tpr)
-#     plot.show()
+
 
 
 def filter_miRNAs(data, annotations):
@@ -169,6 +160,7 @@ all_examples = list(itertools.chain.from_iterable(data_new))
 all_annotations = list(itertools.chain.from_iterable(annotations_new))
 
 
+
 some_lc = [lc for lc, count in zip(low_confidence_data[0], low_confidence_reads) if count > 0]
 
 print " - fixed data", len(train), len(train_annotations), time.clock() - start_time
@@ -249,6 +241,10 @@ print unravel_index(array_res.argmax(), array_res.shape)
 
 _c, _gamma = unravel_index(array_res.argmax(), array_res.shape)
 print "sum all best values:", _c, _gamma, c_values[_c], gamma_values[_gamma]
+
+
+
+
 
 heatplot(array_res, c_values, gamma_values, filters)
 
@@ -333,15 +329,48 @@ print len(hp_candidates)
 
 candidate_classes = learner.predict(hp_candidates)
 
-print "nr of miRNAs:", sum(candidate_classes)
+print "nr of miRNAs:", sum(candidate_classes), candidate_classes
+
+pickle.dump(candidate_classes, open("candidate_classified_miRNA.p", "wb"))
 
 
+
+# def round_number(number, limit=0.99):
+#     return 1 if number > limit else 0
 
 candidate_scores = learner.predict_proba(hp_candidates)
 
 print "sum scores:"
 print sum(candidate_scores)
+print candidate_scores
 print
+
+cc = list(candidate_classes)
+
+csl = map(list, candidate_scores)
+csl = list(csl)
+
+print csl
+
+cscores = zip(*csl)[1] 
+
+print cscores
+
+rounded_scores = [1 if s > 0.99 else 0 for s in cscores]
+
+pickle.dump(rounded_scores, open("candidate_classified_99.p", "wb"))
+
+
+# csc = list(candidate_scores[1])
+
+
+assert len(cc) == len(cscores), (len(cc), len(cscores))
+
+for s, c in sorted(zip(cscores, cc)):
+    print c, s
+print "----------"
+
+
 
 
 # candidate_scores = [a for a,b in candidate_scores]
@@ -365,14 +394,14 @@ print len(candidate_scores), len(candidate_scores[0]), sorted_cs[0]
 scaled123 = pickle.load( open("save_scaled_data.p", "rb"))
 
 
-plot.title("new miRNA candidates classification score")
-for s in sorted_cs:
-    plot.plot(s)
-    break
-    
-
-plot.ylim(ymin=0,ymax=1)
-plot.show()
+# plot.title("new miRNA candidates classification score")
+# for s in sorted_cs:
+#     plot.plot(s)
+#     break
+#     
+# 
+# plot.ylim(ymin=0,ymax=1)
+# plot.show()
 
 
 candidate_scores = learner.predict_proba(hp_candidates)
@@ -381,10 +410,10 @@ candidate_score_trues = [x[1] for x in candidate_scores_list]
 
 candidate_score_trues_sorted = sorted(candidate_score_trues)
 
-plot.title("new miRNA candidates classification score 2")
-plot.ylim(ymin=0,ymax=1)
-plot.plot(candidate_score_trues_sorted)
-plot.show()
+# plot.title("new miRNA candidates classification score 2")
+# plot.ylim(ymin=0,ymax=1)
+# plot.plot(candidate_score_trues_sorted)
+# plot.show()
 
 #==============================================================================
 # plot results using 9 folds + the best 
@@ -403,6 +432,12 @@ def score_once(param):
     return _scores
 
 
+def sorted_by_first_list(several_lists):
+    
+    itemwise = zip(*several_lists)
+    sorted_itemwise = sorted(itemwise)
+    sorted_by_first = zip(*sorted_itemwise)
+    return sorted_by_first
 
 #===============================================================================
 # loading data from mirdeep 
@@ -411,12 +446,7 @@ def score_once(param):
 # train_folds
 # train_folds_annotations
 
-def sorted_by_first_list(several_lists):
-    
-    itemwise = zip(*several_lists)
-    sorted_itemwise = sorted(itemwise)
-    sorted_by_first = zip(*sorted_itemwise)
-    return sorted_by_first
+
 
 fold_scores = map(score_once, zip(train_folds, train_folds_annotations))
 
@@ -428,29 +458,34 @@ fold_scores.insert(0, candidate_score_trues)
 sorted_fold_scores = sorted_by_first_list(fold_scores)
 
 
-plot.title("new miRNA candidates classification score 3")
+# plot.title("new miRNA candidates classification score 3")
+# plot.ylim(ymin=0,ymax=1)
+# plot.plot(sorted_fold_scores[0])
+# plot.show()
+
+
+all_and_sd = sorted_by_first_list([candidate_score_trues, sd_scores])
+
+plot.title("miRNA candidate classification score and SD")
 plot.ylim(ymin=0,ymax=1)
-plot.plot(sorted_fold_scores[0])
+# plot.plot(sorted_fold_scores[0])
+plot.plot(all_and_sd[0], label="classification score")
+plot.plot(all_and_sd[1], label="9-fold score SD")
+plot.legend(loc="upper left")
 plot.show()
 
-plot.title("new miRNA candidates classification score and SD")
-plot.ylim(ymin=0,ymax=1)
-plot.plot(sorted_fold_scores[0])
-plot.plot(sd_scores)
-plot.show()
 
-
-plot.title("new miRNA candidates classification score 5")
-plot.ylim(ymin=0,ymax=1)
-map(plot.plot, sorted_fold_scores)
-plot.show()
-
-
-each_sorted = map(sorted, fold_scores)
-plot.title("new miRNA candidates classification score 5")
-plot.ylim(ymin=0,ymax=1)
-map(plot.plot, each_sorted)
-plot.show()
+# plot.title("new miRNA candidates classification score 5")
+# plot.ylim(ymin=0,ymax=1)
+# map(plot.plot, sorted_fold_scores)
+# plot.show()
+# 
+# 
+# each_sorted = map(sorted, fold_scores)
+# plot.title("new miRNA candidates classification score 5")
+# plot.ylim(ymin=0,ymax=1)
+# map(plot.plot, each_sorted)
+# plot.show()
 
 
 

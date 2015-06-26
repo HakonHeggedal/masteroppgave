@@ -55,6 +55,7 @@ import itertools
 from other_stuff.mirna_split import fix_miRNA_training_test
 from other_stuff.mirdeep_results import mirdeep_make_roc_data
 from misc.plot_mirdeep import plot_mirdeep
+from misc.plot_mirdeep_candidates import plot_candidate_results
 
 def _align_bowtie(bowtie_output_file, collapsed_seq_file):
     from subprocess import check_output
@@ -357,6 +358,14 @@ def main():
 #     mirdeep_make_roc_data(candidate_tree, candidate_to_miRNA, miRNA_high_conf)
     
     candidates = pickle.load( open("candidates_pre.p", "rb"))
+    hp_50 = pickle.load( open("candidate_classified_miRNA.p", "rb"))
+    hp_99 = pickle.load( open("candidate_classified_99.p", "rb"))
+    
+    
+       
+
+
+    
     
     candidate_to_dead = pickle.load( open("candidate_to_dead.p", "rb"))
     miRNA_fam = pickle.load( open("miRNA_fam.p", "rb"))
@@ -400,6 +409,8 @@ def main():
 
     # calculating hairpin stats (length + overhang using pairing prob.)
     hairpin_stats(candidates, candidate_to_miRNA, miRNA_high_conf)
+    
+    
 
     
     def _is_miRNA(c):
@@ -419,7 +430,33 @@ def main():
         return hashval in candidate_to_dead
     
 
-        
+    def is_good_candidate(c):
+        return c.has_hairpin_struct and not _is_dead(c) and not _is_miRNA(c)
+ 
+ 
+    hp_candidates = [c for c in candidates if is_good_candidate(c)]
+    
+    print len(hp_candidates), 572, len(hp_50), len(hp_99)
+    
+    assert len(hp_candidates) == len(hp_50) == len(hp_99)
+    
+    
+    hp_99_candidates = [h for h, is_99 in zip(hp_candidates, hp_99) if is_99]
+    hp_50_candidates = [h for h, is_50 in zip(hp_candidates, hp_50) if is_50]
+    
+    
+    def hash_val(c):
+        return c.chromosome+c.chromosome_direction+str(c.hairpin_start)
+    
+    hp99_to_candidate = {hash_val(c):c for c in hp_99_candidates}
+    hp50_to_candidate = {hash_val(c):c for c in hp_50_candidates}
+    
+#     print hp50_to_candidate.issubset(candidate_to_miRNA)
+#     print hp99_to_candidate.issubset(candidate_to_miRNA)
+#     
+#     assert hp50_to_candidate.issubset(candidate_to_miRNA)
+#     assert hp99_to_candidate.issubset(candidate_to_miRNA)
+#     
     
     
     print "all candidates+miRNA+other:", len(candidates)
@@ -475,7 +512,8 @@ def main():
     align_small_seqs(candidates, small_reads, small_reads_count)
     
     
-    lc_10 = pickle.load( open("lc_scores_10.p", "rb"))
+    lc_10  = pickle.load( open("lc_scores_10.p", "rb"))
+    lc_10_all = pickle.load( open("lc_scores_10_w_cand.p", "rb"))
     lc_names = pickle.load( open("save_low_confidence_names.p", "rb"))
     
     
@@ -488,16 +526,10 @@ def main():
     
     small_seq_stats(candidates)    
 #     small_seq_stats(_mirna_hc) # for testing only
-    
-
 
 
 #     A/U ends for all remaining candidates
     tailing.tailing_au_fast(candidates, not_mapped_reads)
-#     tailing.tailing_au_simple(candidates, not_mapped_reads)
-
-    
-#     tailing.tailing_au(candidates, not_mapped_reads)
     
 
 #     degree of entropy in structure and nucleotides
@@ -659,10 +691,16 @@ def main():
 
 
 
-#     for feat_name in FEATURES:
-#       
-#         plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead,
-#                       miRNA_high_conf, feat_name )
+    for feat_name, lv in zip(all_features, logvals):
+        
+        plot_candidate_results(candidates, candidate_to_miRNA, candidate_to_dead, miRNA_high_conf,
+                               mirdeep_new, hp50_to_candidate, hp99_to_candidate, feat_name, lv)
+        
+       
+        #=======================================================================
+        # plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead,
+        #               miRNA_high_conf, feat_name )
+        #=======================================================================
 
     #===========================================================================
     # for feat_name, lv in zip(all_features, logvals):
@@ -674,89 +712,6 @@ def main():
     print
     print " features finished:", time.clock() - start_time, " seconds"
 
-
-#     
-# 
-# 
-#     
-# #     annotations = list(itertools.chain.from_iterable(annotations))
-# #     all_annotated = list(itertools.chain.from_iterable(annotated_data))
-#     
-#     vector_data = [vectorize.candidates_to_array(d) for d in annotated_data]
-#     single_vector_data = list(itertools.chain.from_iterable(vector_data) )
-#     
-# #     print len(vector_data)
-#     
-#     scaler = preprocessing.StandardScaler().fit(single_vector_data)
-#     
-#     scaled_vectors = [scaler.transform(d) for d in vector_data]
-# 
-# #     learner = svm.SVC(probability=True, cache_size=500)
-#     
-#     threads = ml_folds
-#     pool = Pool(threads)
-#     
-#     print "nr of threads:", threads
-#     
-#     param = zip([scaled_vectors]*ml_folds, [annotations]*ml_folds, range(ml_folds) )
-#     res_lists = pool.map(param_estimate.param_estimate_fold, param)
-#     
-#     
-#     feat_list = zip(*res_lists)
-#     for name, res in zip(feature_names, feat_list):
-#         m = numpy.mean(res)
-#         s = numpy.std(res)
-#         d = abs(m) - s
-#         print m, "\t", s, "\t", d, "\t", name
-# #         print sum(res)/len(res),"\t", name, res
-#     
-#     
-#     assert False
-#         
-
-    # feature selection:
-    # only one fold first:
-    
-    
-#     derp = annotated_data
-#     derp = map(vectorize.candidates_to_array, derp)
-    
-    
-    
-#     test = annotated_data[0]
-#     test_annotations = annotations[0]
-# 
-#     train = list(itertools.chain.from_iterable(annotated_data[1:]))
-#     train_annotations = list(itertools.chain.from_iterable(annotations[1:]))
-# 
-#     train = vectorize.candidates_to_array(train)
-#     test = vectorize.candidates_to_array(test)
-#     
-#     test = preprocessing.scale(test)
-#     train = preprocessing.scale(train)
-# 
-#     # parameter selection:
-#     
-#     learner = svm.SVC(probability=True, cache_size=500)
-#     learner.fit(train, train_annotations)
-#     
-#     
-#     # roc plot 123
-#     probs = learner.predict_proba(test)
-#     print "probabilities", probs
-#     fpr, tpr, _thresholds = metrics.roc_curve(test_annotations, probs[:,1])
-#     
-#     roc_auc = metrics.auc(fpr, tpr)
-#     print "area under curve:", roc_auc
-#     
-#     pyplot.plot(fpr, tpr)
-#     pyplot.show()
-#     
-#     base_score = learner.score(test, test_annotations)
-#     print "base score: ", base_score
-#     assert False
-#     # roc plot 234
-#      
 
 
 
@@ -773,9 +728,9 @@ def main():
         return _is_miRNA(c) or _is_dead(c) or not c.has_hairpin_struct
 
     
-    def is_good_candidate(c):
-        return c.has_hairpin_struct and not _is_dead(c) and not _is_miRNA(c)
-    
+#     def is_good_candidate(c): # du
+#         return c.has_hairpin_struct and not _is_dead(c) and not _is_miRNA(c)
+#     
     
     
 #     # removed bad candidates 

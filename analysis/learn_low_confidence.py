@@ -16,7 +16,46 @@ import time
 import math
 from sklearn import svm, metrics
 import itertools
-from sympy.core.tests.test_args import nd
+from matplotlib import cm
+
+
+
+# lc_reads = pickle.load( open("low_confidence_reads.p", "rb"))
+# 
+# 
+# # lc_reads = lc_reads[:100]
+# 
+# lc_reads = sorted(lc_reads, reverse=True)
+# 
+# lc_pos = range(1, len(lc_reads)+1)
+# 
+# plot.plot(lc_pos, lc_reads, label="reads")
+# 
+# 
+# xticvals = [x for x in range(0, len(lc_reads)-100, 200)]
+# xticvals.remove(800)
+# maxel = len(lc_reads)+1
+# zeroel = lc_reads.index(0.0)+1
+# xticvals.append(maxel)
+# xticvals.append(zeroel)
+# xticvals = sorted(xticvals)
+# print xticvals, maxel, zeroel
+# 
+# 
+# 
+# 
+# plot.xlabel("LC miRNA")
+# plot.ylabel("Reads")
+# 
+# plot.xlim(0, len(lc_reads)+1)
+# plot.yscale("symlog")
+# plot.xticks(xticvals)
+# # plot.legend(loc='upper right')
+# plot.title("LC miRNA reads")
+# plot.show()
+# 
+# assert 0
+
 
 start_time = time.clock()
 
@@ -80,6 +119,48 @@ def remove_candidates(data, annotations, keep=0):
     return data, annotations
 
 
+def heatplot(array_res, c_values, gamma_values, filters):
+    
+    
+    gamma_name = "_gamma_" + str(gamma_values[0]) + "-" + str(gamma_values[-1])
+    c_name = "C_" + str(c_values[0]) + "-" + str(c_values[-1])
+    f_name = "" if not filters[0] else filters[0].__name__
+    plot_name = "plot/Grid_avg_" + f_name + c_name + gamma_name + ".png"
+    
+    
+    row_labels = gamma_values
+    column_labels = c_values
+    
+    
+    #  create gridsearch heatmap
+    fig, ax = plot.subplots()
+    _heatmap = ax.pcolor(array_res)
+    
+    heatmap = ax.pcolor(array_res, cmap=cm.get_cmap("RdBu"), vmin=0.0, vmax=1.0)
+      
+    # put the major ticks at the middle of each cell
+    ax.set_xticks(numpy.arange(array_res.shape[1])+0.5, minor=False)
+    ax.set_yticks(numpy.arange(array_res.shape[0])+0.5, minor=False)
+      
+    ax.set_xticklabels(row_labels, minor=False,  rotation="vertical")
+    ax.set_yticklabels(column_labels, minor=False)
+    
+    heatmap.axes.set_ylim(0, len(array_res))
+    heatmap.axes.set_xlim(0, len(array_res))
+    
+    fig.colorbar(heatmap)
+    
+    plot.title("Grid search C and gamma")
+    plot.xlabel("gamma")
+    plot.ylabel("C")
+    plot.gca().axis('tight')
+    
+    plot.savefig(plot_name)
+    plot.show()
+    print "saved plot", time.clock() - start_time
+
+
+
 def compute_kernel_param(train, train_annotations, filters):
 
     folds = range(len(train))
@@ -131,22 +212,27 @@ print "..loaded"
 
 
 
-print "removing candidates from data"
-
+#===============================================================================
+# print "removing candidates from data"
+# 
 data = data_new
 annotations = annotations_new
+#===============================================================================
 
-# nd, na = [], []
-# 
-# for dl, al in zip(data, annotations):
-#     d, a = remove_candidates(dl, al)
-#     nd.append(d)
-#     na.append(a)
-#     
-# data = nd
-# annotations = na
 
-# data, annotations = [remove_candidates(d, a) for d, a in zip(data, annotations)]
+print map(sum, annotations)
+# print filter_dead(data[0], )
+
+# print len([filter_dead(d,a) for d,a in zip(data,annotations) ])
+print map(len, ([filter_dead(d,a)[1] for d,a in zip(data,annotations) ]))
+print map(len, ([filter_candidates(d,a)[1] for d,a in zip(data,annotations) ]))
+print map(len, ([filter_miRNAs(d,a)[1] for d,a in zip(data,annotations) ]))
+# print len([filter_miRNAs(d,a) for d,a in zip(data,annotations) ])
+
+
+assert 0
+
+
 
 train_annotations = annotations[1:]
 train = data[1:]
@@ -220,8 +306,13 @@ array_res = numpy.mean( np_res, axis=0 )
 # c_values = [10.0 ** i for i in xrange(-4,5)]
 
 
-gamma_values = [4.0 ** i for i in xrange(-4,3)]
-c_values = [4.0 ** i for i in xrange(-3,4)]
+# gamma_values = [4.0 ** i for i in xrange(-4,3)]
+# c_values = [4.0 ** i for i in xrange(-3,4)]
+
+
+
+gamma_values = [2.0 ** i for i in xrange(-18,-1)]
+c_values = [2.0 ** i for i in xrange(-1,10)]
 
 
 gamma_name = "_gamma_" + str(gamma_values[0]) + "-" + str(gamma_values[-1])
@@ -234,22 +325,9 @@ row_labels = gamma_values
 column_labels = c_values
 
 
-#  create 
-# fig, ax = plot.subplots()
-# heatmap = ax.pcolor(array_res)
-#  
-# # put the major ticks at the middle of each cell
-# ax.set_xticks(numpy.arange(array_res.shape[0])+0.5, minor=False)
-# ax.set_yticks(numpy.arange(array_res.shape[1])+0.5, minor=False)
-#  
-# ax.set_xticklabels(row_labels, minor=False,  rotation="vertical")
-# ax.set_yticklabels(column_labels, minor=False)
-# 
-# plot.xlabel("gamma")
-# plot.ylabel("C")
-# plot.show()
-# plot.savefig(plot_name)
-# print "saved plot", time.clock() - start_time
+gamma_text = ["2^"+str(i) for i in xrange(-18,-1)]
+
+heatplot(array_res, c_values, gamma_text, filters)
 
 
 train = list(itertools.chain.from_iterable(train))
@@ -370,7 +448,7 @@ def learn_new_stuff(d):
 
 
 def placement_scoring(result_lists):
-    print
+
     
     
     placement_lists = map(single_placement, result_lists)
@@ -382,7 +460,7 @@ def placement_scoring(result_lists):
     var_placements = map(numpy.std, placements)
 #     var_placements = map(numpy.var, placements)
     
-    
+    print
     for y in range(10):
         print placements[y]
         print mean_placements[y]
@@ -425,7 +503,8 @@ def placement_scoring(result_lists):
         
         
         ax1.plot(sorted_stdev, "r")
-        ax1.set_ylabel("stdev classification position 10-fold", color="r")
+        ax1.set_ylabel("st.dev. classification position 9-folds + all folds", color="r")
+        ax1.set_xlabel("candidates")
         
 #         ax1.yaxis.tick_right()
         for tl in ax1.get_yticklabels():
@@ -437,8 +516,8 @@ def placement_scoring(result_lists):
         for tl in ax2.get_yticklabels():
             tl.set_color("b")
     #     ax2.set_yscale("symlog")
-        ax2.set_ylabel("average classification position 10-fold", color="b")
-
+        ax2.set_ylabel("average classification position 9-folds + all folds", color="b")
+        plot.title("Average classification position ")
         plot.show()
     
 
@@ -474,7 +553,7 @@ def placement_scoring(result_lists):
     ax2.set_axis_bgcolor('red')
     ax2.plot(sorted_mean, "r")
     
-    ax2.set_ylabel("average classification position 10-fold", color="r")
+    ax2.set_ylabel("average classification position 9-fold", color="r")
     
     
     for tl in ax2.get_yticklabels():
@@ -487,7 +566,7 @@ def placement_scoring(result_lists):
     ax3.set_frame_on(True)
     ax3.patch.set_visible(False)
     
-    ax3.set_ylabel("variance classification position 10-fold", color="g")
+    ax3.set_ylabel("variance classification position 9-fold", color="g")
     for tl in ax3.get_yticklabels():
         tl.set_color("g")
         
@@ -495,7 +574,7 @@ def placement_scoring(result_lists):
     ax1.set_zorder(ax3.get_zorder()+1) # put ax1 in front of ax3
     ax1.patch.set_visible(False) # hide the 'canvas'
 #     ax2.patch.set_visible(True) # hide the 'canvas'
-    plot.title("LC reads vs classification score")
+    plot.title("LC scores with 9-fold position stability")
     plot.show()
 
 #     
@@ -590,7 +669,7 @@ def predict_folds(data_list, annotation_list):
     print "making placement scores 123"
     placement_scoring(res)
     
-    pickle.dump(res, open("lc_scores_10.p", "wb"))
+    pickle.dump(res, open("lc_scores_10_w_cand.p", "wb"))
     print len(res)
     
     
@@ -610,8 +689,8 @@ def predict_folds(data_list, annotation_list):
     reads_sorted = zip(*sorted_reads)[1]
 #     reads_sorted_logscaled = map(math.log, reads_sorted)
     
-    mean_results = map(numpy.mean, sorted_by_best)
-    stdev_results = map(numpy.var, sorted_by_best)
+    mean_results = map(numpy.mean, sorted_by_best[1:])
+    stdev_results = map(numpy.var, sorted_by_best[1:])
     
     
     
@@ -627,7 +706,8 @@ def predict_folds(data_list, annotation_list):
     plot.plot(best_res, label="score using all data")
 #     plot.plot(reads_sorted_logscaled, label="reads, log scaled")
     plot.legend(loc='upper left')
-    plot.title("LC 10-fold score stability testing")
+#     plot.legend(loc="center right")
+    plot.title("LC scores with 9-fold stability")
     plot.show()
     
     print len(res_sorted), 11
@@ -800,7 +880,7 @@ print "... wrote results to:", filepathname
 
 
 
-roc_plot(test_all, test_all_annotations, "HC, candidates and dead miRNA")
+roc_plot(test_all, test_all_annotations, "HC vs candidates and dead miRNA")
 # roc_plot(test_miRNA, test_miRNA_annotations)
 # roc_plot(test_candidates, test_candidates_annotations)
 # roc_plot(test_dead, test_dead_annotations)
