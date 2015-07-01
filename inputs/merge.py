@@ -10,7 +10,10 @@ def collapse_collapsed(collapsed_files, min_len, min_count):
     
     all_sequences = {}
     
+    allll = 0
+    
     for filename in collapsed_files:
+        print filename
         
         current_seqs = {}
         
@@ -38,6 +41,7 @@ def collapse_collapsed(collapsed_files, min_len, min_count):
                 if line[0] == ">":
                     count = int(line.split("-")[1])
                     total_count += count
+                    allll += count
                 else:
                     
                     all_seqs += 1
@@ -71,6 +75,8 @@ def collapse_collapsed(collapsed_files, min_len, min_count):
 #         print all_seqs, used_seq*1.0/ all_seqs, "\t", total_count, used_count*1.0/total_count, "\t", filename
 #         print total_count, all_seqs, "\t", legals, large, counted, "\t", used_seq, filename
 #         total_count, total_norm_seqs,
+    print allll
+    assert 0
     return all_sequences
 
 

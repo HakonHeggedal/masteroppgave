@@ -14,10 +14,29 @@ import math
 import matplotlib
 
 
+
+
+def _get_property_list(candidates, feat_names):
+    
+    all_features = []
+    
+    for name in feat_names:
+        feature = [getattr(c, name) for c in candidates]
+        all_features.append(feature)
+        
+    return all_features
+
+
+
+
 def plot_pearson_correlation(candidates, feat_names):
     
+    print "Pearson correlation"
+    print len(feat_names)
     
     features = _get_property_list(candidates, feat_names)
+    
+    
     
     results = [[0]*len(feat_names) for _ in xrange(len(feat_names))]
     
@@ -38,7 +57,12 @@ def plot_pearson_correlation(candidates, feat_names):
 
 def plot_spearman_correlation(candidates, feat_names):
     
+    print "Spearman correlation"
+    print len(feat_names)
+    
     features = _get_property_list(candidates, feat_names)
+    
+    print len(features)
 
     results = [[0]*len(feat_names) for _ in xrange(len(feat_names))]
     
@@ -62,6 +86,7 @@ def plot_correlation(vectors, feat_names=None, is_pearson=True):
     correlation_function_name = "pearson" if is_pearson else "spearman"
     
     features = zip(*vectors)
+    print len(features)
     
     results = [[0]*len(features) for _ in xrange(len(features))]
     
@@ -122,18 +147,66 @@ def plot_color_grid(arraylike, row_labels, column_labels, name, vmin=-1, vmax=1)
     plot.savefig("figures/"+name+".png")
     plot.show()
     
-    
 
 
-def _get_property_list(candidates, feat_names):
-    
-    all_features = []
-    
-    for name in feat_names:
-        feature = [getattr(c, name) for c in candidates]
-        all_features.append(feature)
-        
-    return all_features
 
-print matplotlib.__version__
+FEATURE_NAMES = []
+FEATURE_NAMES.append("mapped sequences")
+# FEATURE_NAMES.append("mapped sequences rpm count")
+FEATURE_NAMES.append("hairpin energy")
+# FEATURE_NAMES.append("hairpin + 10nt energy")
+FEATURE_NAMES.append("entropy nucleotides")
+FEATURE_NAMES.append("entropy structure")
+FEATURE_NAMES.append("heterogenity 5p start")
+FEATURE_NAMES.append("heterogenity 5p end")
+FEATURE_NAMES.append("heterogenity 3p start")
+FEATURE_NAMES.append("heterogenity 3p end")
+FEATURE_NAMES.append("candidate quality")
+# FEATURE_NAMES.append("nr of bindings hairpin+10nt")
+FEATURE_NAMES.append("overhang level outer")
+FEATURE_NAMES.append("overhang outer")
+FEATURE_NAMES.append("overhang level inner")
+FEATURE_NAMES.append("overhang inner")
+# FEATURE_NAMES.append("bulge factor")
+FEATURE_NAMES.append("short seq align score")
+FEATURE_NAMES.append("short vs long seqs")
+# FEATURE_NAMES.append("small sequences aligned 5p")
+# FEATURE_NAMES.append("small sequences aligned 3p")
+FEATURE_NAMES.append("loop size")
+FEATURE_NAMES.append("folds 5p")
+FEATURE_NAMES.append("folds 3p")
+FEATURE_NAMES.append("folds before")
+FEATURE_NAMES.append("folds after")
+FEATURE_NAMES.append("has hairpin structure")
+
+
+
+
+data = pickle.load( open("save_scaled_data.p", "rb"))
+# annotations = pickle.load( open("save_an.p", "rb"))
+# low_confidence_data = pickle.load( open("save_low_confidence_data.p", "rb"))
+# low_confidence_names = pickle.load( open("save_low_confidence_names.p", "rb"))
+
+data_new = pickle.load( open("save_scaled_data_new.p", "rb"))
+# annotations_new = pickle.load( open("save_an_new.p", "rb"))
+
+
+
+# plot_correlation(data, FEATURE_NAMES, False)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

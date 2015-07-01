@@ -167,12 +167,15 @@ def _shannon_entropy(bitpair_probs):
 
 
 
-
+#===============================================================================
+# 
 # # testing only:
 # seq2 = "AGGUUGAGGUAGUAGGUUGUAUAGUUUAGAAUUACAUCAAGGGAGAUAACUGUACAGCCUCCUAGCUUUCCU"
-#      
+# seq2 = "GAUCUGUCUGUCUUCUGUAUAUACCCUGUAGAUCCGAAUUUGUGUAAGGAAUUUUGUGGUCACAAAUUCGUAUCUAGGGGAAUAUGUAGUUGACAUAAACACUCCGCUCU"
+#       
 # print  
 # print _viennafold(seq2, do_ps=True)
+#===============================================================================
 
 
 

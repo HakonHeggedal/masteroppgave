@@ -98,12 +98,9 @@ def _total_fold(fold):
 #     return sum( map(lambda x: x == "(", fold)  )
 
 def _find_overhang(fold, five_start, three_end):
-    ''' calculate alignment of 5' and 3' candidates '''
+    ''' calculate overhang of alignment (for 5p and 3p start/end positions) '''
     
-    #TODO vienna needs 10nt on each side of candidate
-#     for candidate in candidates:
-    
-#     five_distance = -1
+
     five_folds = 0
     three_folds = 0
 
@@ -160,7 +157,9 @@ def _find_overhang(fold, five_start, three_end):
 
 
 
+test = ".((.))"
 
+print _find_overhang(test, 0, 5)
 
 
 

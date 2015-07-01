@@ -3,6 +3,8 @@ Created on 4. nov. 2014
 
 @author: hakon
 '''
+
+
 import numpy
 import math
 

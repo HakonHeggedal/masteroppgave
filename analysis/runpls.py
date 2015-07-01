@@ -56,6 +56,8 @@ from other_stuff.mirna_split import fix_miRNA_training_test
 from other_stuff.mirdeep_results import mirdeep_make_roc_data
 from misc.plot_mirdeep import plot_mirdeep
 from misc.plot_mirdeep_candidates import plot_candidate_results
+from misc.plot_lc import plot_LC_results
+from matplotlib import pyplot
 
 def _align_bowtie(bowtie_output_file, collapsed_seq_file):
     from subprocess import check_output
@@ -185,7 +187,7 @@ def main():
     if is_new_run:
         
         id_to_dead_hp, id_to_dead_mature = dead_mirna.get_hairpin(dead_mirnas)
-    #     assert False
+#         assert False
         
         print "merging",len(fasta_files), "collapsed files" if len(fasta_files)>1 else ""
             
@@ -256,7 +258,7 @@ def main():
         dead_miRNA_hits = [line.strip().split("\t") for line in open(dead_mirna_bowtie_out)]
             
         print "TOTAL dead mirnas:", len(dead_miRNA_hits)
-        
+#         assert 0 
         
     #     using sequence tree to find possible candidates
     #     candidate_tree, sequence_tree, candidates, seq_to_candidates = interval_tree_search.find_candidates(fixed_lines)
@@ -336,6 +338,14 @@ def main():
         
           
         print "saved 456"
+        
+        
+    candidate_to_dead = pickle.load( open("candidate_to_dead.p", "rb"))
+#     print len(candidate_to_dead)
+#     
+#     print len(candidate_to_dead.values())
+#     print len(set(candidate_to_dead.values()))
+#     assert 0
 
     print "loading miRNAs"
     mirdeep_new = pickle.load( open("mirdeep_new.p", "rb"))
@@ -512,20 +522,23 @@ def main():
     align_small_seqs(candidates, small_reads, small_reads_count)
     
     
-    lc_10  = pickle.load( open("lc_scores_10.p", "rb"))
-    lc_10_all = pickle.load( open("lc_scores_10_w_cand.p", "rb"))
-    lc_names = pickle.load( open("save_low_confidence_names.p", "rb"))
-    
-    
-    
-    small_seq_stats(_mirna_lc, lc_10, lc_names, candidate_to_miRNA)
-    print lc_names[0]
+#     lc_10  = pickle.load( open("lc_scores_10.p", "rb"))
+#     lc_10_all = pickle.load( open("lc_scores_10_w_cand.p", "rb"))
+#     lc_names = pickle.load( open("save_low_confidence_names.p", "rb"))
+# #     
+# #     
+# #     
+#     small_seq_stats(_mirna_lc, lc_10, lc_names, candidate_to_miRNA)
+#     print lc_names[0]
 #     assert 0
+
+
+
     
     
-    
-    small_seq_stats(candidates)    
-#     small_seq_stats(_mirna_hc) # for testing only
+#     small_seq_stats(candidates)    
+    small_seq_stats(_mirna_hc) # for testing only
+
 
 
 #     A/U ends for all remaining candidates
@@ -543,6 +556,15 @@ def main():
 #      
 #     candidate quality: nr of sequence hits / all candidate hits for given sequences
     quality.candidate_quality(candidates, seq_to_candidates)
+    
+    
+    
+    
+    
+    # save candidates again here ?
+    
+#     pickle.dump(candidates, open("candidates_with_features.p", "wb"))
+
     
     
 #     plotting all features
@@ -667,14 +689,18 @@ def main():
     FEATURES_old = [ "hairpin_energy_10", "entropy_nucleotides", "entropy_structure", "heterogenity_5_begin",
                 "heterogenity_5_end", "heterogenity_3_begin", "heterogenity_3_end",
                 "quality", "overhang_level_outer_10",
-                "overhang_outer_10", "overhang_level_inner_10", "overhang_inner_10"]
+                "overhang_outer_10", "overhang_level_inner_10", "overhang_inner_10", ]
+    FEATURES_old = [ "hairpin_energy_10", "entropy_nucleotides", "entropy_structure", "heterogenity_5_begin",
+                "heterogenity_5_end", "heterogenity_3_begin", "heterogenity_3_end",
+                 "overhang_level_outer_10",
+                "overhang_outer_10", "overhang_level_inner_10", "overhang_inner_10", "quality" ]
 
     FEATURES = [
-                "ratio_short_long",
+#                 "ratio_short_long",
                 "short_seq_align", # 0 until best val is found
 #                 "ratio_short_long_logval",
-                "leading_au",
-                "tailing_au",
+#                 "leading_au",
+#                 "tailing_au",
                 "overhang_inner",
                 "overhang_outer",
                 "loop_size",
@@ -688,15 +714,39 @@ def main():
     logvals = [True] + [False]*10 + [False]*len(FEATURES_old)
 #     plot_pearson_correlation(candidates, FEATURES)
 #     plot_spearman_correlation(candidates, FEATURES)
+    plot_spearman_correlation(candidates, all_features)
 
 
 
+    LC_100_best_all  = pickle.load( open("LC_100_best_all.p", "rb"))
+    LC_100_best_nonhp  = pickle.load( open("LC_100_best_nonhp.p", "rb"))
+    LC_100_worst_all  = pickle.load( open("LC_100_worst_all.p", "rb"))
+    LC_100_worst_nonhp  = pickle.load( open("LC_100_worst_nonhp.p", "rb"))
+    
+    
+    
+    c_scores = []
+    mir_scores = []
+    
+    
     for feat_name, lv in zip(all_features, logvals):
         
-        plot_candidate_results(candidates, candidate_to_miRNA, candidate_to_dead, miRNA_high_conf,
-                               mirdeep_new, hp50_to_candidate, hp99_to_candidate, feat_name, lv)
+#         (ks_mirdeep, ks_classify) = plot_candidate_results(candidates, candidate_to_miRNA, candidate_to_dead, miRNA_high_conf,
+#                                mirdeep_new, hp50_to_candidate, hp99_to_candidate, feat_name, lv)
         
+        plot_LC_results(candidates, candidate_to_miRNA, candidate_to_dead, miRNA_high_conf,
+                         LC_100_worst_all, LC_100_worst_nonhp, LC_100_best_all, LC_100_best_nonhp, feat_name, lv)
+        
+#         c_scores.append(ks_classify)
+#         mir_scores.append(ks_mirdeep)
        
+       
+    
+    
+    pyplot.plot(c_scores)
+    pyplot.plot(mir_scores)
+    pyplot.title("mirDeep")
+    pyplot.show()
         #=======================================================================
         # plot_any.plot(candidates, candidate_to_miRNA, candidate_to_dead,
         #               miRNA_high_conf, feat_name )

@@ -23,7 +23,7 @@ def plot_candidate_results(candidates, candidate_to_miRNAid, candidate_to_dead, 
     log_text = " log scaled" if isLog else ""
     
     plot_name = name.replace("_", " ")
-    outfile = "figures/" + name + ".png"
+    outfile = "figures/c_" + name + ".png"
     
     candidate_only = []
     mirna_high = []
@@ -91,25 +91,21 @@ def plot_candidate_results(candidates, candidate_to_miRNAid, candidate_to_dead, 
     c_50 = numpy.arange( minval, maxval, .1)
     c_99 = numpy.arange( minval, maxval, .1)
     
-    ks_val, p_2s =  stats.ks_2samp(mirna_high, mirna_low)
+    ks_mirdeep, _s =  stats.ks_2samp(mirna_high, mirdeep_c)
+    ks_classify, _d =  stats.ks_2samp(mirna_high, classed_99)
     print "\tKolmogorov-Smirnov test: miRNA high/low conf:"
-    print "\t\tKS: ", ks_val, "two sided p val: ", p_2s
+    print "\t\tKS: ", ks_mirdeep, "two sided p val: "
+    print "\t\tKS: ", ks_classify, "two sided p val: "
     
-    tval_same_var, prob_same = stats.ttest_ind(mirna_high, mirna_low, equal_var=True)
-    print "\tStudents T-test (same variance): miRNA high/low conf:"
-    print "\t\ttval: ",tval_same_var , "probability: ", prob_same 
-    
-    tval_diff_var, prob_diff = stats.ttest_ind(mirna_high, mirna_low, equal_var=False)
-    print "\tWelchs T-test: miRNA high/low conf:"
-    print "\t\ttval: ",tval_diff_var , "probability: ", prob_diff 
+
     
     
     fig, ax = pyplot.subplots()
     
-    ax.plot(x, dens_cand(x), label="Candidates")
+#     ax.plot(x, dens_cand(x), label="Candidates")
     ax.plot(y, dens_high(y), label="miRNA HC")
     ax.plot(z, dens_low(z), label="miRNA LC")
-    ax.plot(ae, dens_dead(ae), label="dead miRNA")
+#     ax.plot(ae, dens_dead(ae), label="dead miRNA")
     if len (mirdeep_c):
         ax.plot(oe, dens_mirdeep(oe), label="mirDeep2 new")
      
@@ -145,31 +141,31 @@ def plot_candidate_results(candidates, candidate_to_miRNAid, candidate_to_dead, 
 #     pyplot.show()
 #     pyplot.close()
     
-    return (ks_val, p_2s, tval_same_var, prob_same, tval_diff_var, prob_diff)
+    return (ks_mirdeep, ks_classify)
 
 
-fig, ax = pyplot.subplots()
- 
-ax.plot([4,2,3], label="Candidates")
-ax.plot([1,0,3], label="miRNA HC")
-ax.plot([1,1,3], label="miRNA LC")
-ax.plot([1,6,3], label="dead miRNA")
-ax.plot([1,2,2], label="mirDeep2 new")
-ax.plot([1,2,5], label="0.99 scored")
-ax.plot([3,3,3], label="classifier 0.99")
-ax.set_ylabel("frequency")
-ax.set_xlabel("frequency")
-# pyplot.ax
-# pyplot.subplots_adjust(right=0.8)
- 
-box = ax.get_position()
-ax.set_position([box.x0-0.01, box.y0, box.width * 0.74, box.height])
- 
-ax.legend(loc='upper left', bbox_to_anchor = (1.02, 1.0))
-pyplot.title("some random title heres he")
-pyplot.show()
-#     pyplot.close()
-
+#===============================================================================
+# fig, ax = pyplot.subplots()
+#  
+# ax.plot([4,2,3], label="Candidates")
+# ax.plot([1,0,3], label="miRNA HC")
+# ax.plot([1,1,3], label="miRNA LC")
+# ax.plot([1,6,3], label="dead miRNA")
+# ax.plot([1,2,2], label="mirDeep2 new")
+# ax.plot([1,2,5], label="0.99 scored")
+# ax.plot([3,3,3], label="classifier 0.99")
+# ax.set_ylabel("frequency")
+# ax.set_xlabel("frequency")
+# # pyplot.ax
+# # pyplot.subplots_adjust(right=0.8)
+#  
+# box = ax.get_position()
+# ax.set_position([box.x0-0.01, box.y0, box.width * 0.74, box.height])
+#  
+# ax.legend(loc='upper left', bbox_to_anchor = (1.02, 1.0))
+# pyplot.title("some random title heres he")
+# pyplot.show()
+# #     pyplot.close()
 
 
 

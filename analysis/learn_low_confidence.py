@@ -17,8 +17,103 @@ import math
 from sklearn import svm, metrics
 import itertools
 from matplotlib import cm
+from misc.correlation_plots import plot_correlation
 
 
+
+
+FEATURE_NAMES = []
+FEATURE_NAMES.append("mapped sequences")
+# FEATURE_NAMES.append("mapped sequences rpm count")
+FEATURE_NAMES.append("hairpin energy")
+# FEATURE_NAMES.append("hairpin + 10nt energy")
+FEATURE_NAMES.append("entropy nucleotides")
+FEATURE_NAMES.append("entropy structure")
+FEATURE_NAMES.append("heterogenity 5p start")
+FEATURE_NAMES.append("heterogenity 5p end")
+FEATURE_NAMES.append("heterogenity 3p start")
+FEATURE_NAMES.append("heterogenity 3p end")
+FEATURE_NAMES.append("candidate quality")
+# FEATURE_NAMES.append("nr of bindings hairpin+10nt")
+FEATURE_NAMES.append("overhang level outer")
+FEATURE_NAMES.append("overhang outer")
+FEATURE_NAMES.append("overhang level inner")
+FEATURE_NAMES.append("overhang inner")
+# FEATURE_NAMES.append("bulge factor")
+FEATURE_NAMES.append("short seq align score")
+FEATURE_NAMES.append("short vs long seqs")
+# FEATURE_NAMES.append("small sequences aligned 5p")
+# FEATURE_NAMES.append("small sequences aligned 3p")
+FEATURE_NAMES.append("loop size")
+FEATURE_NAMES.append("folds 5p")
+FEATURE_NAMES.append("folds 3p")
+FEATURE_NAMES.append("folds before")
+FEATURE_NAMES.append("folds after")
+FEATURE_NAMES.append("has hairpin structure")
+
+# lc_10  = pickle.load( open("lc_scores_10.p", "rb"))
+# lc_10_all = pickle.load( open("lc_scores_10_w_cand.p", "rb"))
+# lc_names = pickle.load( open("save_low_confidence_names.p", "rb"))
+# 
+# low_confidence_reads = pickle.load( open("low_confidence_reads.p", "rb"))
+# 
+# 
+# lc_names = list(itertools.chain.from_iterable(lc_names))
+# 
+# lc_score_all = lc_10_all[0]
+# lc_score_nonhp = lc_10[0]
+# 
+# 
+# 
+# 
+# print "before", len(lc_names)
+# lc_names = [lc for lc, count in zip(lc_names, low_confidence_reads) if count > 0]
+# print "after", len(lc_names)
+# 
+# 
+# sorted_score_pairs_all = sorted(zip(lc_score_all, lc_names))
+# scores_all, names_all = zip(*sorted_score_pairs_all)
+# 
+# 
+# sorted_score_pairs_nonhp = sorted(zip(lc_score_nonhp, lc_names))
+# scores_nonhp, names_nonhp = zip(*sorted_score_pairs_nonhp)
+# 
+# 
+# LC_100_best_all = names_all[-100:]
+# LC_100_best_nonhp = names_nonhp[-100:]
+#  
+# LC_100_worst_all = names_all[:100]
+# LC_100_worst_nonhp = names_nonhp[:100]
+# 
+# print LC_100_best_all
+# print LC_100_best_nonhp
+# print LC_100_worst_all
+# print LC_100_worst_nonhp
+# 
+# 
+# pickle.dump(LC_100_best_all, open("LC_100_best_all.p", "wb"))
+# pickle.dump(LC_100_best_nonhp, open("LC_100_best_nonhp.p", "wb"))
+# pickle.dump(LC_100_worst_all, open("LC_100_worst_all.p", "wb"))
+# pickle.dump(LC_100_worst_nonhp, open("save_scaled_data_new.p", "wb"))
+
+
+# # plot.plot(scores_all[-100:])
+# 
+# plot.plot(scores_nonhp[-202:])
+# # plot.plot(scores_all[:100])
+# 
+# plot.show()
+
+
+
+# assert 0
+
+
+# lc_10  = pickle.load( open("lc_scores_10.p", "rb"))
+# 
+# print len(lc_10)
+# print len(lc_10[-1])
+# assert 0
 
 # lc_reads = pickle.load( open("low_confidence_reads.p", "rb"))
 # 
@@ -210,27 +305,38 @@ annotations_new = pickle.load( open("save_an_new.p", "rb"))
 
 print "..loaded"
 
+print len(data)
+print 0
+d = list(itertools.chain.from_iterable(data))
+d2 = list(itertools.chain.from_iterable(data_new))
+print len(d)
+print len(d[0])
+print "---"
+# assert 0
+
+plot_correlation(d, FEATURE_NAMES, False)
+plot_correlation(d, FEATURE_NAMES, False)
 
 
 #===============================================================================
 # print "removing candidates from data"
 # 
-data = data_new
-annotations = annotations_new
+# data = data_new
+# annotations = annotations_new
 #===============================================================================
 
 
-print map(sum, annotations)
-# print filter_dead(data[0], )
-
-# print len([filter_dead(d,a) for d,a in zip(data,annotations) ])
-print map(len, ([filter_dead(d,a)[1] for d,a in zip(data,annotations) ]))
-print map(len, ([filter_candidates(d,a)[1] for d,a in zip(data,annotations) ]))
-print map(len, ([filter_miRNAs(d,a)[1] for d,a in zip(data,annotations) ]))
-# print len([filter_miRNAs(d,a) for d,a in zip(data,annotations) ])
-
-
-assert 0
+# # print map(sum, annotations)
+# # # print filter_dead(data[0], )
+# # 
+# # # print len([filter_dead(d,a) for d,a in zip(data,annotations) ])
+# print map(len, ([filter_dead(d,a)[1] for d,a in zip(data,annotations) ]))
+# print map(len, ([filter_candidates(d,a)[1] for d,a in zip(data,annotations) ]))
+# print map(len, ([filter_miRNAs(d,a)[1] for d,a in zip(data,annotations) ]))
+# # print len([filter_miRNAs(d,a) for d,a in zip(data,annotations) ])
+#  
+#  
+# assert 0
 
 
 
@@ -242,6 +348,17 @@ low_confidence_names = list(itertools.chain.from_iterable(low_confidence_names))
 
 
 hp_candidates = list(itertools.chain.from_iterable(hp_candidates))
+
+
+
+
+
+
+
+
+
+
+
 
 
 print " - fixed data", len(train), len(train_annotations), time.clock() - start_time
@@ -364,7 +481,9 @@ learner.fit(train, train_annotations)
 
 
 
-
+print "C", best_c
+print "gamma", best_gamma
+assert 0
 
 
 #===============================================================================
@@ -548,6 +667,7 @@ def placement_scoring(result_lists):
     ax1.plot(sorted_res_all)
 #     ax1.set_yscale("symlog")
     ax1.set_ylabel("classification score all data", color="b")
+    ax1.set_xlabel("LC miRNA")
       
     ax2 = ax1.twinx()
     ax2.set_axis_bgcolor('red')
@@ -560,7 +680,7 @@ def placement_scoring(result_lists):
         tl.set_color("r")
         
     ax3 = ax1.twinx()
-    ax3.plot(sorted_stdev, "g")
+    ax3.plot(sorted_stdev, "g", alpha=0.85)
 #     ax3.set_yscale("symlog")
     ax3.spines['right'].set_position(('axes', 1.2))
     ax3.set_frame_on(True)
@@ -571,7 +691,8 @@ def placement_scoring(result_lists):
         tl.set_color("g")
         
     
-    ax1.set_zorder(ax3.get_zorder()+1) # put ax1 in front of ax3
+    ax1.set_zorder(ax3.get_zorder()+2) # put ax1 in front of ax3
+#     ax2.set_zorder(ax3.get_zorder()+1) # put ax1 in front of ax3
     ax1.patch.set_visible(False) # hide the 'canvas'
 #     ax2.patch.set_visible(True) # hide the 'canvas'
     plot.title("LC scores with 9-fold position stability")
@@ -668,7 +789,6 @@ def predict_folds(data_list, annotation_list):
     
     print "making placement scores 123"
     placement_scoring(res)
-    
     pickle.dump(res, open("lc_scores_10_w_cand.p", "wb"))
     print len(res)
     
@@ -708,6 +828,8 @@ def predict_folds(data_list, annotation_list):
     plot.legend(loc='upper left')
 #     plot.legend(loc="center right")
     plot.title("LC scores with 9-fold stability")
+    plot.xlabel("LC miRNA")
+    plot.ylabel("score")
     plot.show()
     
     print len(res_sorted), 11

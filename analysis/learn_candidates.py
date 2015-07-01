@@ -47,7 +47,7 @@ def roc_plot(learner, test_data, test_data_annotations, name=""):
     plot.xlabel("False positive rate")
     plot.yticks([0.1*x for x in range(0, 11)])
     plot.ylabel("True positive rate")
-    plot.ylim(ymin=0,ymax=1)
+    plot.ylim(ymin=0,ymax=1.01)
     plot.savefig(filename)
     plot.show()
 
@@ -140,7 +140,13 @@ data_new = pickle.load( open("save_scaled_data_new.p", "rb"))
 annotations_new = pickle.load( open("save_an_new.p", "rb"))
 hp_candidates = pickle.load( open("save_hp_candidates_new.p", "rb"))
 
+# print len(hp_candidates)
+# print hp_candidates
+# assert 0
 
+# print sum(map(len, [filter_dead(x,y)[0] for x,y in zip(data_new, annotations_new)]))
+# print 1
+# assert 0
 # for testing purposes:
 low_confidence_data = pickle.load( open("save_low_confidence_data.p", "rb"))
 low_confidence_reads = pickle.load( open("low_confidence_reads.p", "rb"))
@@ -451,7 +457,9 @@ def sorted_by_first_list(several_lists):
 fold_scores = map(score_once, zip(train_folds, train_folds_annotations))
 
 
-sd_scores = map(numpy.std, zip(*fold_scores))
+# sd_scores = map(numpy.std, zip(*fold_scores))
+var_scores = map(numpy.var, zip(*fold_scores))
+avg_scores = map(numpy.mean, zip(*fold_scores))
 
 fold_scores.insert(0, candidate_score_trues)
 
@@ -464,14 +472,20 @@ sorted_fold_scores = sorted_by_first_list(fold_scores)
 # plot.show()
 
 
-all_and_sd = sorted_by_first_list([candidate_score_trues, sd_scores])
+# all_and_sd = sorted_by_first_list([candidate_score_trues, sd_scores])
+all_var_mean = sorted_by_first_list([candidate_score_trues, var_scores, avg_scores])
 
-plot.title("miRNA candidate classification score and SD")
+plot.title("Candidate classification score with 9-fold stability")
 plot.ylim(ymin=0,ymax=1)
 # plot.plot(sorted_fold_scores[0])
-plot.plot(all_and_sd[0], label="classification score")
-plot.plot(all_and_sd[1], label="9-fold score SD")
+# plot.plot(all_and_sd[0], label="classification score, all data")
+# plot.plot(all_and_sd[1], label="9-fold score SD")
+plot.plot(all_var_mean[0], label="score using all data", zorder = 4)
+plot.plot(all_var_mean[1], label="9-fold variance")
+plot.plot(all_var_mean[2], label="9-fold average")
 plot.legend(loc="upper left")
+plot.xlabel("candidate miRNA")
+plot.ylabel("score")
 plot.show()
 
 
@@ -522,7 +536,7 @@ score_miRNA = learner.score(test_miRNA, test_miRNA_annotations)
 score_candidates = learner.score(test_candidates, test_candidates_annotations)
 score_dead = learner.score(test_dead, test_dead_annotations)
 
-
+roc_plot(learner, test_all, test_all_annotations, "candidate dataset")
 
 print "final scores:"
 print "\t total score:\t\t", score_all
